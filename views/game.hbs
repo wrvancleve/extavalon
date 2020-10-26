@@ -1,0 +1,94 @@
+<div class="flex-column" id="root">
+    <div class="flex-column" id="lobby">
+        <h2 class="future-color" id="name">{{title}}</h2>
+        <div id="game-information">
+            {{# if host }}
+                <h2 id="game-code">Game Code: </h2>
+                <div id="players">
+                    <h2>Players</h2>
+                    <ul id="player-list"></ul>
+                </div>
+            {{else}}
+                <h2>Waiting for role information...</h2>
+            {{/if}}
+        </div>
+        {{# if host }}
+            <button class="future-color future-box" type="button" id="start-game-button">Start Game</button>
+            <button class="future-color future-box" type="button" id="close-game-button">Close Game</button>
+        {{/if}}
+        <button class="modal-open-button" id="roles-open-button"> ? </button>
+    </div>
+    <div class="modal" id="roles">
+        <span class="modal-close-button" id="roles-close-button">&times;</span>
+        <h2>Resistance Roles</h2>
+        <ul>
+            <li>
+                <span class="resistance">Merlin</span>: Sees spies (except <span class="spy">Mordred</span>) and
+                <span class="resistance">Puck</span>; Can be assassinated
+            </li>
+            <li>
+                <span class="resistance">Percival</span>: Sees <span class="resistance">Merlin</span>) and
+                <span class="spy">Morgana</span>
+            </li>
+            <li>
+                <span class="resistance">Tristan</span>: Sees <span class="resistance">Iseult</span>); Can be
+                assassinated with <span class="resistance">Iseult</span>
+            </li>
+            <li>
+                <span class="resistance">Iseult</span>: Sees <span class="resistance">Tristan</span>); Can be
+                assassinated with <span class="resistance">Tristan</span>
+            </li>
+            <li>
+                <span class="resistance">Lancelot</span>: May play reverse cards
+            </li>
+            <li>
+                <span class="resistance">Guinevere</span>: Sees <span class="resistance">Lancelot</span>) and
+                <span class="spy">Maelagant</span>
+            </li>
+            <li>
+                <span class="resistance">Arthur</span>: Sees resistance roles present; Can be assassinated
+            </li>
+            <li>
+                <span class="resistance">Uther</span>: Sees a random resistance player
+            </li>
+            <li>
+                <span class="resistance">Leon</span>: Sees the team counts of two random players
+            </li>
+            <li>
+                <span class="resistance">Puck</span>: Only wins if resistance wins in 5 rounds; May play fail cards
+            </li>
+            <li>
+                <span class="resistance">Jester</span>: Only wins if assassinated; Sees present assassinable roles
+            </li>
+            <li>
+                <span class="resistance">Galahad</span>: Sees <span class="resistance">Arthur</span>
+            </li>
+        </ul>
+        <h2>Spy Roles</h2>
+        <ul>
+            <li>
+                <span class="spy">Mordred</span>: Not seen by <span class="resistance">Merlin</span>
+            </li>
+            <li>
+                <span class="spy">Morgana</span>: Seen as possible <span class="resistance">Merlin</span>
+                by <span class="resistance">Percival</span>
+            </li>
+            <li>
+                <span class="spy">Maelagant</span>: May play reverse cards
+            </li>
+            <li>
+                <span class="spy">Colgrevance</span>: Sees roles of all spies
+            </li>
+            <li>
+                <span class="spy">Lucius</span>: Observes a single seen information from random resistance player
+            </li>
+        </ul>
+    </div>
+</div>
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qs/6.9.4/qs.min.js"
+        integrity="sha512-BHtomM5XDcUy7tDNcrcX1Eh0RogdWiMdXl3wJcKB3PFekXb3l5aDzymaTher61u6vEZySnoC/SAj2Y/p918Y3w=="
+        crossorigin="anonymous">
+</script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/2.3.0/socket.io.js"></script>
+<script src="/javascripts/game.js"></script>
