@@ -42,7 +42,7 @@ $(document).ready(function () {
     });
 
     socket.on('close-lobby', () => {
-        location.replace("http://localhost:25565/");
+        location.replace("https://extavalon.com/");
     });
 
     socket.emit('join-lobby', {name, code});
