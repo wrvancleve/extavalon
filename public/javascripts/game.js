@@ -1,5 +1,5 @@
 $(document).ready(function () {
-    const socket = io.connect("http://localhost:8080");
+    const socket = io.connect("http://localhost:3000");
 
     const {name, code} = Qs.parse(location.search, {
         ignoreQueryPrefix: true
