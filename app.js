@@ -48,77 +48,79 @@ app.use('/join', joinGameRouter);
 app.use('/new', newGameRouter);
 app.use('/game', gameRouter);
 
-const server = http.createServer(app);
-const io = require('socket.io')(server);
-io.use(function(socket, next) {
-  sessionMiddleware(socket.request, socket.request.res || {}, next);
-});
+app.createServer = function() {
+  const server = http.createServer(app);
+  const io = require('socket.io')(server);
+  io.use(function(socket, next) {
+    sessionMiddleware(socket.request, socket.request.res || {}, next);
+  });
 
-server.listen(8080, "127.0.0.1");
+  io.on('connection', socket => {
+    socket.on('join-lobby', ({name, code}) => {
+      Lobby.findOne({ "code": code }).then(function(existingLobby) {
+        const connectingPlayerIndex = existingLobby.players.findIndex(player => player.session_id == socket.request.session.id)
+        //const connectingPlayerIndex = existingLobby.players.findIndex(player => player.socketId == socket.id)
+        if (connectingPlayerIndex == -1) {
+          const newPlayer = {
+            sessionId: socket.request.session.id,
+            socketId: socket.id,
+            name: name
+          };
+          existingLobby.players.push(newPlayer);
 
-io.on('connection', socket => {
-  socket.on('join-lobby', ({name, code}) => {
-    Lobby.findOne({ "code": code }).then(function(existingLobby) {
-      const connectingPlayerIndex = existingLobby.players.findIndex(player => player.session_id == socket.request.session.id)
-      //const connectingPlayerIndex = existingLobby.players.findIndex(player => player.socketId == socket.id)
-      if (connectingPlayerIndex == -1) {
-        const newPlayer = {
-          sessionId: socket.request.session.id,
-          socketId: socket.id,
-          name: name
-        };
-        existingLobby.players.push(newPlayer);
+          // Send updated player list to host
+          io.sockets.to(existingLobby.players[0].socketId).emit('update-players',
+              existingLobby.players.map(player => player.name));
+        } else {
+          // Update socket id
+          existingLobby.players[connectingPlayerIndex] = socket.id;
+        }
+        existingLobby.save();
+        socket.join(code);
 
-        // Send updated player list to host
-        io.sockets.to(existingLobby.players[0].socketId).emit('update-players',
-            existingLobby.players.map(player => player.name));
-      } else {
-        // Update socket id
-        existingLobby.players[connectingPlayerIndex] = socket.id;
-      }
-      existingLobby.save();
-      socket.join(code);
+        socket.on('start-game', () => {
+          // Create game and send data back
+          Lobby.findOne({ "code": code }).then(function(existingLobby) {
+            existingLobby.status = 'STARTED'
+            existingLobby.save();
 
-      socket.on('start-game', () => {
-        // Create game and send data back
-        Lobby.findOne({ "code": code }).then(function(existingLobby) {
-          existingLobby.status = 'STARTED'
-          existingLobby.save();
-
-          const game = new Game(existingLobby.players, existingLobby.settings);
-          for (var i = 0; i < existingLobby.players.length; i++) {
-            const currentPlayer = existingLobby.players[i];
-            io.sockets.to(currentPlayer.socketId).emit('start-game', game.getPlayerHTML(i));
-          }
-        });
-      });
-
-      function closeLobby() {
-        Lobby.deleteOne({"code": code}, function (err, result) {
-          io.sockets.to(code).emit('close-lobby');
-        });
-      };
-
-      socket.on('close-lobby', closeLobby);
-
-      socket.on('disconnect', () => {
-        Lobby.findOne({ "code": code }).then(function(existingLobby) {
-          if (existingLobby) {
-            const disconnectingPlayerIndex = existingLobby.players.findIndex(player => player.socketId == socket.id);
-            if (disconnectingPlayerIndex > 0) {
-              existingLobby.players.splice(disconnectingPlayerIndex, 1);
-              existingLobby.save();
-              io.sockets.to(existingLobby.players[0].socketId).emit('update-players',
-                  existingLobby.players.map(player => player.name));
-            } else {
-              closeLobby();
+            const game = new Game(existingLobby.players, existingLobby.settings);
+            for (var i = 0; i < existingLobby.players.length; i++) {
+              const currentPlayer = existingLobby.players[i];
+              io.sockets.to(currentPlayer.socketId).emit('start-game', game.getPlayerHTML(i));
             }
-          }
+          });
+        });
+
+        function closeLobby() {
+          Lobby.deleteOne({"code": code}, function (err, result) {
+            io.sockets.to(code).emit('close-lobby');
+          });
+        };
+
+        socket.on('close-lobby', closeLobby);
+
+        socket.on('disconnect', () => {
+          Lobby.findOne({ "code": code }).then(function(existingLobby) {
+            if (existingLobby) {
+              const disconnectingPlayerIndex = existingLobby.players.findIndex(player => player.socketId == socket.id);
+              if (disconnectingPlayerIndex > 0) {
+                existingLobby.players.splice(disconnectingPlayerIndex, 1);
+                existingLobby.save();
+                io.sockets.to(existingLobby.players[0].socketId).emit('update-players',
+                    existingLobby.players.map(player => player.name));
+              } else {
+                closeLobby();
+              }
+            }
+          });
         });
       });
     });
   });
-});
+  return server;
+};
+
 
 // catch 404 and forward to error handler
 app.use(function(req, res, next) {
@@ -134,6 +136,12 @@ app.use(function(err, req, res, next) {
   // render the error page
   res.status(err.status || 500);
   res.render('error');
+});
+
+process.on('SIGINT', function() {
+  console.log("Caught interrupt signal");
+
+  process.exit();
 });
 
 module.exports = app;
