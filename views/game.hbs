@@ -1,23 +1,27 @@
 <div class="flex-column" id="root">
     <div class="flex-column" id="lobby">
         <h2 class="future-color" id="name">{{title}}</h2>
-        <div id="game-information">
-            {{# if host }}
+            <div class="future-color" id="lobby-information">
                 <h2 id="game-code">Game Code: </h2>
-                <div id="players">
-                    <h2>Players</h2>
-                    <ul id="player-list"></ul>
-                </div>
-            {{else}}
+                {{# if host }}
+                    <div id="players">
+                        <h2>Players</h2>
+                        <ul id="player-list"></ul>
+                    </div>
+                {{/if}}
+            </div>
+        <div id="game-information">
+            {{# unless host }}
                 <h2>Waiting for role information...</h2>
-            {{/if}}
+            {{/unless}}
         </div>
         {{# if host }}
             <button class="future-color future-box" type="button" id="start-game-button">Start Game</button>
             <button class="future-color future-box" type="button" id="close-game-button">Close Game</button>
         {{/if}}
-        <button class="modal-open-button" id="roles-open-button"> ? </button>
     </div>
+    <button class="lobby-open-button" id="lobby-open-button" title="Open Lobby Information"> # </button>
+    <button class="modal-open-button" id="roles-open-button" title="Open Role Information"> ? </button>
     <div class="modal" id="roles">
         <span class="modal-close-button" id="roles-close-button">&times;</span>
         <h2>Resistance Roles</h2>
