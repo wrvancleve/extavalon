@@ -1,5 +1,5 @@
 $(document).ready(function () {
-    const socket = io.connect("http://localhost:3000");
+    const socket = io.connect("https://extavalon.com");
 
     const {name, code} = Qs.parse(location.search, {
         ignoreQueryPrefix: true

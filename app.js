@@ -22,7 +22,7 @@ const Game = require('./models/game');
 const app = express();
 
 const mongo_db_default_url = 'mongodb://localhost:27017/extavalon'
-mongoose.connect(process.env.MONGODB_URI || mongo_db_default_url);
+mongoose.connect(process.env.MONGO_URL || mongo_db_default_url);
 mongoose.Promise = global.Promise;
 
 // view engine setup
