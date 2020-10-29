@@ -13,7 +13,7 @@ class Game {
         this.resistanceCount = this.playerCount - this.spyCount;
         this.players = players;
         this.settings = settings;
-        if (settings.assassin === "Enabled" || (settings.assassin === "Random" && Math.random() === 1)) {
+        if (settings.assassin === "Enabled" || (settings.assassin === "Random" && Math.random() >= 0.5)) {
             this.assassin = true;
         } else {
             this.assassin = false;
@@ -162,21 +162,21 @@ class Game {
     }
 
     getEnabledResistanceRoles() {
-        var resistanceRoles = ["Merlin", "Percival", "Lancelot", "Lovers", "Arthur", "Uther"];
+        var resistanceRoles = ["Merlin", "Percival", "Lancelot", "Tristan", "Iseult", "Arthur"];
         if (this.settings.guinevere) {
             resistanceRoles.push("Guinevere");
         }
         if (this.settings.puck) {
             resistanceRoles.push("Puck");
         }
+        if (this.settings.robin) {
+            resistanceRoles.push("Sir Robin");
+        }
         if (this.settings.galahad) {
             resistanceRoles.push("Galahad");
         }
         if (this.settings.jester && this.assassin) {
             resistanceRoles.push("Jester");
-        }
-        if (this.settings.leon && this.playerCount > 7) {
-            resistanceRoles.push("Leon");
         }
         return resistanceRoles;
     }
@@ -191,86 +191,133 @@ class Game {
             var possibleResistanceRoles = this.shuffle(enabledResistanceRoles);
             var containsAssassinableRole = false;
             var containsSeeRole = false;
+            var leonPossible = this.playerCount > 7;
 
             do {
                 const currentRole = possibleResistanceRoles.pop();
+
                 var add = true;
                 if (usedResistanceRoles.length == this.resistanceCount - 1 &&
-                    ((currentRole === "Lovers") ||
-                        (currentRole === "Percival" && !containsMorgana && !usedResistanceRoles.includes("Merlin")) ||
-                        (currentRole === "Galahad" && !usedResistanceRoles.includes("Arthur")))) {
+                    ((currentRole === "Percival" && !containsMorgana &&
+                        possibleResistanceRoles.findIndex(e => e === "Merlin") != -1) ||
+                        (currentRole === "Galahad" &&
+                            possibleResistanceRoles.findIndex(e => e === "Arthur") != -1))) {
                     add = false;
                 }
 
                 if (add) {
                     switch (currentRole) {
-                        case "Lovers":
-                            usedResistanceRoles.push("Tristan");
-                            usedResistanceRoles.push("Iseult");
-                            possibleResistanceRoles.splice(possibleResistanceRoles.findIndex(e => e === "Uther"),1);
-                            possibleResistanceRoles.splice(possibleResistanceRoles.findIndex(e => e === "Leon"),1);
-                            containsAssassinableRole = true;
-                            containsSeeRole = true;
-                            break;
-                        case "Uther":
-                            usedResistanceRoles.push(currentRole);
-                            possibleResistanceRoles.splice(possibleResistanceRoles.findIndex(e => e === "Lovers"),1);
-                            possibleResistanceRoles.splice(possibleResistanceRoles.findIndex(e => e === "Leon"),1);
-                            containsSeeRole = true;
-                            break;
-                        case "Leon":
-                            usedResistanceRoles.push(currentRole);
-                            possibleResistanceRoles.splice(possibleResistanceRoles.findIndex(e => e === "Lovers"),1);
-                            possibleResistanceRoles.splice(possibleResistanceRoles.findIndex(e => e === "Uther"),1);
-                            containsSeeRole = true;
-                            break;
                         case "Lancelot":
                             usedResistanceRoles.push(currentRole);
-                            possibleResistanceRoles.splice(possibleResistanceRoles.findIndex(e => e === "Puck"),1);
+                            var puckIndex = possibleResistanceRoles.findIndex(e => e === "Puck");
+                            if (puckIndex != -1) {
+                                possibleResistanceRoles.splice(puckIndex,1);
+                            }
                             break;
                         case "Puck":
                             usedResistanceRoles.push(currentRole);
-                            possibleResistanceRoles.splice(possibleResistanceRoles.findIndex(e => e === "Lancelot"),1);
-                            possibleResistanceRoles.splice(possibleResistanceRoles.findIndex(e => e === "Jester"),1);
+                            var lancelotIndex = possibleResistanceRoles.findIndex(e => e === "Lancelot");
+                            if (lancelotIndex != -1) {
+                                possibleResistanceRoles.splice(lancelotIndex,1);
+                            }
+                            var jesterIndex = possibleResistanceRoles.findIndex(e => e === "Jester");
+                            if (jesterIndex != -1) {
+                                possibleResistanceRoles.splice(jesterIndex,1);
+                            }
+                            var robinIndex = possibleResistanceRoles.findIndex(e => e === "Sir Robin");
+                            if (robinIndex != -1) {
+                                possibleResistanceRoles.splice(robinIndex,1);
+                            }
+                            break;
+                        case "Sir Robin":
+                            usedResistanceRoles.push(currentRole);
+                            var puckIndex = possibleResistanceRoles.findIndex(e => e === "Puck");
+                            if (puckIndex != -1) {
+                                possibleResistanceRoles.splice(puckIndex,1);
+                            }
+                            var jesterIndex = possibleResistanceRoles.findIndex(e => e === "Jester");
+                            if (jesterIndex != -1) {
+                                possibleResistanceRoles.splice(jesterIndex,1);
+                            }
                             break;
                         case "Jester":
                             usedResistanceRoles.push(currentRole);
-                            possibleResistanceRoles.splice(possibleResistanceRoles.findIndex(e => e === "Arthur"),1);
-                            possibleResistanceRoles.splice(possibleResistanceRoles.findIndex(e => e === "Puck"),1);
-                            possibleResistanceRoles.splice(possibleResistanceRoles.findIndex(e => e === "Galahad"),1);
+                            var robinIndex = possibleResistanceRoles.findIndex(e => e === "Sir Robin");
+                            if (robinIndex != -1) {
+                                possibleResistanceRoles.splice(robinIndex,1);
+                            }
+                            var arthurIndex = possibleResistanceRoles.findIndex(e => e === "Arthur");
+                            if (arthurIndex != -1) {
+                                possibleResistanceRoles.splice(arthurIndex,1);
+                            }
+                            var puckIndex = possibleResistanceRoles.findIndex(e => e === "Puck");
+                            if (puckIndex != -1) {
+                                possibleResistanceRoles.splice(puckIndex,1);
+                            }
+                            var galahadIndex = possibleResistanceRoles.findIndex(e => e === "Galahad");
+                            if (galahadIndex != -1) {
+                                possibleResistanceRoles.splice(galahadIndex,1);
+                            }
                             break;
                         case "Arthur":
                             usedResistanceRoles.push(currentRole);
-                            possibleResistanceRoles.splice(possibleResistanceRoles.findIndex(e => e === "Jester"),1);
+                            var jesterIndex = possibleResistanceRoles.findIndex(e => e === "Jester");
+                            if (jesterIndex != -1) {
+                                possibleResistanceRoles.splice(jesterIndex,1);
+                            }
                             containsAssassinableRole = true;
                             break;
                         case "Galahad":
                             usedResistanceRoles.push(currentRole);
-                            if (!usedResistanceRoles.includes("Arthur")) {
+                            var tristanIndex = possibleResistanceRoles.findIndex(e => e === "Tristan");
+                            if (tristanIndex != -1) {
+                                possibleResistanceRoles.splice(tristanIndex,1);
+                            }
+                            var iseultIndex = possibleResistanceRoles.findIndex(e => e === "Iseult");
+                            if (iseultIndex != -1) {
+                                possibleResistanceRoles.splice(iseultIndex,1);
+                            }
+                            var arthurIndex = possibleResistanceRoles.findIndex(e => e === "Arthur");
+                            if (arthurIndex != -1) {
                                 usedResistanceRoles.push("Arthur");
-                                possibleResistanceRoles.splice(possibleResistanceRoles.findIndex(e => e === "Arthur"),1);
-                                possibleResistanceRoles.splice(possibleResistanceRoles.findIndex(e => e === "Jester"),1);
+                                possibleResistanceRoles.splice(arthurIndex,1);
+                                var jesterIndex = possibleResistanceRoles.findIndex(e => e === "Jester");
+                                if (jesterIndex != 1) {
+                                    possibleResistanceRoles.splice(jesterIndex,1);
+                                }
                                 containsAssassinableRole = true;
                             }
                             containsSeeRole = true;
                             break;
                         case "Percival":
                             usedResistanceRoles.push(currentRole);
-                            if (!containsMorgana && !usedResistanceRoles.includes("Merlin")) {
+                            var merlinIndex = possibleResistanceRoles.findIndex(e => e === "Merlin")
+                            if (!containsMorgana && merlinIndex != -1) {
                                 usedResistanceRoles.push("Merlin");
-                                possibleResistanceRoles.splice(possibleResistanceRoles.findIndex(e => e === "Merlin"),1);
+                                possibleResistanceRoles.splice(merlinIndex,1);
                                 containsAssassinableRole = true;
                             }
                             containsSeeRole = true;
+                            leonPossible = false;
                             break;
                         case "Merlin":
                             usedResistanceRoles.push(currentRole);
                             containsAssassinableRole = true;
                             containsSeeRole = true;
                             break;
+                        case "Tristan":
+                        case "Iseult":
+                            usedResistanceRoles.push(currentRole);
+                            var galahadIndex = possibleResistanceRoles.findIndex(e => e === "Galahad");
+                            if (galahadIndex != -1) {
+                                possibleResistanceRoles.splice(galahadIndex,1);
+                            }
+                            containsSeeRole = true;
+                            break;
                         case "Guinevere":
                             usedResistanceRoles.push(currentRole);
                             containsSeeRole = true;
+                            leonPossible = false;
                             break;
                         default:
                             usedResistanceRoles.push(currentRole);
@@ -280,6 +327,21 @@ class Game {
             } while (possibleResistanceRoles.length > 0 && usedResistanceRoles.length < this.resistanceCount);
             selectingRoles = (usedResistanceRoles.length != this.resistanceCount) || (this.assassin && !containsAssassinableRole)
                 || (containsLucius && !containsSeeRole);
+
+            const tristanFinalIndex = usedResistanceRoles.findIndex(e => e === "Tristan");
+            const iseultFinalIndex = usedResistanceRoles.findIndex(e => e === "Iseult");
+            if (tristanFinalIndex == -1 ^ iseultFinalIndex == -1) {
+                const replacementIndex = tristanFinalIndex == -1 ? iseultFinalIndex : tristanFinalIndex;
+                if (leonPossible && this.settings.leon) {
+                    if (Math.random() >= 0.5) {
+                        usedResistanceRoles[replacementIndex] = "Leon";
+                    } else {
+                        usedResistanceRoles[replacementIndex] = "Uther";
+                    }
+                } else {
+                    usedResistanceRoles[replacementIndex] = "Uther";
+                }
+            }
         } while (selectingRoles);
 
         return this.shuffle(usedResistanceRoles);
@@ -312,7 +374,11 @@ class Game {
             array[i] = t;
         }
 
-        return array;
+        const newArray = [];
+        for (i = 0; i < array.length; i++) {
+            newArray[i] = array[i];
+        }
+        return newArray;
     }
 
     getPlayerHTML(playerIndex) {
@@ -342,6 +408,9 @@ class Game {
                 break;
             case "Puck":
                 playerHTML = this.getPuckHTML();
+                break;
+            case "Sir Robin":
+                playerHTML = this.getRobinHTML();
                 break;
             case "Arthur":
                 playerHTML = this.getArthurHTML();
@@ -480,6 +549,15 @@ class Game {
                 <p>You only win if the Resistance wins on mission 5.</p>
                 <p>You may play fail cards while on missions.</p>
                 <p>If <span class="resistance">Merlin</span> is in the game, you are seen by <span class="resistance">Merlin</span> as a possible spy.</p>
+            </section>
+        `;
+    }
+
+    getRobinHTML() {
+        return `
+            <h2 class="resistance">Sir Robin</h2>
+            <section>
+                <p>You only win if the resistance wins and you went on two or fewer missions.</p>
             </section>
         `;
     }

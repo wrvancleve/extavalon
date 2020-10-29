@@ -59,7 +59,6 @@ app.createServer = function() {
     socket.on('join-lobby', ({name, code}) => {
       Lobby.findOne({ "code": code }).then(function(existingLobby) {
         const connectingPlayerIndex = existingLobby.players.findIndex(player => player.session_id == socket.request.session.id)
-        //const connectingPlayerIndex = existingLobby.players.findIndex(player => player.socketId == socket.id)
         if (connectingPlayerIndex == -1) {
           const newPlayer = {
             sessionId: socket.request.session.id,
@@ -81,8 +80,10 @@ app.createServer = function() {
         socket.on('start-game', () => {
           // Create game and send data back
           Lobby.findOne({ "code": code }).then(function(existingLobby) {
-            existingLobby.status = 'STARTED'
-            existingLobby.save();
+            if (existingLobby.status != 'STARTED') {
+              existingLobby.status = 'STARTED'
+              existingLobby.save();
+            }
 
             const game = new Game(existingLobby.players, existingLobby.settings);
             for (var i = 0; i < existingLobby.players.length; i++) {

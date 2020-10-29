@@ -6,7 +6,7 @@ const LobbySchema = new Schema({
     status: {type: String, required: true},
     settings: {
         type: { guinevere: Boolean, puck: Boolean, jester: Boolean, lucius: Boolean,
-            leon: Boolean, galahad: Boolean, assassin: String },
+            leon: Boolean, galahad: Boolean, robin: Boolean, assassin: String },
         required: true
     },
     players: {type: [{sessionId: String, socketId: String, name: String}], default: []}

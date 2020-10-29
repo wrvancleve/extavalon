@@ -38,6 +38,7 @@ router.post('/', [check('name', 'Invalid Name').isLength({min: 2})],
             const settings = {
                 guinevere: req.body.guinevere == 'on',
                 puck: req.body.puck == 'on',
+                robin: req.body.robin == 'on',
                 jester: req.body.jester == 'on',
                 leon: req.body.leon == 'on',
                 galahad: req.body.galahad == 'on',
