@@ -452,9 +452,9 @@ class Game {
         for (var i = 0; i < this.playerCount; i++) {
             if ((this.spyList.includes(i) && this.roles[i] !== "Mordred") || this.roles[i] === "Puck") {
                 if (this.settings.puck) {
-                    merlinHTML += `<p>${this.players[i].name} is evil or <span class="resistance">Puck</span></p>`;
+                    merlinHTML += `<p>${this.players[i].name} is <span class="spy">evil</span> or <span class="resistance">Puck</span></p>`;
                 } else {
-                    merlinHTML += `<p>${this.players[i].name} is evil</p>`;
+                    merlinHTML += `<p>${this.players[i].name} is <span class="spy">evil</span></p>`;
                 }
             }
         }
@@ -515,7 +515,7 @@ class Game {
         return `
             <h2 class="resistance">Uther</h2>
             <section><p>You see:</p></section>
-            <section><p>${this.players[this.utherInformationIndex].name} is good</p></section>
+            <section><p>${this.players[this.utherInformationIndex].name} is <span class="resistance">good</span></p></section>
         `;
     }
 
@@ -546,9 +546,9 @@ class Game {
         return `
             <h2 class="resistance">Puck</h2>
             <section>
-                <p>You only win if the Resistance wins on mission 5.</p>
+                <p>You only win if the <span class="resistance">Resistance</span> wins on mission 5.</p>
                 <p>You may play fail cards while on missions.</p>
-                <p>If <span class="resistance">Merlin</span> is in the game, you are seen by <span class="resistance">Merlin</span> as a possible spy.</p>
+                <p>If <span class="resistance">Merlin</span> is in the game, you are seen by <span class="resistance">Merlin</span> as a possible <span class="spy">spy</span>.</p>
             </section>
         `;
     }
@@ -557,7 +557,7 @@ class Game {
         return `
             <h2 class="resistance">Sir Robin</h2>
             <section>
-                <p>You only win if the resistance wins and you went on two or fewer missions.</p>
+                <p>You only win if the <span class="resistance">Resistance</span> wins and you went on two or fewer missions.</p>
             </section>
         `;
     }
@@ -619,11 +619,11 @@ class Game {
 
         if (spyCount == 1) {
             leonHTML += `<p>${this.players[this.leonInformationIndexes[0]].name} or ${this.players[this.leonInformationIndexes[1]].name}
-                is good; the other is evil</p></section>
+                is <span class="resistance">good</span>; the other is <span class="spy">evil</span></p></section>
             `;
         } else {
             leonHTML += `<p>${this.players[this.leonInformationIndexes[0]].name} and ${this.players[this.leonInformationIndexes[1]].name}
-                are either both good or both evil</p></section>
+                are either both <span class="resistance">good</span> or both <span class="spy">evil</span></p></section>
             `;
         }
 
@@ -716,7 +716,7 @@ class Game {
             if (isColgrevance) {
                 spyHTML += `<p>${i + 1}) ${this.players[spyIndex].name} is <span class="spy">${this.roles[spyIndex]}</span></p>`;
             } else {
-                spyHTML += `<p>${i + 1}) ${this.players[spyIndex].name} is evil</p>`;
+                spyHTML += `<p>${i + 1}) ${this.players[spyIndex].name} is <span class="spy">evil</span></p>`;
             }
         }
         spyHTML += `</section>`;

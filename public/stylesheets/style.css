@@ -14,8 +14,9 @@ body {
   color: #cef5fd;
 }
 
-.future-color-disabled {
+.future-disabled {
   color: #033e49;
+  cursor: default !important;
 }
 
 .future-box {
@@ -33,6 +34,14 @@ body {
   margin-top: 2vh;
   border: 2px solid #029dbb;
   box-shadow: 0 0 4px rgba(2,157,187,0.65);
+}
+
+.player-active {
+  color: #228B22;
+}
+
+.player-inactive {
+  color: #b3b3b3;
 }
 
 .resistance {
@@ -221,6 +230,7 @@ select {
   margin: auto;
   font-size: 2em;
   margin-top: 2vh;
+  color: #cef5fd;
 }
 
 #players {
@@ -286,13 +296,9 @@ select {
 }
 
 .modal {
-  width: 94vw;
   max-height: 96vh;
   box-sizing: border-box;
-  position: fixed;
-  left: 50%;
   top: 2vh;
-  margin-left: -47vw;
   padding: 2vh 2vw;
   overflow: auto;
 }

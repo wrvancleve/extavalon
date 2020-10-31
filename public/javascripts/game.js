@@ -25,14 +25,16 @@ $(document).ready(function () {
     }
 
     socket.on('update-players', currentPlayers => {
+        const activePlayerCount = currentPlayers.filter(p => p.active === "player-active").length;
+        $("#player-count").html(`Players [${activePlayerCount}]`);
         $("#player-list").html(`
-            ${currentPlayers.map(player => `<li>${player}</li>`).join('')}
+            ${currentPlayers.map(player => `<li class="${player.active}">${player.name}</li>`).join('')}
         `);
-        startGame.disabled = currentPlayers.length < 5;
+        startGame.disabled = activePlayerCount < 5;
         if (startGame.disabled) {
-            startGame.addClass("future-color-disabled");
+            startGame.addClass("future-disabled");
         } else {
-            startGame.removeClass("future-color-disabled");
+            startGame.removeClass("future-disabled");
         }
     });
 

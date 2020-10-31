@@ -15,7 +15,7 @@ async function generate_code(callback) {
     var code = null;
     do {
         var result = '';
-        const characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+        const characters = 'ABCDEFGHJKLMNOPQRSTUVWXYZ';
         for (var i = 0; i < code_length; i++) {
             result += characters.charAt(Math.floor(Math.random() * characters.length));
         }
@@ -28,7 +28,7 @@ async function generate_code(callback) {
     callback(code);
 }
 
-router.post('/', [check('name', 'Invalid Name').isLength({min: 2})],
+router.post('/', [check('name', 'Invalid Name').trim().matches("^[ a-zA-z]{2,12}$")],
     async function(req, res) {
         const errors = validationResult(req);
         if (!errors.isEmpty()) {
@@ -49,7 +49,7 @@ router.post('/', [check('name', 'Invalid Name').isLength({min: 2})],
             const name = req.body.name
 
             generate_code(function(code) {
-                const newLobby = new Lobby({code: code, status: 'OPEN', settings: settings});
+                const newLobby = new Lobby({code: code, settings: settings});
                 newLobby.save();
                 req.session.backURL = '/new';
                 res.redirect(`/game?code=${code}&name=${name}`);

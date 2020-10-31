@@ -58,38 +58,43 @@ app.createServer = function() {
   io.on('connection', socket => {
     socket.on('join-lobby', ({name, code}) => {
       Lobby.findOne({ "code": code }).then(function(existingLobby) {
-        const connectingPlayerIndex = existingLobby.players.findIndex(player => player.session_id == socket.request.session.id)
+        const connectingPlayerIndex = existingLobby.players.findIndex(player => player.sessionId == socket.request.session.id)
         if (connectingPlayerIndex == -1) {
           const newPlayer = {
             sessionId: socket.request.session.id,
             socketId: socket.id,
-            name: name
+            name: name,
+            active: "player-active",
+            gameInformation: null
           };
           existingLobby.players.push(newPlayer);
-
-          // Send updated player list to host
-          io.sockets.to(existingLobby.players[0].socketId).emit('update-players',
-              existingLobby.players.map(player => player.name));
         } else {
-          // Update socket id
-          existingLobby.players[connectingPlayerIndex] = socket.id;
+          const currentPlayer = existingLobby.players[connectingPlayerIndex];
+          currentPlayer.socketId = socket.id;
+          currentPlayer.name = name;
+          currentPlayer.active = "player-active";
+
+          if (currentPlayer.gameInformation != null) {
+            io.sockets.to(currentPlayer.socketId).emit('start-game', currentPlayer.gameInformation);
+          }
         }
         existingLobby.save();
+
+        io.sockets.to(existingLobby.players[0].socketId).emit('update-players',
+            existingLobby.players.map(({ name, active }) => ({name, active})));
+
         socket.join(code);
 
         socket.on('start-game', () => {
-          // Create game and send data back
           Lobby.findOne({ "code": code }).then(function(existingLobby) {
-            if (existingLobby.status != 'STARTED') {
-              existingLobby.status = 'STARTED'
-              existingLobby.save();
+            const activePlayers = existingLobby.players.filter(player => player.active === "player-active");
+            const game = new Game(activePlayers, existingLobby.settings);
+            for (var i = 0; i < activePlayers.length; i++) {
+              const currentPlayer = activePlayers[i];
+              currentPlayer.gameInformation = game.getPlayerHTML(i);
+              io.sockets.to(currentPlayer.socketId).emit('start-game', currentPlayer.gameInformation);
             }
-
-            const game = new Game(existingLobby.players, existingLobby.settings);
-            for (var i = 0; i < existingLobby.players.length; i++) {
-              const currentPlayer = existingLobby.players[i];
-              io.sockets.to(currentPlayer.socketId).emit('start-game', game.getPlayerHTML(i));
-            }
+            existingLobby.save();
           });
         });
 
@@ -106,10 +111,10 @@ app.createServer = function() {
             if (existingLobby) {
               const disconnectingPlayerIndex = existingLobby.players.findIndex(player => player.socketId == socket.id);
               if (disconnectingPlayerIndex > 0) {
-                existingLobby.players.splice(disconnectingPlayerIndex, 1);
+                existingLobby.players[disconnectingPlayerIndex].active = "player-inactive";
                 existingLobby.save();
                 io.sockets.to(existingLobby.players[0].socketId).emit('update-players',
-                    existingLobby.players.map(player => player.name));
+                    existingLobby.players.map(({ name, active }) => ({name, active})));
               } else {
                 closeLobby();
               }

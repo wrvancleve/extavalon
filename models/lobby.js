@@ -3,13 +3,15 @@ const Schema = mongoose.Schema;
 
 const LobbySchema = new Schema({
     code: {type: String, required: true},
-    status: {type: String, required: true},
     settings: {
         type: { guinevere: Boolean, puck: Boolean, jester: Boolean, lucius: Boolean,
             leon: Boolean, galahad: Boolean, robin: Boolean, assassin: String },
         required: true
     },
-    players: {type: [{sessionId: String, socketId: String, name: String}], default: []}
+    players: {
+        type: [{sessionId: String, socketId: String, name: String, active: String, gameInformation: String}],
+        default: []
+    }
 }, {collection: 'lobby'});
 
 const Lobby = mongoose.model('Lobby', LobbySchema);

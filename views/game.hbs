@@ -1,22 +1,23 @@
 <div class="flex-column" id="root">
     <div class="flex-column" id="lobby">
-        <h2 class="future-color" id="name">{{title}}</h2>
-            <div class="future-color" id="lobby-information">
-                <h2 id="game-code">Game Code: </h2>
-                {{# if host }}
-                    <div id="players">
-                        <h2>Players</h2>
-                        <ul id="player-list"></ul>
-                    </div>
-                {{/if}}
-            </div>
+        <h2 id="name">{{title}}</h2>
+        <div class="future-color" id="lobby-information">
+            <h2 id="game-code">Game Code: </h2>
+            {{# if host }}
+                <div id="players">
+                    <h2 id="player-count">Players [0]</h2>
+                    <ul id="player-list"></ul>
+                </div>
+            {{/if}}
+        </div>
         <div id="game-information">
             {{# unless host }}
                 <h2>Waiting for role information...</h2>
             {{/unless}}
         </div>
         {{# if host }}
-            <button class="future-color future-box" type="button" id="start-game-button">Start Game</button>
+            <button class="future-color future-disabled future-box" type="button"
+                    id="start-game-button" disabled>Start Game</button>
             <button class="future-color future-box" type="button" id="close-game-button">Close Game</button>
         {{/if}}
     </div>
@@ -27,7 +28,7 @@
         <h2>Resistance Roles</h2>
         <ul>
             <li>
-                <span class="resistance">Merlin</span>: Sees spies (except <span class="spy">Mordred</span>) and
+                <span class="resistance">Merlin</span>: Sees <span class="spy">spies</span> (except <span class="spy">Mordred</span>) and
                 <span class="resistance">Puck</span>; Can be assassinated
             </li>
             <li>
@@ -50,19 +51,19 @@
                 <span class="spy">Maelagant</span>
             </li>
             <li>
-                <span class="resistance">Arthur</span>: Sees resistance roles present; Can be assassinated
+                <span class="resistance">Arthur</span>: Sees <span class="resistance">resistance</span> roles present; Can be assassinated
             </li>
             <li>
-                <span class="resistance">Uther</span>: Sees a random resistance player
+                <span class="resistance">Uther</span>: Sees a random <span class="resistance">resistance</span> player
             </li>
             <li>
                 <span class="resistance">Leon</span>: Sees the team counts of two random players
             </li>
             <li>
-                <span class="resistance">Puck</span>: Only wins if resistance wins in 5 rounds; May play fail cards
+                <span class="resistance">Puck</span>: Only wins if <span class="resistance">resistance</span> wins in 5 rounds; May play fail cards
             </li>
             <li>
-                <span class="resistance">Sir Robin</span>: Only wins if resistance wins and he went on two or fewer missions
+                <span class="resistance">Sir Robin</span>: Only wins if <span class="resistance">resistance</span> wins and he went on two or fewer missions
             </li>
             <li>
                 <span class="resistance">Jester</span>: Only wins if assassinated; Sees present assassinable roles
@@ -84,11 +85,46 @@
                 <span class="spy">Maelagant</span>: May play reverse cards
             </li>
             <li>
-                <span class="spy">Colgrevance</span>: Sees roles of all spies
+                <span class="spy">Colgrevance</span>: Sees roles of all <span class="spy">spies</span>
             </li>
             <li>
-                <span class="spy">Lucius</span>: Observes a single seen information from random resistance player
+                <span class="spy">Lucius</span>: Observes a single seen information from random <span class="resistance">resistance</span> player
             </li>
+        </ul>
+        <h2>Role Generation</h2>
+        <ul>
+            <li>If <span class="resistance">Percival</span> is present, then <span class="resistance">Merlin</span> and/or <span class="spy">Morgana</span> is present</li>
+            <li>Only one of the following could be present:
+                <ul>
+                    <li><span class="resistance">Tristan</span> and <span class="resistance">Iseult</span></li>
+                    <li><span class="resistance">Uther</span></li>
+                    <li><span class="resistance">Leon</span></li>
+                    <li><span class="resistance">Galahad</span></li>
+                </ul>
+            </li>
+            <li>If <span class="resistance">Arthur</span> is present, <span class="resistance">Jester</span> is not</li>
+            <li>If <span class="resistance">Lancelot</span> is present, <span class="resistance">Puck</span> is not</li>
+            <li>If <span class="resistance">Jester</span> is present, the following cannot be present:
+                <ul>
+                    <li><span class="resistance">Arthur</span></li>
+                    <li><span class="resistance">Galahad</span></li>
+                    <li><span class="resistance">Puck</span></li>
+                    <li><span class="resistance">Sir Robin</span></li>
+                </ul>
+            </li>
+            <li>If <span class="resistance">Puck</span> is present, the following cannot be present:
+                <ul>
+                    <li><span class="resistance">Lancelot</span></li>
+                    <li><span class="resistance">Jester</span></li>
+                    <li><span class="resistance">Sir Robin</span></li>
+                </ul>
+            </li>
+            <li>If <span class="resistance">Galahad</span> is present, then <span class="resistance">Arthur</span> is</li>
+            <li>If <span class="resistance">Galahad</span> is present, then <span class="resistance">Jester</span> is not</li>
+            <li>If <span class="resistance">Leon</span> is present, <span class="resistance">Percival</span> and
+                <span class="resistance">Guinevere</span> are not</li>
+            <li>If <span class="resistance">Sir Robin</span> is present, <span class="resistance">Puck</span> and
+                <span class="resistance">Jester</span> are not</li>
         </ul>
     </div>
 </div>
