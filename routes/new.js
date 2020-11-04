@@ -24,7 +24,7 @@ async function generate_code(callback) {
                 code = result;
             }
         });
-    } while (code == null);
+    } while (code === null);
     callback(code);
 }
 
@@ -36,14 +36,14 @@ router.post('/', [check('name', 'Invalid Name').trim().matches("^[ a-zA-z]{2,12}
             res.redirect('/new');
         } else {
             const settings = {
-                guinevere: req.body.guinevere == 'on',
-                puck: req.body.puck == 'on',
-                robin: req.body.robin == 'on',
-                jester: req.body.jester == 'on',
-                leon: req.body.leon == 'on',
-                galahad: req.body.galahad == 'on',
-                lucius: req.body.lucius == 'on',
-                assassin: req.body.assassin
+                guinevere: req.body.guinevere === 'on',
+                puck: req.body.puck === 'on',
+                jester: req.body.jester === 'on',
+                leon: req.body.leon === 'on',
+                galahad: req.body.galahad === 'on',
+                titania: req.body.titania === 'on',
+                lucius: req.body.lucius === 'on',
+                accolon: req.body.accolon === 'on'
             };
 
             const name = req.body.name

@@ -58,8 +58,8 @@ app.createServer = function() {
   io.on('connection', socket => {
     socket.on('join-lobby', ({name, code}) => {
       Lobby.findOne({ "code": code }).then(function(existingLobby) {
-        const connectingPlayerIndex = existingLobby.players.findIndex(player => player.sessionId == socket.request.session.id)
-        if (connectingPlayerIndex == -1) {
+        const connectingPlayerIndex = existingLobby.players.findIndex(player => player.sessionId === socket.request.session.id)
+        if (connectingPlayerIndex === -1) {
           const newPlayer = {
             sessionId: socket.request.session.id,
             socketId: socket.id,
@@ -88,7 +88,7 @@ app.createServer = function() {
         socket.on('start-game', () => {
           Lobby.findOne({ "code": code }).then(function(existingLobby) {
             const activePlayers = existingLobby.players.filter(player => player.active === "player-active");
-            const game = new Game(activePlayers, existingLobby.settings);
+            const game = new Game(activePlayers.map(({ name }) => ({ name })), existingLobby.settings);
             for (var i = 0; i < activePlayers.length; i++) {
               const currentPlayer = activePlayers[i];
               currentPlayer.gameInformation = game.getPlayerHTML(i);
@@ -109,7 +109,7 @@ app.createServer = function() {
         socket.on('disconnect', () => {
           Lobby.findOne({ "code": code }).then(function(existingLobby) {
             if (existingLobby) {
-              const disconnectingPlayerIndex = existingLobby.players.findIndex(player => player.socketId == socket.id);
+              const disconnectingPlayerIndex = existingLobby.players.findIndex(player => player.socketId === socket.id);
               if (disconnectingPlayerIndex > 0) {
                 existingLobby.players[disconnectingPlayerIndex].active = "player-inactive";
                 existingLobby.save();

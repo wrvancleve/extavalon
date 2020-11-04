@@ -4,8 +4,8 @@ const Schema = mongoose.Schema;
 const LobbySchema = new Schema({
     code: {type: String, required: true},
     settings: {
-        type: { guinevere: Boolean, puck: Boolean, jester: Boolean, lucius: Boolean,
-            leon: Boolean, galahad: Boolean, robin: Boolean, assassin: String },
+        type: { guinevere: Boolean, puck: Boolean, jester: Boolean, leon: Boolean, galahad: Boolean,
+            lucius: Boolean, titania: Boolean, accolon: Boolean },
         required: true
     },
     players: {
