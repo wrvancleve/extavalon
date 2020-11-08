@@ -19,7 +19,7 @@ router.get('/', [check('name', 'Invalid Name').trim().matches("^[ a-zA-z]{2,12}$
             Lobby.findOne({ "code": code }).then(function(existingLobby) {
                 if (existingLobby) {
                     const playerIndex = existingLobby.players.findIndex(player => player.sessionId === req.session.id)
-                    const lobbyFull = existingLobby.players.filter(player => player.active === "player-active").length === 10;
+                    const lobbyFull = existingLobby.players.filter(player => player.active).length === 10;
                     const host = existingLobby.players.length === 0 || playerIndex === 0;
 
                     if (lobbyFull) {

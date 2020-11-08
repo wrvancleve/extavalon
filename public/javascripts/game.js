@@ -1,59 +1,57 @@
-$(document).ready(function () {
+document.addEventListener('DOMContentLoaded', function () {
     const socket = io.connect("https://extavalon.com");
 
     const {name, code} = Qs.parse(location.search, {
         ignoreQueryPrefix: true
     });
 
-    const gameCode = $("#game-code");
-    gameCode.html(`Game Code: ${code}`);
+    document.getElementById("game-code").innerHTML = `Game Code: ${code}`;
 
-    const openLobby = $("#lobby-open-button")[0];
-    const lobby = $("#lobby")[0];
-    const roles = $("#roles")[0];
-    const openRoles = $("#roles-open-button")[0];
-    const closeRoles = $("#roles-close-button")[0];
-    const startGame = $("#start-game-button");
+    const openLobby = document.getElementById("lobby-open-button");
+    const lobby = document.getElementById("lobby");
+    const roles = document.getElementById("roles");
+    const openRoles = document.getElementById("roles-open-button");
+    const closeRoles = document.getElementById("roles-close-button");
+    const startGame = document.getElementById("start-game-button");
 
-    // If host
     if (startGame) {
-        const closeGame = $("#close-game-button");
+        const closeGame = document.getElementById("close-game-button");
 
         socket.on('update-players', currentPlayers => {
-            const activePlayerCount = currentPlayers.filter(p => p.active === "player-active").length;
-            $("#player-count").html(`Players [${activePlayerCount}]`);
-            $("#player-list").html(`
-                ${currentPlayers.map(player => `<li class="${player.active}">${player.name}</li>`).join('')}
-            `);
+            const activePlayerCount = currentPlayers.filter(p => p.active).length;
+            document.getElementById("player-count").innerHTML = `Players [${activePlayerCount}]`;
+            document.getElementById("player-list").innerHTML = `
+                ${currentPlayers.map(player => `<li class="${player.active ? 'player-active' : 'player-inactive'}">${player.name}</li>`).join('')}
+            `;
             startGame.disabled = activePlayerCount < 5;
             if (startGame.disabled) {
-                startGame.addClass("future-disabled");
+                startGame.classList.add("future-disabled");
             } else {
-                startGame.removeClass("future-disabled");
+                startGame.classList.remove("future-disabled");
             }
         });
 
-        startGame.click(function () {
+        startGame.onclick = function () {
             socket.emit('start-game');
-        });
+        };
 
-        closeGame.click(function () {
+        closeGame.onclick = function () {
             socket.emit('close-lobby');
-        });
+        };
     }
 
-    const lobbyInformation = $("#lobby-information")[0];
-    const gameInformation = $("#game-information");
+    const lobbyInformation = document.getElementById("lobby-information");
+    const gameInformation = document.getElementById("game-information");
     socket.on('start-game', gameHTML => {
         lobbyInformation.style.display = "none";
-        gameInformation.html(gameHTML);
+        gameInformation.innerHTML = gameHTML;
 
-        if (!gameInformation.hasClass("active")) {
-            gameInformation.addClass("active");
+        if (!gameInformation.classList.contains("active")) {
+            gameInformation.classList.add("active");
         }
 
         if (startGame) {
-            startGame.html('Play Again');
+            startGame.innerHTML = 'Play Again';
         }
     });
 

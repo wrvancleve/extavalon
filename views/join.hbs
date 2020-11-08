@@ -10,7 +10,6 @@
     {{/if}}
     <form action="/game" method="get" autocomplete="off">
         <input class="future-color future-secondary-font future-box" type="text" placeholder="Enter Game Code"
-               oninput="let p=this.selectionStart;this.value=this.value.toUpperCase();this.setSelectionRange(p, p);"
                maxlength="4" name="code" required />
         <input class="future-color future-secondary-font future-box" type="text" placeholder="Enter Name"
                maxlength="12" name="name" required />
@@ -18,5 +17,4 @@
                value="Join Game" id="join-game-button" disabled />
     </form>
 </div>
-<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
 <script src="/javascripts/join.js"></script>

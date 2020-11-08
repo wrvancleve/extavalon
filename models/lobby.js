@@ -9,7 +9,7 @@ const LobbySchema = new Schema({
         required: true
     },
     players: {
-        type: [{sessionId: String, socketId: String, name: String, active: String, gameInformation: String}],
+        type: [{sessionId: String, socketId: String, name: String, active: Boolean, gameInformation: String}],
         default: []
     }
 }, {collection: 'lobby'});
