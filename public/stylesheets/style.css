@@ -1,6 +1,6 @@
 body {
   background-image: url("../images/background-large.jpg");
-  font-family: 'Titillium Web', sans-serif;
+  font-family: 'Helvetica', sans-serif;
 }
 
 /* Common Classes */
@@ -11,11 +11,11 @@ body {
 }
 
 .future-color {
-  color: #cef5fd;
+  color: #9debfb;
 }
 
 .future-disabled {
-  color: #033e49;
+  color: #0790ab;
   cursor: default !important;
 }
 
@@ -26,7 +26,7 @@ body {
 }
 
 .future-secondary-font {
-  font-family: 'Electrolize', sans-serif;
+  font-family: Candara, sans-serif;
   text-shadow: 0 0 4px rgba(161,236,251,0.65);
 }
 
@@ -63,6 +63,10 @@ body {
 }
 
 /* Common Elements */
+
+p {
+  line-height: 150%;
+}
 
 button, input[type=submit] {
   font-size: 1.5em;
@@ -230,7 +234,7 @@ select {
   margin: auto;
   font-size: 2em;
   margin-top: 2vh;
-  color: #cef5fd;
+  color: #9debfb;
 }
 
 #players {
@@ -239,7 +243,7 @@ select {
   max-width: 400px;
   border-bottom: 20px solid #029dbb;
   box-shadow: 0 0 4px rgba(0,157,187,0);
-  color: #cef5fd;
+  color: #9debfb;
   background: transparent;
   border-bottom-left-radius: 10px;
   border-bottom-right-radius: 10px;
@@ -274,7 +278,7 @@ select {
 
 #game-information {
   text-align: center;
-  color: #cef5fd;
+  color: #b6f0fc;
 }
 
 #game-information section {
@@ -282,7 +286,7 @@ select {
 }
 
 #game-information h2 {
-  font-family: 'Electrolize', sans-serif;
+  font-family: Candara, sans-serif;
 }
 
 #game-information p {
@@ -349,27 +353,28 @@ select {
 }
 
 #roles-open-button {
-  color: #cef5fd;
+  color: #9debfb;
   background: transparent;
   border: 2px solid #029dbb;
-  color: #cef5fd;
 }
 
 #lobby-open-button {
-  color: #cef5fd;
+  color: #9debfb;
   background: transparent;
   border: 2px solid #029dbb;
 }
 
 #roles {
   display: none;
-  color: #cef5fd;
+  color: #b6f0fc;
   background-color: transparent;
   border: 2px solid #029dbb;
   box-shadow: 0 0 4px rgba(2,157,187,0.65);
+  font-family: 'Helvetica', sans-serif;
 }
 
-#roles h1,h2 {
-  font-family: 'Electrolize', sans-serif;
+#roles h1 {
+  font-family: Candara, sans-serif;
   text-shadow: 0 0 4px rgba(161,236,251,0.65);
+  font-size: 1.75em;
 }

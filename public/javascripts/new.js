@@ -1,18 +1,18 @@
-$(document).ready(function () {
-    $("input[name=name]").on('input',function() {
-        const createGame = $('#create-game-button');
-        const length = $(this).val().trim().length;
+document.addEventListener('DOMContentLoaded', function () {
+    document.getElementsByName("name")[0].oninput = function(){
+        const createGame = document.getElementById("create-game-button");
+        const length = this.value.trim().length;
         if (length < 2 || length > 12) {
-            if (!createGame.hasClass("future-disabled")) {
-                createGame.addClass("future-disabled");
+            if (!createGame.classList.contains("future-disabled")) {
+                createGame.classList.add("future-disabled");
             }
-            createGame.attr('disabled', true);
+            createGame.disabled = true;
         }
         else {
-            if (createGame.hasClass("future-disabled")) {
-                createGame.removeClass("future-disabled");
+            if (createGame.classList.contains("future-disabled")) {
+                createGame.classList.remove("future-disabled");
             }
-            createGame.attr('disabled',false);
+            createGame.disabled = false;
         }
-    });
+    };
 });
