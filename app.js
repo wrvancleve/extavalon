@@ -16,7 +16,7 @@ const joinGameRouter = require('./routes/join');
 const newGameRouter = require('./routes/new');
 const gameRouter = require('./routes/game');
 
-const Lobby = require('./models/lobby');
+const lobbyCollection = require('./models/lobbyCollection');
 const Game = require('./models/game');
 
 const app = express();
@@ -64,70 +64,60 @@ app.createServer = function() {
 
   io.on('connection', socket => {
     socket.on('join-lobby', ({name, code}) => {
-      Lobby.findOne({ "code": code }).then(function(existingLobby) {
-        const connectingPlayerIndex = existingLobby.players.findIndex(player => player.sessionId === socket.request.session.id)
-        if (connectingPlayerIndex === -1) {
-          const newPlayer = {
-            sessionId: socket.request.session.id,
-            socketId: socket.id,
-            name: name,
-            active: true,
-            gameInformation: null
-          };
-          existingLobby.players.push(newPlayer);
-        } else {
-          const currentPlayer = existingLobby.players[connectingPlayerIndex];
-          currentPlayer.socketId = socket.id;
-          currentPlayer.name = name;
-          currentPlayer.active = true;
-
-          if (currentPlayer.gameInformation != null) {
-            io.sockets.to(currentPlayer.socketId).emit('start-game', currentPlayer.gameInformation);
-          }
-        }
-        existingLobby.save();
-
-        io.sockets.to(existingLobby.players[0].socketId).emit('update-players',
-            existingLobby.players.map(({ name, active }) => ({name, active})));
-
-        socket.join(code);
-
-        socket.on('start-game', () => {
-          Lobby.findOne({ "code": code }).then(function(existingLobby) {
-            const activePlayers = existingLobby.players.filter(player => player.active);
-            const game = new Game(activePlayers.map(({ name }) => ({ name })), existingLobby.settings);
-            for (var i = 0; i < activePlayers.length; i++) {
-              const currentPlayer = activePlayers[i];
-              currentPlayer.gameInformation = game.getPlayerHTML(i);
-              io.sockets.to(currentPlayer.socketId).emit('start-game', currentPlayer.gameInformation);
-            }
-            existingLobby.save();
-          });
-        });
-
-        function closeLobby() {
-          Lobby.deleteOne({"code": code}, function (err, result) {
-            io.sockets.to(code).emit('close-lobby');
-          });
+      const lobby = lobbyCollection.lobbies.get(code);
+      const connectingPlayerIndex = lobby.players.findIndex(player => player.sessionId === socket.request.session.id)
+      if (connectingPlayerIndex === -1) {
+        const newPlayer = {
+          sessionId: socket.request.session.id,
+          socketId: socket.id,
+          name: name,
+          active: true,
+          gameInformation: null
         };
+        lobby.players.push(newPlayer);
+      } else {
+        const currentPlayer = lobby.players[connectingPlayerIndex];
+        currentPlayer.socketId = socket.id;
+        currentPlayer.name = name;
+        currentPlayer.active = true;
 
-        socket.on('close-lobby', closeLobby);
+        if (currentPlayer.gameInformation != null) {
+          io.sockets.to(currentPlayer.socketId).emit('start-game', currentPlayer.gameInformation);
+        }
+      }
 
-        socket.on('disconnect', () => {
-          Lobby.findOne({ "code": code }).then(function(existingLobby) {
-            if (existingLobby) {
-              const disconnectingPlayerIndex = existingLobby.players.findIndex(player => player.socketId === socket.id);
-              if (disconnectingPlayerIndex > 0) {
-                existingLobby.players[disconnectingPlayerIndex].active = false;
-                existingLobby.save();
-                io.sockets.to(existingLobby.players[0].socketId).emit('update-players',
-                    existingLobby.players.map(({ name, active }) => ({name, active})));
-              } else {
-                closeLobby();
-              }
-            }
-          });
-        });
+      io.sockets.to(lobby.players[0].socketId).emit('update-players',
+        lobby.players.map(({ name, active }) => ({name, active})));
+
+      socket.join(code);
+
+      socket.on('start-game', () => {
+        const activePlayers = lobby.players.filter(player => player.active);
+        const game = new Game(activePlayers.map(({ name }) => ({ name })), lobby.settings);
+        lobby.game = game;
+        for (var i = 0; i < activePlayers.length; i++) {
+          const currentPlayer = activePlayers[i];
+          currentPlayer.gameInformation = game.getPlayerHTML(i);
+          io.sockets.to(currentPlayer.socketId).emit('start-game', currentPlayer.gameInformation);
+        }
+      });
+
+      function closeLobby() {
+        lobbyCollection.lobbies.delete(code);
+        io.sockets.to(code).emit('close-lobby');
+      };
+
+      socket.on('close-lobby', closeLobby);
+
+      socket.on('disconnect', () => {
+        const disconnectingPlayerIndex = lobby.players.findIndex(player => player.socketId === socket.id);
+        if (disconnectingPlayerIndex > 0) {
+          lobby.players[disconnectingPlayerIndex].active = false;
+          io.sockets.to(lobby.players[0].socketId).emit('update-players',
+            lobby.players.map(({ name, active }) => ({name, active})));
+        } else {
+          closeLobby();
+        }
       });
     });
   });
