@@ -1,7 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const { check, validationResult } = require('express-validator');
-const Lobby = require('../models/lobby');
+const lobbyCollection = require('../models/lobbyCollection');
 
 /* GET game page. */
 router.get('/', [check('name', 'Invalid Name').trim().matches("^[ a-zA-z]{2,12}$")],
@@ -15,24 +15,22 @@ router.get('/', [check('name', 'Invalid Name').trim().matches("^[ a-zA-z]{2,12}$
             res.redirect(redirectURL);
         } else {
             const code = req.query.code;
+            if (lobbyCollection.lobbies.has(code)) {
+                const lobby = lobbyCollection.lobbies.get(code);
+                const playerIndex = lobby.players.findIndex(player => player.sessionId === req.session.id)
+                const lobbyFull = lobby.players.filter(player => player.active).length === 10;
+                const host = lobby.players.length === 0 || playerIndex === 0;
 
-            Lobby.findOne({ "code": code }).then(function(existingLobby) {
-                if (existingLobby) {
-                    const playerIndex = existingLobby.players.findIndex(player => player.sessionId === req.session.id)
-                    const lobbyFull = existingLobby.players.filter(player => player.active).length === 10;
-                    const host = existingLobby.players.length === 0 || playerIndex === 0;
-
-                    if (lobbyFull) {
-                        req.session.errors = [{msg: "Game full!"}]
-                        res.redirect(redirectURL);
-                    } else {
-                        res.render('game', { title: req.query.name, host: host, settings: existingLobby.settings });
-                    }
-                } else {
-                    req.session.errors = [{msg: "Game not found!"}]
+                if (lobbyFull) {
+                    req.session.errors = [{msg: "Game full!"}]
                     res.redirect(redirectURL);
+                } else {
+                    res.render('game', { title: req.query.name, host: host, settings: lobby.settings });
                 }
-            });
+            } else {
+                req.session.errors = [{msg: "Game not found!"}]
+                res.redirect(redirectURL);
+            }
         }
 });
 
