@@ -13,8 +13,9 @@ document.addEventListener('DOMContentLoaded', function () {
     const openRoles = document.getElementById("roles-open-button");
     const closeRoles = document.getElementById("roles-close-button");
     const startGame = document.getElementById("start-game-button");
+    const host = startGame !== undefined;
 
-    if (startGame) {
+    if (host) {
         const closeGame = document.getElementById("close-game-button");
 
         socket.on('update-players', currentPlayers => {

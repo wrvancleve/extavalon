@@ -8,71 +8,71 @@ class Game {
     }
 
     getPlayerHTML(playerIndex) {
-        const playerRole = this.getPlayerRole(playerIndex);
+        const playerRole = this._getPlayerRole(playerIndex);
         var playerHTML = null;
         switch (playerRole) {
             case "Merlin":
-                playerHTML = this.getMerlinHTML(playerIndex);
+                playerHTML = this._getMerlinHTML(playerIndex);
                 break;
             case "Percival":
-                playerHTML = this.getPercivalHTML(playerIndex);
+                playerHTML = this._getPercivalHTML(playerIndex);
                 break;
             case "Uther":
-                playerHTML = this.getUtherHTML(playerIndex);
+                playerHTML = this._getUtherHTML(playerIndex);
                 break;
             case "Lancelot":
-                playerHTML = this.getLancelotHTML();
+                playerHTML = this._getLancelotHTML();
                 break;
             case "Tristan":
-                playerHTML = this.getTristanHTML(playerIndex);
+                playerHTML = this._getTristanHTML(playerIndex);
                 break;
             case "Iseult":
-                playerHTML = this.getIseultHTML(playerIndex);
+                playerHTML = this._getIseultHTML(playerIndex);
                 break;
             case "Leon":
-                playerHTML = this.getLeonHTML(playerIndex);
+                playerHTML = this._getLeonHTML(playerIndex);
                 break;
             case "Puck":
-                playerHTML = this.getPuckHTML();
+                playerHTML = this._getPuckHTML();
                 break;
             case "Arthur":
-                playerHTML = this.getArthurHTML(playerIndex);
+                playerHTML = this._getArthurHTML(playerIndex);
                 break;
             case "Guinevere":
-                playerHTML = this.getGuinevereHTML(playerIndex);
+                playerHTML = this._getGuinevereHTML(playerIndex);
                 break;
             case "Jester":
-                playerHTML = this.getJesterHTML(playerIndex);
+                playerHTML = this._getJesterHTML(playerIndex);
                 break;
             case "Galahad":
-                playerHTML = this.getGalahadHTML(playerIndex);
+                playerHTML = this._getGalahadHTML(playerIndex);
                 break;
             case "Titania":
-                playerHTML = this.getTitaniaHTML(playerIndex);
+                playerHTML = this._getTitaniaHTML(playerIndex);
                 break;
             case "Mordred":
-                playerHTML = this.getMordredHTML(playerIndex);
+                playerHTML = this._getMordredHTML(playerIndex);
                 break;
             case "Morgana":
-                playerHTML = this.getMorganaHTML(playerIndex);
+                playerHTML = this._getMorganaHTML(playerIndex);
                 break;
             case "Maelagant":
-                playerHTML = this.getMaelagantHTML(playerIndex);
+                playerHTML = this._getMaelagantHTML(playerIndex);
                 break;
             case "Colgrevance":
-                playerHTML = this.getColgrevanceHTML(playerIndex);
+                playerHTML = this._getColgrevanceHTML(playerIndex);
                 break;
             case "Lucius":
-                playerHTML = this.getLuciusHTML(playerIndex);
+                playerHTML = this._getLuciusHTML(playerIndex);
                 break;
             case "Accolon":
-                playerHTML = this.getAccolonHTML(playerIndex);
+                playerHTML = this._getAccolonHTML(playerIndex);
                 break;
         }
         return playerHTML;
     }
 
-    getMerlinHTML(playerIndex) {
+    _getMerlinHTML(playerIndex) {
         var seeIndexes = this.playerInformation.getPlayerIndexes({
             includedRoles: ["Puck"],
             excludedRoles: ["Mordred"],
@@ -96,11 +96,11 @@ class Game {
         for (var i = 0; i < seeIndexes.length; i++) {
             if (this.puckEnabled) {
                 merlinHTML += `
-                    <p>${this.getPlayerName(seeIndexes[i])} is <span class="spy">evil</span>
+                    <p>${this._getPlayerName(seeIndexes[i])} is <span class="spy">evil</span>
                     or <span class="resistance">Puck</span></p>
                 `;
             } else {
-                merlinHTML += `<p>${this.getPlayerName(seeIndexes[i])} is <span class="spy">evil</span></p>`;
+                merlinHTML += `<p>${this._getPlayerName(seeIndexes[i])} is <span class="spy">evil</span></p>`;
             }
         }
         merlinHTML += `</section>`;
@@ -108,7 +108,7 @@ class Game {
         return merlinHTML;
     }
 
-    getPercivalHTML(playerIndex) {
+    _getPercivalHTML(playerIndex) {
         var seeIndexes = this.playerInformation.getPlayerIndexes({
             includedRoles: ["Merlin", "Morgana"],
             includedTeams: []
@@ -132,7 +132,7 @@ class Game {
 
         for (var i = 0; i < seeIndexes.length; i++) {
             percivalHTML += `
-                <p>${this.getPlayerName(seeIndexes[i])} is <span class="resistance">Merlin</span> or
+                <p>${this._getPlayerName(seeIndexes[i])} is <span class="resistance">Merlin</span> or
                 <span class="spy">Morgana</span></p>
             `;
         }
@@ -141,7 +141,7 @@ class Game {
         return percivalHTML;
     }
 
-    getTristanHTML(playerIndex) {
+    _getTristanHTML(playerIndex) {
         var seeIndexes = [this.playerInformation.getRoleIndex("Iseult")];
         const accolonSabotage = this.playerInformation.getAccolonSabotage(playerIndex);
 
@@ -161,14 +161,14 @@ class Game {
         }
 
         for (var i = 0; i < seeIndexes.length; i++) {
-            tristanHTML += `<p>${this.getPlayerName(seeIndexes[i])} is <span class="resistance">Iseult</span></p>`;
+            tristanHTML += `<p>${this._getPlayerName(seeIndexes[i])} is <span class="resistance">Iseult</span></p>`;
         }
         tristanHTML += `</section>`;
 
         return tristanHTML;
     }
 
-    getIseultHTML(playerIndex) {
+    _getIseultHTML(playerIndex) {
         var seeIndexes = [this.playerInformation.getRoleIndex("Tristan")];
         const accolonSabotage = this.playerInformation.getAccolonSabotage(playerIndex);
 
@@ -188,14 +188,14 @@ class Game {
         }
 
         for (var i = 0; i < seeIndexes.length; i++) {
-            iseultHTML += `<p>${this.getPlayerName(seeIndexes[i])} is <span class="resistance">Tristan</span></p>`;
+            iseultHTML += `<p>${this._getPlayerName(seeIndexes[i])} is <span class="resistance">Tristan</span></p>`;
         }
         iseultHTML += `</section>`;
 
         return iseultHTML;
     }
 
-    getUtherHTML(playerIndex) {
+    _getUtherHTML(playerIndex) {
         var seeIndexes = [this.playerInformation.getUtherInformationIndex()];
         const accolonSabotage = this.playerInformation.getAccolonSabotage(playerIndex);
 
@@ -215,14 +215,14 @@ class Game {
         }
 
         for (var i = 0; i < seeIndexes.length; i++) {
-            utherHTML += `<p>${this.getPlayerName(seeIndexes[i])} is <span class="resistance">good</span></p>`;
+            utherHTML += `<p>${this._getPlayerName(seeIndexes[i])} is <span class="resistance">good</span></p>`;
         }
         utherHTML += `</section>`;
 
         return utherHTML;
     }
 
-    getArthurHTML(playerIndex) {
+    _getArthurHTML(playerIndex) {
         const seeIndexes = this.playerInformation.getPlayerIndexes({
             excludedRoles: ["Arthur"],
             includedTeams: ["Resistance"]
@@ -243,12 +243,12 @@ class Game {
 
         for (var i = 0; i < seeIndexes.length; i++) {
             if (!accolonSabotage) {
-                arthurHTML += `<p><span class="resistance">${this.getPlayerRole(seeIndexes[i])}</span> is in the game</p>`;
+                arthurHTML += `<p><span class="resistance">${this._getPlayerRole(seeIndexes[i])}</span> is in the game</p>`;
             } else {
                 if (accolonSabotage.destination === seeIndexes[i]) {
                     arthurHTML += `<p>??? is in the game</p>`;
                 } else {
-                    arthurHTML += `<p><span class="resistance">${this.getPlayerRole(seeIndexes[i])}</span> is in the game</p>`;
+                    arthurHTML += `<p><span class="resistance">${this._getPlayerRole(seeIndexes[i])}</span> is in the game</p>`;
                 }
             }
         }
@@ -257,14 +257,14 @@ class Game {
         return arthurHTML;
     }
 
-    getLancelotHTML() {
+    _getLancelotHTML() {
         return `
             <h2 class="resistance">Lancelot</h2>
             <section><p>You may play reserve cards while on missions.</p></section>
         `;
     }
 
-    getPuckHTML() {
+    _getPuckHTML() {
         return `
             <h2 class="resistance">Puck</h2>
             <section>
@@ -278,7 +278,7 @@ class Game {
         `;
     }
 
-    getJesterHTML(playerIndex) {
+    _getJesterHTML(playerIndex) {
         const seeIndexes = this.playerInformation.getPlayerIndexes({
             includedRoles: ["Tristan", "Iseult", "Merlin"],
             includedTeams: []
@@ -293,7 +293,7 @@ class Game {
             jesterHTML += `<p>You see:</p></section><section>`;
 
             for (var i = 0; i < seeIndexes.length; i++) {
-                jesterHTML += `<p><span class="resistance">${this.getPlayerRole(seeIndexes[i])}</span> is in the game</p>`;
+                jesterHTML += `<p><span class="resistance">${this._getPlayerRole(seeIndexes[i])}</span> is in the game</p>`;
             }
         } else {
             jesterHTML += `
@@ -312,7 +312,7 @@ class Game {
         return jesterHTML;
     }
 
-    getGuinevereHTML(playerIndex) {
+    _getGuinevereHTML(playerIndex) {
         var seeIndexes = this.playerInformation.getPlayerIndexes({
             includedRoles: ["Lancelot", "Maelagant"],
             includedTeams: []
@@ -337,7 +337,7 @@ class Game {
         if (seeIndexes.length > 0) {
             for (var i = 0; i < seeIndexes.length; i++) {
                 guinevereHTML += `
-                    <p>${this.getPlayerName(seeIndexes[i])} is <span class="resistance">Lancelot</span> or
+                    <p>${this._getPlayerName(seeIndexes[i])} is <span class="resistance">Lancelot</span> or
                     <span class="spy">Maelagant</span></p>
                 `;
             }
@@ -352,7 +352,7 @@ class Game {
         return guinevereHTML;
     }
 
-    getLeonHTML(playerIndex) {
+    _getLeonHTML(playerIndex) {
         const leonInformation = this.playerInformation.getLeonInformation();
         const accolonSabotage = this.playerInformation.getAccolonSabotage(playerIndex);
         console.log("Leon Information: %j", leonInformation);
@@ -365,12 +365,12 @@ class Game {
 
             if (leonInformation.spyCount === 1) {
                 leonHTML += `
-                <p>${this.getPlayerName(leonInformation.indexes[0])} or ${this.getPlayerName(leonInformation.indexes[1])}
+                <p>${this._getPlayerName(leonInformation.indexes[0])} or ${this._getPlayerName(leonInformation.indexes[1])}
                 is <span class="resistance">good</span>; the other is <span class="spy">evil</span></p></section>
             `;
             } else {
                 leonHTML += `
-                <p>${this.getPlayerName(leonInformation.indexes[0])} and ${this.getPlayerName(leonInformation.indexes[1])}
+                <p>${this._getPlayerName(leonInformation.indexes[0])} and ${this._getPlayerName(leonInformation.indexes[1])}
                 are either both <span class="resistance">good</span> or both <span class="spy">evil</span></p></section>
             `;
             }
@@ -382,7 +382,7 @@ class Game {
 
             for (var i = 0; i < leonInformation.indexes.length; i++) {
                 leonHTML += `
-                    <p>${this.getPlayerName(leonInformation.indexes[i])}</p>
+                    <p>${this._getPlayerName(leonInformation.indexes[i])}</p>
                 `;
             }
             leonHTML += `</section>`;
@@ -391,7 +391,7 @@ class Game {
         return leonHTML;
     }
 
-    getGalahadHTML(playerIndex) {
+    _getGalahadHTML(playerIndex) {
         var seeIndexes = [this.playerInformation.getRoleIndex("Arthur")];
         const accolonSabotage = this.playerInformation.getAccolonSabotage(playerIndex);
 
@@ -411,14 +411,14 @@ class Game {
         }
 
         for (var i = 0; i < seeIndexes.length; i++) {
-            galahadHTML += `<p>${this.getPlayerName(seeIndexes[i])} is <span class="resistance">Arthur</span></p>`;
+            galahadHTML += `<p>${this._getPlayerName(seeIndexes[i])} is <span class="resistance">Arthur</span></p>`;
         }
         galahadHTML += `</section>`;
 
         return galahadHTML;
     }
 
-    getTitaniaHTML() {
+    _getTitaniaHTML() {
         return `
             <h2 class="resistance">Titania</h2>
             <section>
@@ -428,46 +428,46 @@ class Game {
         `;
     }
 
-    getMordredHTML(playerIndex) {
+    _getMordredHTML(playerIndex) {
         var mordredHTML = `
             <h2 class="spy">Mordred</h2>
             <section><p>You are not seen by <span class="resistance">Merlin</span>.</p></section>
         `;
 
-        mordredHTML += this.getSpyHTML(false, playerIndex);
+        mordredHTML += this._getSpyHTML(false, playerIndex);
         return mordredHTML;
     }
 
-    getMorganaHTML(playerIndex) {
+    _getMorganaHTML(playerIndex) {
         var morganaHTML = `
             <h2 class="spy">Morgana</h2>
             <section><p>You are seen by <span class="resistance">Percival</span> as a possible <span class="resistance">Merlin</span>.</p></section>
         `;
 
-        morganaHTML += this.getSpyHTML(false, playerIndex);
+        morganaHTML += this._getSpyHTML(false, playerIndex);
         return morganaHTML;
     }
 
-    getMaelagantHTML(playerIndex) {
+    _getMaelagantHTML(playerIndex) {
         var maelagantHTML = `
             <h2 class="spy">Maelagant</h2>
             <section><p>You may play reserve cards while on missions.</p></section>
         `;
 
-        maelagantHTML += this.getSpyHTML(false, playerIndex);
+        maelagantHTML += this._getSpyHTML(false, playerIndex);
         return maelagantHTML;
     }
 
-    getColgrevanceHTML(playerIndex) {
+    _getColgrevanceHTML(playerIndex) {
         var colgrevanceHTML = `<h2 class="spy">Colgrevance</h2>`;
-        colgrevanceHTML += this.getSpyHTML(true, playerIndex);
+        colgrevanceHTML += this._getSpyHTML(true, playerIndex);
         return colgrevanceHTML;
     }
 
-    getLuciusHTML(playerIndex) {
+    _getLuciusHTML(playerIndex) {
         const luciusInformation = this.playerInformation.getLuciusInformation();
-        const luciusSourceName = this.getPlayerName(luciusInformation.source);
-        const luciusDestinationName = this.getPlayerName(luciusInformation.destination);
+        const luciusSourceName = this._getPlayerName(luciusInformation.source);
+        const luciusDestinationName = this._getPlayerName(luciusInformation.destination);
 
         var luciusHTML = `
             <h2 class="spy">Lucius</h2>
@@ -477,22 +477,22 @@ class Game {
             </section>
         `;
 
-        luciusHTML += this.getSpyHTML(false, playerIndex);
+        luciusHTML += this._getSpyHTML(false, playerIndex);
         return luciusHTML;
     }
 
-    getAccolonHTML(playerIndex) {
+    _getAccolonHTML(playerIndex) {
         var accolonHTML = `
             <h2 class="spy">Accolon</h2>
             <section>
                 <p>You sabotaged the vision of a <span class="resistance">resistance</span> player.</p>
             </section>
         `;
-        accolonHTML += this.getSpyHTML(false, playerIndex);
+        accolonHTML += this._getSpyHTML(false, playerIndex);
         return accolonHTML;
     }
 
-    getSpyHTML(isColgrevance, playerIndex) {
+    _getSpyHTML(isColgrevance, playerIndex) {
         var spyHTML = "";
 
         if (this.playerInformation.isAssassin(playerIndex)) {
@@ -519,11 +519,11 @@ class Game {
             if (isColgrevance) {
                 spyHTML += `
                     <p>
-                        ${i + 1}) ${this.getPlayerName(spyIndex)} is <span class="spy">${this.getPlayerRole(spyIndex)}</span>
+                        ${i + 1}) ${this._getPlayerName(spyIndex)} is <span class="spy">${this._getPlayerRole(spyIndex)}</span>
                     </p>
                 `;
             } else {
-                spyHTML += `<p>${i + 1}) ${this.getPlayerName(spyIndex)} is <span class="spy">evil</span></p>`;
+                spyHTML += `<p>${i + 1}) ${this._getPlayerName(spyIndex)} is <span class="spy">evil</span></p>`;
             }
         }
         spyHTML += `</section>`;
@@ -531,11 +531,11 @@ class Game {
         return spyHTML;
     }
 
-    getPlayerRole(index) {
+    _getPlayerRole(index) {
         return this.playerInformation.getPlayerRole(index);
     }
 
-    getPlayerName(index) {
+    _getPlayerName(index) {
         return this.playerInformation.getPlayerName(index);
     }
 }

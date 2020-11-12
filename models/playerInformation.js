@@ -28,13 +28,13 @@ class PlayerInformation {
         this.titaniaSabotageIndex = -1;
         this.accolonSabotage = {};
 
-        this.setupGame();
+        this._setupGame();
     }
 
-    setupGame() {
-        const spyRoles = this.getSpyRoles();
-        const resistanceRoles = this.getResistanceRoles(spyRoles.includes("Morgana"), spyRoles.includes("Lucius"));
-        const spyIndexes = this.getSpyIndexes();
+    _setupGame() {
+        const spyRoles = this._getSpyRoles();
+        const resistanceRoles = this._getResistanceRoles(spyRoles.includes("Morgana"), spyRoles.includes("Lucius"));
+        const spyIndexes = this._getSpyIndexes();
         this.assassinIndex = ArrayHelper.shuffle(spyIndexes)[0];
 
         for (var i = 0; i < this.playerCount; i++) {
@@ -56,14 +56,14 @@ class PlayerInformation {
             this.playerIndexesByRole.set(currentRole, i);
         }
 
-        this.setUtherInformationIndex();
-        this.setTitaniaSabotage();
-        this.setAccolonSabotage();
-        this.setLeonInformation();
-        this.setLuciusInformation();
+        this._setUtherInformationIndex();
+        this._setTitaniaSabotage();
+        this._setAccolonSabotage();
+        this._setLeonInformation();
+        this._setLuciusInformation();
     }
 
-    setUtherInformationIndex() {
+    _setUtherInformationIndex() {
         const utherIndex = this.getRoleIndex("Uther");
         if (utherIndex !== -1) {
             this.utherInformationIndex = this.getPlayerIndexes({
@@ -73,7 +73,7 @@ class PlayerInformation {
         }
     }
 
-    setLeonInformation() {
+    _setLeonInformation() {
         const leonIndex = this.getRoleIndex("Leon");
         if (leonIndex !== -1) {
             if (this.accolonSabotage.source === leonIndex) {
@@ -103,7 +103,7 @@ class PlayerInformation {
         }
     }
 
-    setLuciusInformation() {
+    _setLuciusInformation() {
         if (this.getRoleIndex("Lucius") !== -1) {
             const seeRoles = ["Merlin", "Percival", "Tristan", "Iseult", "Uther", "Leon", "Galahad"];
             const guinevereSees = this.getPlayerIndexes({
@@ -157,7 +157,7 @@ class PlayerInformation {
         }
     }
 
-    setTitaniaSabotage() {
+    _setTitaniaSabotage() {
         if (this.getRoleIndex("Titania") !== -1) {
             this.titaniaSabotageIndex = this.getPlayerIndexes({
                 excludedRoles: ["Colgrevance"],
@@ -166,7 +166,7 @@ class PlayerInformation {
         }
     }
 
-    setAccolonSabotage() {
+    _setAccolonSabotage() {
         if (this.getRoleIndex("Accolon") !== -1) {
             const informationRoles = [
                 "Merlin", "Percival", "Tristan", "Iseult", "Uther", "Leon", "Galahad"
@@ -246,7 +246,7 @@ class PlayerInformation {
         }
     }
 
-    getSpyRoles() {
+    _getSpyRoles() {
         const usedSpyRoles = [];
         const enabledSpyRoles = ["Mordred", "Morgana", "Maelagant", "Colgrevance"];
         if (this.settings.lucius) {
@@ -278,7 +278,7 @@ class PlayerInformation {
         }
     }
 
-    getEnabledResistanceRoles() {
+    _getEnabledResistanceRoles() {
         var resistanceRoles = ["Merlin", "Percival", "Lancelot", "Tristan", "Iseult", "Arthur"];
         if (this.settings.guinevere) {
             resistanceRoles.push("Guinevere");
@@ -298,8 +298,8 @@ class PlayerInformation {
         return resistanceRoles;
     }
 
-    getResistanceRoles(containsMorgana, containsLucius) {
-        var enabledResistanceRoles = this.getEnabledResistanceRoles();
+    _getResistanceRoles(containsMorgana, containsLucius) {
+        var enabledResistanceRoles = this._getEnabledResistanceRoles();
         var usedResistanceRoles = [];
 
         var selectingRoles = true;
@@ -441,7 +441,7 @@ class PlayerInformation {
         return ArrayHelper.shuffle(usedResistanceRoles);
     }
 
-    getSpyIndexes() {
+    _getSpyIndexes() {
         return ArrayHelper.shuffle(ArrayHelper.getArrayTo(this.playerCount)).slice(0, this.spyCount);
     }
 
