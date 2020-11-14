@@ -1,7 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const { check, validationResult } = require('express-validator');
-const lobbyCollection = require('../models/lobbyCollection');
+const Lobby = require('../models/lobby');
 
 const code_length = 4;
 
@@ -11,7 +11,7 @@ router.get('/', function(req, res) {
   req.session.errors = null;
 });
 
-function generate_code() {
+async function generate_code(callback) {
     var code = null;
     do {
         var result = '';
@@ -19,41 +19,42 @@ function generate_code() {
         for (var i = 0; i < code_length; i++) {
             result += characters.charAt(Math.floor(Math.random() * characters.length));
         }
-
-        if (!lobbyCollection.lobbies.has(code)) {
-            code = result;
-        }
+        await Lobby.findOne({"code": code}).then(function (existingLobby) {
+            if (!existingLobby) {
+                code = result;
+            }
+        });
     } while (code === null);
-    return code;
+    callback(code);
 }
 
-router.post('/', [check('name', 'Invalid Name').trim().matches("^[ a-zA-z]{2,12}$")], function(req, res) {
-    const errors = validationResult(req);
-    if (!errors.isEmpty()) {
-        req.session.errors = errors.array();
-        res.redirect('/new');
-    } else {
-        const settings = {
-            guinevere: req.body.guinevere === 'on',
-            puck: req.body.puck === 'on',
-            jester: req.body.jester === 'on',
-            leon: req.body.leon === 'on',
-            galahad: req.body.galahad === 'on',
-            titania: req.body.titania === 'on',
-            lucius: req.body.lucius === 'on',
-            accolon: req.body.accolon === 'on'
-        };
+router.post('/', [check('name', 'Invalid Name').trim().matches("^[ a-zA-z]{2,12}$")],
+    async function(req, res) {
+        const errors = validationResult(req);
+        if (!errors.isEmpty()) {
+            req.session.errors = errors.array();
+            res.redirect('/new');
+        } else {
+            const settings = {
+                guinevere: req.body.guinevere === 'on',
+                puck: req.body.puck === 'on',
+                jester: req.body.jester === 'on',
+                leon: req.body.leon === 'on',
+                galahad: req.body.galahad === 'on',
+                titania: req.body.titania === 'on',
+                lucius: req.body.lucius === 'on',
+                accolon: req.body.accolon === 'on'
+            };
 
-        const name = req.body.name
-        const code = generate_code();
-        const newLobby = {
-            settings: settings,
-            players: []
-        };
-        lobbyCollection.lobbies.set(code, newLobby);
-        req.session.backURL = '/new';
-        res.redirect(`/game?code=${code}&name=${name}`);
-    }
-});
+            const name = req.body.name
+
+            generate_code(function(code) {
+                const newLobby = new Lobby({code: code, settings: settings});
+                newLobby.save();
+                req.session.backURL = '/new';
+                res.redirect(`/game?code=${code}&name=${name}`);
+            });
+        }
+    });
 
 module.exports = router;
