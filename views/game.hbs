@@ -16,16 +16,16 @@
             {{/unless}}
         </div>
         {{# if host }}
-            <button class="future-color future-secondary-font future-disabled future-box" type="button"
-                    id="start-game-button" disabled>Start Game</button>
-            <button class="future-color future-secondary-font future-box" type="button" id="close-game-button">Close Game</button>
+            <button class="future-color future-disabled future-box" type="button"
+                    id="start-game-button">Start Game</button>
+            <button class="future-color future-box" type="button" id="close-game-button">Close Game</button>
         {{/if}}
     </div>
     <button class="lobby-open-button" id="lobby-open-button" title="Open Lobby Information"> # </button>
     <button class="modal-open-button" id="roles-open-button" title="Open Role Information"> ? </button>
     <div class="modal" id="roles">
         <span class="modal-close-button" id="roles-close-button">&times;</span>
-        <h1>Resistance Roles</h1>
+        <h2>Resistance Roles</h2>
         <ul>
             {{# if settings.puck }}
                 <li>
@@ -90,7 +90,7 @@
                 </li>
             {{/if}}
         </ul>
-        <h1>Spy Roles</h1>
+        <h2>Spy Roles</h2>
         <ul>
             <li>
                 <span class="spy">Mordred</span>: Not seen by <span class="resistance">Merlin</span>
@@ -116,7 +116,7 @@
                 </li>
             {{/if}}
         </ul>
-        <h1>Role Generation</h1>
+        <h2>Role Generation</h2>
         <ul>
             <li>If <span class="resistance">Percival</span> is present, then <span class="resistance">Merlin</span> and/or <span class="spy">Morgana</span> is present</li>
             <li>Only one of the following could be present:
@@ -185,6 +185,7 @@
         </ul>
     </div>
 </div>
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/qs/6.9.4/qs.min.js"
         integrity="sha512-BHtomM5XDcUy7tDNcrcX1Eh0RogdWiMdXl3wJcKB3PFekXb3l5aDzymaTher61u6vEZySnoC/SAj2Y/p918Y3w=="
         crossorigin="anonymous">

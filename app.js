@@ -41,14 +41,7 @@ app.use(logger('dev'));
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(cookieParser());
-app.use(express.static(path.join(__dirname, 'public'), {
-  etag: true,
-  setHeaders: function (res, path, stat) {
-    res.set({
-      'Cache-Control': 'public, max-age=3600'
-    });
-  }
-}));
+app.use(express.static(path.join(__dirname, 'public')));
 
 app.use('/', indexRouter);
 app.use('/join', joinGameRouter);
@@ -71,7 +64,7 @@ app.createServer = function() {
             sessionId: socket.request.session.id,
             socketId: socket.id,
             name: name,
-            active: true,
+            active: "player-active",
             gameInformation: null
           };
           existingLobby.players.push(newPlayer);
@@ -79,7 +72,7 @@ app.createServer = function() {
           const currentPlayer = existingLobby.players[connectingPlayerIndex];
           currentPlayer.socketId = socket.id;
           currentPlayer.name = name;
-          currentPlayer.active = true;
+          currentPlayer.active = "player-active";
 
           if (currentPlayer.gameInformation != null) {
             io.sockets.to(currentPlayer.socketId).emit('start-game', currentPlayer.gameInformation);
@@ -94,7 +87,7 @@ app.createServer = function() {
 
         socket.on('start-game', () => {
           Lobby.findOne({ "code": code }).then(function(existingLobby) {
-            const activePlayers = existingLobby.players.filter(player => player.active);
+            const activePlayers = existingLobby.players.filter(player => player.active === "player-active");
             const game = new Game(activePlayers.map(({ name }) => ({ name })), existingLobby.settings);
             for (var i = 0; i < activePlayers.length; i++) {
               const currentPlayer = activePlayers[i];
@@ -118,7 +111,7 @@ app.createServer = function() {
             if (existingLobby) {
               const disconnectingPlayerIndex = existingLobby.players.findIndex(player => player.socketId === socket.id);
               if (disconnectingPlayerIndex > 0) {
-                existingLobby.players[disconnectingPlayerIndex].active = false;
+                existingLobby.players[disconnectingPlayerIndex].active = "player-inactive";
                 existingLobby.save();
                 io.sockets.to(existingLobby.players[0].socketId).emit('update-players',
                     existingLobby.players.map(({ name, active }) => ({name, active})));
@@ -133,6 +126,7 @@ app.createServer = function() {
   });
   return server;
 };
+
 
 // catch 404 and forward to error handler
 app.use(function(req, res, next) {
@@ -152,6 +146,7 @@ app.use(function(err, req, res, next) {
 
 process.on('SIGINT', function() {
   console.log("Caught interrupt signal");
+
   process.exit();
 });
 

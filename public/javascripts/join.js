@@ -1,31 +1,41 @@
-document.addEventListener('DOMContentLoaded', function () {
-    const code = document.getElementsByName("code")[0];
-    const name = document.getElementsByName("name")[0];
+$(document).ready(function () {
+    const joinGame = $("#join-game-button");
+    const codeInput = $("input[name=code]");
+    const nameInput = $("input[name=name]");
 
-    function updateButtons() {
-        const codeLength = code.value.trim().length;
-        const nameLength = name.value.trim().length;
-        const joinGame = document.getElementById("join-game-button");
+    codeInput.on('input',function() {
+        const nameLength = nameInput.val().trim().length;
+        const codeLength = codeInput.val().trim().length;
 
         if (nameLength < 2 || nameLength > 12 || codeLength != 4) {
-            if (!joinGame.classList.contains("future-disabled")) {
-                joinGame.classList.add("future-disabled");
+            if (!joinGame.hasClass("future-disabled")) {
+                joinGame.addClass("future-disabled");
             }
-            joinGame.disabled = true;
+            joinGame.attr('disabled', true);
         }
         else {
-            if (joinGame.classList.contains("future-disabled")) {
-                joinGame.classList.remove("future-disabled");
+            if (joinGame.hasClass("future-disabled")) {
+                joinGame.removeClass("future-disabled");
             }
-            joinGame.disabled = false;
+            joinGame.attr('disabled',false);
         }
-    }
+    });
 
-    code.oninput = function () {
-        let p=this.selectionStart;
-        this.value=this.value.toUpperCase();
-        this.setSelectionRange(p, p);
-        updateButtons();
-    };
-    name.oninput = updateButtons;
+    nameInput.on('input',function() {
+        const nameLength = nameInput.val().trim().length;
+        const codeLength = codeInput.val().trim().length;
+
+        if (nameLength < 2 || nameLength > 12 || codeLength != 4) {
+            if (!joinGame.hasClass("future-disabled")) {
+                joinGame.addClass("future-disabled");
+            }
+            joinGame.attr('disabled', true);
+        }
+        else {
+            if (joinGame.hasClass("future-disabled")) {
+                joinGame.removeClass("future-disabled");
+            }
+            joinGame.attr('disabled',false);
+        }
+    });
 });
