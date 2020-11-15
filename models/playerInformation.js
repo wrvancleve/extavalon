@@ -6,6 +6,7 @@ class PlayerInformation {
         this.settings = settings;
 
         this.playerCount = players.length;
+        this.firstPlayerIndex = Math.floor((Math.random() * (this.playerCount + 1)));
         if (this.playerCount < 7) {
             this.spyCount = 2;
         }
@@ -512,6 +513,10 @@ class PlayerInformation {
 
     isAssassin(index) {
         return this.assassinIndex === index;
+    }
+
+    isFirstPlayer(index) {
+        return this.firstPlayerIndex === index;
     }
 }
 

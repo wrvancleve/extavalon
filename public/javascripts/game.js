@@ -42,8 +42,20 @@ document.addEventListener('DOMContentLoaded', function () {
 
     const lobbyInformation = document.getElementById("lobby-information");
     const gameInformation = document.getElementById("game-information");
-    socket.on('start-game', gameHTML => {
+    const playerName = document.getElementById("name");
+    socket.on('start-game', ({gameHTML, amFirstPlayer}) => {
         lobbyInformation.style.display = "none";
+
+        if (amFirstPlayer) {
+            if (!playerName.classList.contains("first-player")) {
+                playerName.classList.add("first-player");
+            }
+        } else {
+            if (playerName.classList.contains("first-player")) {
+                playerName.classList.remove("first-player");
+            }
+        }
+
         gameInformation.innerHTML = gameHTML;
 
         if (!gameInformation.classList.contains("active")) {

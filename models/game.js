@@ -538,6 +538,10 @@ class Game {
     _getPlayerName(index) {
         return this.playerInformation.getPlayerName(index);
     }
+
+    isFirstPlayer(index) {
+        return this.playerInformation.isFirstPlayer(index);
+    }
 }
 
 module.exports = Game;
