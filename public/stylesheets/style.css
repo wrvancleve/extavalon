@@ -237,6 +237,10 @@ select {
   color: #9debfb;
 }
 
+.first-player {
+  color: #FFD700 !important;
+}
+
 #players {
   margin: auto;
   width: 80vw;

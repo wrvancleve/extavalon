@@ -41,14 +41,7 @@ app.use(logger('dev'));
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(cookieParser());
-app.use(express.static(path.join(__dirname, 'public'), {
-  etag: true,
-  setHeaders: function (res, path, stat) {
-    res.set({
-      'Cache-Control': 'public, max-age=3600'
-    });
-  }
-}));
+app.use(express.static(path.join(__dirname, 'public')));
 
 app.use('/', indexRouter);
 app.use('/join', joinGameRouter);
@@ -65,7 +58,7 @@ app.createServer = function() {
   io.on('connection', socket => {
     socket.on('join-lobby', ({name, code}) => {
       const lobby = lobbyCollection.lobbies.get(code);
-      const connectingPlayerIndex = lobby.players.findIndex(player => player.sessionId === socket.request.session.id)
+      const connectingPlayerIndex = lobby.players.findIndex(player => player.sessionId === socket.request.session.id);
       if (connectingPlayerIndex === -1) {
         const newPlayer = {
           sessionId: socket.request.session.id,
@@ -98,7 +91,10 @@ app.createServer = function() {
         for (var i = 0; i < activePlayers.length; i++) {
           const currentPlayer = activePlayers[i];
           currentPlayer.gameInformation = game.getPlayerHTML(i);
-          io.sockets.to(currentPlayer.socketId).emit('start-game', currentPlayer.gameInformation);
+          io.sockets.to(currentPlayer.socketId).emit('start-game', {
+            gameHTML: currentPlayer.gameInformation,
+            amFirstPlayer: game.isFirstPlayer(i)
+          });
         }
       });
 
