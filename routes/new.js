@@ -27,12 +27,13 @@ function generate_code() {
     return code;
 }
 
-router.post('/', [check('name', 'Invalid Name').trim().matches("^[ a-zA-z]{2,12}$")], function(req, res) {
+router.post('/', [check('name', 'Invalid Name').trim().matches("^[ a-zA-z0-9]{2,12}$")], function(req, res) {
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
         req.session.errors = errors.array();
         res.redirect('/new');
     } else {
+        /*
         const settings = {
             guinevere: req.body.guinevere === 'on',
             puck: req.body.puck === 'on',
@@ -42,6 +43,13 @@ router.post('/', [check('name', 'Invalid Name').trim().matches("^[ a-zA-z]{2,12}
             titania: req.body.titania === 'on',
             lucius: req.body.lucius === 'on',
             accolon: req.body.accolon === 'on'
+        };
+        */
+
+        const settings = {
+            guinevere: req.body.guinevere === 'on',
+            puck: req.body.puck === 'on',
+            jester: req.body.jester === 'on'
         };
 
         const name = req.body.name

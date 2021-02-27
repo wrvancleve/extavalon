@@ -4,7 +4,7 @@ const { check, validationResult } = require('express-validator');
 const lobbyCollection = require('../models/lobbyCollection');
 
 /* GET game page. */
-router.get('/', [check('name', 'Invalid Name').trim().matches("^[ a-zA-z]{2,12}$")],
+router.get('/', [check('name', 'Invalid Name').trim().matches("^[ a-zA-z0-9]{2,12}$")],
     function(req, res) {
         const redirectURL = req.session.backURL || '/join';
         req.session.backURL = null;

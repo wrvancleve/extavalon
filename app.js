@@ -58,10 +58,20 @@ app.createServer = function() {
   io.on('connection', socket => {
     socket.on('join-lobby', ({name, code}) => {
       const lobby = lobbyCollection.lobbies.get(code);
-      const connectingPlayerIndex = lobby.players.findIndex(player => player.sessionId === socket.request.session.id);
+      //const connectingPlayerIndex = lobby.players.findIndex(player => player.sessionId === socket.request.session.id);
+      const connectingPlayerIndex = lobby.players.findIndex(player => player.socketId === socket.id);
       if (connectingPlayerIndex === -1) {
+        /*
         const newPlayer = {
           sessionId: socket.request.session.id,
+          socketId: socket.id,
+          name: name,
+          active: true,
+          gameInformation: null
+        };
+        */
+        const newPlayer = {
+          sessionId: socket.id,
           socketId: socket.id,
           name: name,
           active: true,
@@ -86,16 +96,28 @@ app.createServer = function() {
 
       socket.on('start-game', () => {
         const activePlayers = lobby.players.filter(player => player.active);
-        const game = new Game(activePlayers.map(({ name }) => ({ name })), lobby.settings);
+        const game = new Game(activePlayers.map(({ sessionId, name }) => ({ sessionId, name })), lobby.settings);
         lobby.game = game;
         for (var i = 0; i < activePlayers.length; i++) {
           const currentPlayer = activePlayers[i];
-          currentPlayer.gameInformation = game.getPlayerHTML(i);
+          currentPlayer.gameInformation = game.getPlayerHTML(currentPlayer.sessionId);
           io.sockets.to(currentPlayer.socketId).emit('start-game', {
             gameHTML: currentPlayer.gameInformation,
-            amFirstPlayer: game.isFirstPlayer(i)
+            amFirstPlayer: game.isFirstPlayer(currentPlayer.sessionId)
           });
         }
+      });
+
+      socket.on('propose-team', ({team}) => {
+        
+      });
+
+      socket.on('vote-on-team', ({vote}) => {
+        
+      });
+
+      socket.on('conduct-mission', ({action}) => {
+        
       });
 
       function closeLobby() {
