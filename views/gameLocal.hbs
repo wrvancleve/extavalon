@@ -1,0 +1,142 @@
+<div class="flex-column" id="root">
+    <div class="flex-column" id="lobby">
+        <h2 id="name">{{title}}</h2>
+        <div class="future-color" id="lobby-information">
+            <h2 id="game-code">Game Code: </h2>
+            <div id="players-local">
+                <h2 id="player-count">Players [0]</h2>
+                <ul id="player-list"></ul>
+            </div>
+        </div>
+        <div id="game-information">
+            {{# unless host }}
+                <h2>Waiting for role information...</h2>
+            {{/unless}}
+        </div>
+        {{# if host }}
+            <button class="future-color future-secondary-font future-disabled future-box" type="button"
+                    id="start-game-button" disabled>Start Game</button>
+            <button class="future-color future-secondary-font future-box" type="button" id="close-game-button">Close Game</button>
+        {{/if}}
+    </div>
+    <button class="lobby-open-button" id="lobby-open-button" title="Open Lobby Information"> # </button>
+    <button class="modal-open-button" id="roles-open-button" title="Open Role Information"> ? </button>
+    <div class="modal" id="modal-roles">
+        <span class="modal-close-button" id="roles-close-button">&times;</span>
+        <h1>Resistance Roles</h1>
+        <ul>
+            {{# if settings.puck }}
+                <li>
+                    <span class="resistance">Merlin</span>: Sees <span class="spy">spies</span> (except <span class="spy">Mordred</span>) and
+                    <span class="resistance">Puck</span>; Can be assassinated
+                </li>
+            {{else}}
+                <li>
+                    <span class="resistance">Merlin</span>: Sees <span class="spy">spies</span> (except <span class="spy">Mordred</span>); Can be assassinated
+                </li>
+            {{/if}}
+            <li>
+                <span class="resistance">Percival</span>: Sees <span class="resistance">Merlin</span> and
+                <span class="spy">Morgana</span>
+            </li>
+            <li>
+                <span class="resistance">Tristan</span>: Sees <span class="resistance">Iseult</span>; Can be
+                assassinated with <span class="resistance">Iseult</span>
+            </li>
+            <li>
+                <span class="resistance">Iseult</span>: Sees <span class="resistance">Tristan</span>; Can be
+                assassinated with <span class="resistance">Tristan</span>
+            </li>
+            <li>
+                <span class="resistance">Lancelot</span>: May play reverse cards
+            </li>
+            {{# if settings.guinevere }}
+                <li>
+                    <span class="resistance">Guinevere</span>: Sees <span class="resistance">Lancelot</span> and
+                    <span class="spy">Maelagant</span>
+                </li>
+            {{/if}}
+            <li>
+                <span class="resistance">Arthur</span>: Sees <span class="resistance">resistance</span> roles present; Can be assassinated
+            </li>
+            <li>
+                <span class="resistance">Uther</span>: Sees a random <span class="resistance">resistance</span> player
+            </li>
+            {{# if settings.puck }}
+                <li>
+                    <span class="resistance">Puck</span>: Only wins if <span class="resistance">resistance</span> wins in 5 rounds; May play fail cards
+                </li>
+            {{/if}}
+            {{# if settings.titania }}
+                <li>
+                    <span class="resistance">Titania</span>: Appears as a <span class="spy">spy</span> to a random <span class="spy">spy</span> player
+                </li>
+            {{/if}}
+            {{# if settings.jester }}
+                <li>
+                    <span class="resistance">Jester</span>: Only wins if assassinated; Sees present assassinable roles
+                </li>
+            {{/if}}
+        </ul>
+        <h1>Spy Roles</h1>
+        <ul>
+            <li>
+                <span class="spy">Mordred</span>: Not seen by <span class="resistance">Merlin</span>
+            </li>
+            <li>
+                <span class="spy">Morgana</span>: Seen as possible <span class="resistance">Merlin</span>
+                by <span class="resistance">Percival</span>
+            </li>
+            <li>
+                <span class="spy">Maelagant</span>: May play reverse cards
+            </li>
+            <li>
+                <span class="spy">Colgrevance</span>: Sees roles of all <span class="spy">spies</span>
+            </li>
+        </ul>
+        <h1>Role Generation</h1>
+        <ul>
+            <li>If <span class="resistance">Percival</span> is present, then <span class="resistance">Merlin</span> and/or <span class="spy">Morgana</span> is present</li>
+            <li>Only one of the following could be present:
+                <ul>
+                    <li><span class="resistance">Tristan</span> and <span class="resistance">Iseult</span></li>
+                    <li><span class="resistance">Uther</span></li>
+                </ul>
+            </li>
+            {{# if settings.jester }}
+                <li>If <span class="resistance">Arthur</span> is present, <span class="resistance">Jester</span> is not</li>
+            {{/if}}
+            {{# if settings.puck }}
+                <li>If <span class="resistance">Lancelot</span> is present, <span class="resistance">Puck</span> is not</li>
+            {{/if}}
+            {{# if settings.jester }}
+                <li>If <span class="resistance">Jester</span> is present, the following cannot be present:
+                    <ul>
+                        <li><span class="resistance">Arthur</span></li>
+                        {{# if settings.puck }}
+                            <li><span class="resistance">Puck</span></li>
+                        {{/if}}
+                    </ul>
+                </li>
+            {{/if}}
+            {{# if settings.puck }}
+                {{# if settings.jester }}
+                    <li>
+                        If <span class="resistance">Puck</span> is present, <span class="resistance">Lancelot</span> and
+                        <span class="resistance">Jester</span> are not
+                    </li>
+                {{else}}
+                    <li>
+                        If <span class="resistance">Puck</span> is present, <span class="resistance">Lancelot</span> is not
+                    </li>
+                {{/if}}
+            {{/if}}
+        </ul>
+    </div>
+</div>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qs/6.9.4/qs.min.js"
+        integrity="sha512-BHtomM5XDcUy7tDNcrcX1Eh0RogdWiMdXl3wJcKB3PFekXb3l5aDzymaTher61u6vEZySnoC/SAj2Y/p918Y3w=="
+        crossorigin="anonymous">
+</script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/2.3.0/socket.io.js"></script>
+<script src="/javascripts/gameLocal.js"></script>

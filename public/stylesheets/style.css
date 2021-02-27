@@ -241,7 +241,7 @@ select {
   color: #FFD700 !important;
 }
 
-#players {
+#players-local {
   margin: auto;
   width: 80vw;
   max-width: 400px;
@@ -254,7 +254,24 @@ select {
   margin-block-start: 2vh;
 }
 
-#players h2 {
+#players-online {
+  margin: auto;
+  width: 20vw;
+  max-width: 300px;
+  border-bottom: 20px solid #029dbb;
+  box-shadow: 0 0 4px rgba(0,157,187,0);
+  color: #9debfb;
+  background: transparent;
+  border-bottom-left-radius: 10px;
+  border-bottom-right-radius: 10px;
+  margin-block-start: 2vh;
+  top: 55px;
+  right: 10px;
+  margin-top: 0px;
+  position: absolute;
+}
+
+#players-local h2, #players-online h2 {
   padding: 10px 20px;
   margin: 0px;
   font-size: 1.5em;
@@ -264,7 +281,7 @@ select {
   box-shadow: 0 0 4px rgba(2,157,187,0.65);
 }
 
-#players ul {
+#players-local ul, #players-online ul {
   position: relative;
   padding-inline-start: 10px;
   margin-block-start: 0px;
@@ -278,6 +295,15 @@ select {
   list-style: none;
   padding: 10px;
   font-size: 1.25em;
+}
+
+#modal-game-information {
+  color: #b6f0fc;
+  display: none;
+  background-color: black;
+  border: 2px solid #029dbb;
+  box-shadow: 0 0 4px rgba(2,157,187,0.65);
+  font-family: 'Helvetica', sans-serif;
 }
 
 #game-information {
@@ -311,6 +337,18 @@ select {
   overflow: auto;
 }
 
+.modal-online {
+  max-height: 96vh;
+  box-sizing: border-box;
+  top: 2vh;
+  padding: 2vh 2vw;
+  overflow: auto;
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+}
+
 .modal-close-button {
   float: right;
   font-size: 28px;
@@ -328,18 +366,9 @@ select {
   color: #08a5c4;
 }
 
-.lobby-open-button {
-  border-radius: 50%;
-  -webkit-border-radius: 50%;
-  width: 1.5em;
-  height: 1.5em;
-  font-size: 1.5em;
-  top: 10px;
-  right: calc(13px + 1.5em);
-  margin-top: 0px;
-  position: absolute;
-  z-index: 5;
-  cursor: pointer;
+#game-information-close-button:hover,
+#game-information-close-button:focus {
+  color: #08a5c4;
 }
 
 .modal-open-button {
@@ -362,13 +391,44 @@ select {
   border: 2px solid #029dbb;
 }
 
+#game-information-open-button {
+  color: #9debfb;
+  background: transparent;
+  border: 2px solid #029dbb;
+  border-radius: 50%;
+  -webkit-border-radius: 50%;
+  width: 1.5em;
+  height: 1.5em;
+  font-size: 1.5em;
+  top: 10px;
+  right: calc(13px + 1.5em);
+  margin-top: 0px;
+  position: absolute;
+  z-index: 5;
+  cursor: pointer;
+}
+
+.lobby-open-button {
+  border-radius: 50%;
+  -webkit-border-radius: 50%;
+  width: 1.5em;
+  height: 1.5em;
+  font-size: 1.5em;
+  top: 10px;
+  right: calc(13px + 1.5em);
+  margin-top: 0px;
+  position: absolute;
+  z-index: 5;
+  cursor: pointer;
+}
+
 #lobby-open-button {
   color: #9debfb;
   background: transparent;
   border: 2px solid #029dbb;
 }
 
-#roles {
+#modal-roles {
   display: none;
   color: #b6f0fc;
   background-color: transparent;
@@ -377,7 +437,7 @@ select {
   font-family: 'Helvetica', sans-serif;
 }
 
-#roles h1 {
+#modal-roles h1 {
   font-family: Candara, sans-serif;
   text-shadow: 0 0 4px rgba(161,236,251,0.65);
   font-size: 1.75em;

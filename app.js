@@ -14,7 +14,9 @@ const http = require('http');
 const indexRouter = require('./routes/index');
 const joinGameRouter = require('./routes/join');
 const newLocalGameRouter = require('./routes/newLocal');
-const gameRouter = require('./routes/game');
+const newOnlineGameRouter = require('./routes/newOnline');
+const gameLocalRouter = require('./routes/gameLocal');
+const gameOnlineRouter = require('./routes/gameOnline');
 
 const lobbyCollection = require('./models/lobbyCollection');
 const Game = require('./models/game');
@@ -48,7 +50,9 @@ app.use(express.static(path.join(__dirname, 'public')));
 app.use('/', indexRouter);
 app.use('/join', joinGameRouter);
 app.use('/new-local', newLocalGameRouter);
-app.use('/game', gameRouter);
+app.use('/new-online', newOnlineGameRouter);
+app.use('/game-local', gameLocalRouter);
+app.use('/game-online', gameOnlineRouter);
 
 app.createServer = function() {
   const server = http.createServer(app);
@@ -91,10 +95,10 @@ app.createServer = function() {
         }
       }
 
-      io.sockets.to(lobby.players[0].socketId).emit('update-players',
-        lobby.players.map(({ name, active }) => ({name, active})));
-
       socket.join(code);
+
+      io.sockets.to(code).emit('update-players',
+        lobby.players.map(({ name, active }) => ({name, active})));
 
       socket.on('start-game', () => {
         const activePlayers = lobby.players.filter(player => player.active);
@@ -133,7 +137,7 @@ app.createServer = function() {
         const disconnectingPlayerIndex = lobby.players.findIndex(player => player.socketId === socket.id);
         if (disconnectingPlayerIndex > 0) {
           lobby.players[disconnectingPlayerIndex].active = false;
-          io.sockets.to(lobby.players[0].socketId).emit('update-players',
+          io.sockets.to(code).emit('update-players',
             lobby.players.map(({ name, active }) => ({name, active})));
         } else {
           closeLobby();

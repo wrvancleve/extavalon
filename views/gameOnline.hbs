@@ -3,27 +3,24 @@
         <h2 id="name">{{title}}</h2>
         <div class="future-color" id="lobby-information">
             <h2 id="game-code">Game Code: </h2>
-            {{# if host }}
-                <div id="players">
-                    <h2 id="player-count">Players [0]</h2>
-                    <ul id="player-list"></ul>
-                </div>
-            {{/if}}
-        </div>
-        <div id="game-information">
-            {{# unless host }}
-                <h2>Waiting for role information...</h2>
-            {{/unless}}
+            <div id="players-online">
+                <h2 id="player-count">Players [0]</h2>
+                <ul id="player-list"></ul>
+            </div>
         </div>
         {{# if host }}
             <button class="future-color future-secondary-font future-disabled future-box" type="button"
                     id="start-game-button" disabled>Start Game</button>
             <button class="future-color future-secondary-font future-box" type="button" id="close-game-button">Close Game</button>
-        {{/if}}
+        {{/if}}        
     </div>
-    <button class="lobby-open-button" id="lobby-open-button" title="Open Lobby Information"> # </button>
+    <button class="modal-open-button" id="game-information-open-button" title="Open Game Information"> # </button>
     <button class="modal-open-button" id="roles-open-button" title="Open Role Information"> ? </button>
-    <div class="modal" id="roles">
+    <div class="modal-online" id="modal-game-information">
+        <span class="modal-close-button" id="game-information-close-button">&times;</span>
+        <h2>Waiting for role information...</h2>
+    </div>
+    <div class="modal-online" id="modal-roles" style="background-color: black;">
         <span class="modal-close-button" id="roles-close-button">&times;</span>
         <h1>Resistance Roles</h1>
         <ul>
@@ -141,4 +138,4 @@
         crossorigin="anonymous">
 </script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/2.3.0/socket.io.js"></script>
-<script src="/javascripts/game.js"></script>
+<script src="/javascripts/gameOnline.js"></script>

@@ -7,7 +7,7 @@ const code_length = 4;
 
 /* GET new page. */
 router.get('/', function(req, res) {
-  res.render('newLocal', { title: 'New Game', errors: req.session.errors });
+  res.render('newOnline', { title: 'New Online Game', errors: req.session.errors });
   req.session.errors = null;
 });
 
@@ -31,7 +31,7 @@ router.post('/', [check('name', 'Invalid Name').trim().matches("^[ a-zA-z0-9]{2,
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
         req.session.errors = errors.array();
-        res.redirect('/new-local');
+        res.redirect('/new-online');
     } else {
         /*
         const settings = {
@@ -59,8 +59,8 @@ router.post('/', [check('name', 'Invalid Name').trim().matches("^[ a-zA-z0-9]{2,
             players: []
         };
         lobbyCollection.lobbies.set(code, newLobby);
-        req.session.backURL = '/new-local';
-        res.redirect(`/game-local?code=${code}&name=${name}`);
+        req.session.backURL = '/new-online';
+        res.redirect(`/game-online?code=${code}&name=${name}`);
     }
 });
 
