@@ -55,10 +55,11 @@ document.addEventListener('DOMContentLoaded', function () {
         console.log(`Player Index: ${playerIndex}`);
 
         const currentPlayer = players[playerIndex];
+        console.log("Player: %j", currentPlayer);
         if (currentPlayer.team === "Spies") {
             for (let i = 0; i < players.length; i++) {
                 const player = players[i];
-                if(player.team == "Spies"){
+                if(player.team === "Spies"){
                     player.status = "spy";
                 } else {
                     player.status = "resistance";
@@ -69,27 +70,27 @@ document.addEventListener('DOMContentLoaded', function () {
                 const player = players[i];
                 switch (currentPlayer.role) {
                     case "Merlin":
-                        if(player.role == "spy" && player.role !== "Modred" || player.role == "Puck"){
+                        if(player.team === "Spies" && player.role !== "Mordred" || player.role === "Puck"){
                             player.status = "suspicious";
                         }
                         break;
                     case "Tristan":
-                        if(player.role == "Iseult"){
+                        if(player.role === "Iseult"){
                             player.status = "resistance";
                         }
                         break;
                     case "Iseult":
-                        if(player.role == "Tristan"){
+                        if(player.role === "Tristan"){
                             player.status = "resistance";
                         }
                         break;
                     case "Percival":
-                        if(player.role == "Merlin" || player.role == "Morgana"){
+                        if(player.role === "Merlin" || player.role === "Morgana"){
                             player.status = "suspicious";
                         }
                         break;
                     case "Guinevere":
-                        if(player.role == "Maelagant" || player.role == "Lancelot"){
+                        if(player.role === "Maelagant" || player.role === "Lancelot"){
                             player.status = "suspicious";
                         }
                         break;
@@ -97,6 +98,7 @@ document.addEventListener('DOMContentLoaded', function () {
             }
         }
 
+        console.log("Altered Players: %j", players);
         document.getElementById("game-player-list").innerHTML = `
             ${players.map(player => `<li class="${player.status}">${player.name}</li>`).join('')}
         `;

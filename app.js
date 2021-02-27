@@ -122,10 +122,17 @@ app.createServer = function() {
           const currentPlayer = activePlayers[i];
           currentPlayer.gameInformation = game.getPlayerHTML(currentPlayer.sessionId);
           console.log("About to send players");
+          /*
           io.sockets.to(currentPlayer.socketId).emit('start-game', {
             gameHTML: currentPlayer.gameInformation,
             players: game.getPlayerInformation(),
             playerIndex: game.getPlayerIndex(socket.request.session.id)
+          });
+          */
+          io.sockets.to(currentPlayer.socketId).emit('start-game', {
+            gameHTML: currentPlayer.gameInformation,
+            players: game.getPlayerInformation(),
+            playerIndex: game.getPlayerIndex(currentPlayer.socketId)
           });
         }
       });

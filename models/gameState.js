@@ -56,6 +56,7 @@ class GameState {
             const player = new Player(this, id, playerInformation[id].name, playerRole);
             players.push(player);
             this.playersBySession.set(playerInformation[id].sessionId, player);
+            console.log(`${player.name}: ${playerInformation[id].sessionId}`);
             this.playersByRole.set(playerRole, player);
             
             if (playerRole.team === "Resistance") {
