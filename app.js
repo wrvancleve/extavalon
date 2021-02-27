@@ -8,12 +8,12 @@ const bodyParser = require('body-parser');
 const logger = require('morgan');
 const hbs = require('express-handlebars');
 const expressSession = require('express-session');
-const mongoose = require('mongoose');
+//const mongoose = require('mongoose');
 const http = require('http');
 
 const indexRouter = require('./routes/index');
 const joinGameRouter = require('./routes/join');
-const newGameRouter = require('./routes/new');
+const newLocalGameRouter = require('./routes/newLocal');
 const gameRouter = require('./routes/game');
 
 const lobbyCollection = require('./models/lobbyCollection');
@@ -21,9 +21,11 @@ const Game = require('./models/game');
 
 const app = express();
 
+/*
 const mongo_db_default_url = 'mongodb://localhost:27017/extavalon'
 mongoose.connect(process.env.MONGO_URL || mongo_db_default_url);
 mongoose.Promise = global.Promise;
+*/
 
 // view engine setup
 app.engine('hbs', hbs({extname: 'hbs', defaultLayout: 'layout', layoutsDir: __dirname + '/views/layouts/'}))
@@ -45,7 +47,7 @@ app.use(express.static(path.join(__dirname, 'public')));
 
 app.use('/', indexRouter);
 app.use('/join', joinGameRouter);
-app.use('/new', newGameRouter);
+app.use('/new-local', newLocalGameRouter);
 app.use('/game', gameRouter);
 
 app.createServer = function() {

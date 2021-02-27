@@ -7,7 +7,7 @@ const code_length = 4;
 
 /* GET new page. */
 router.get('/', function(req, res) {
-  res.render('new', { title: 'New Game', errors: req.session.errors });
+  res.render('newLocal', { title: 'New Game', errors: req.session.errors });
   req.session.errors = null;
 });
 
@@ -59,7 +59,7 @@ router.post('/', [check('name', 'Invalid Name').trim().matches("^[ a-zA-z0-9]{2,
             players: []
         };
         lobbyCollection.lobbies.set(code, newLobby);
-        req.session.backURL = '/new';
+        req.session.backURL = '/new-local';
         res.redirect(`/game?code=${code}&name=${name}`);
     }
 });
