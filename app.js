@@ -13,8 +13,8 @@ const http = require('http');
 
 const indexRouter = require('./routes/index');
 const joinGameRouter = require('./routes/join');
-const newLocalGameRouter = require('./routes/newLocal');
-const newOnlineGameRouter = require('./routes/newOnline');
+const newGameRouter = require('./routes/new');
+//const gameRouter = require('./routes/game');
 const gameLocalRouter = require('./routes/gameLocal');
 const gameOnlineRouter = require('./routes/gameOnline');
 
@@ -49,10 +49,10 @@ app.use(express.static(path.join(__dirname, 'public')));
 
 app.use('/', indexRouter);
 app.use('/join', joinGameRouter);
-app.use('/new-local', newLocalGameRouter);
-app.use('/new-online', newOnlineGameRouter);
+app.use('/new', newGameRouter);
 app.use('/game-local', gameLocalRouter);
 app.use('/game-online', gameOnlineRouter);
+//app.use('/game', gameRouter);
 
 app.createServer = function() {
   const server = http.createServer(app);

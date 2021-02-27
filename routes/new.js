@@ -7,7 +7,11 @@ const code_length = 4;
 
 /* GET new page. */
 router.get('/', function(req, res) {
-  res.render('newOnline', { title: 'New Online Game', errors: req.session.errors });
+  let online = false;
+  if (req.query.type && req.query.type === 'online') {
+    online = true;
+  }
+  res.render('new', { title: 'New Game', errors: req.session.errors, online: online });
   req.session.errors = null;
 });
 
@@ -31,7 +35,7 @@ router.post('/', [check('name', 'Invalid Name').trim().matches("^[ a-zA-z0-9]{2,
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
         req.session.errors = errors.array();
-        res.redirect('/new-online');
+        res.redirect(`/new?type=${type}`);
     } else {
         /*
         const settings = {
@@ -52,15 +56,18 @@ router.post('/', [check('name', 'Invalid Name').trim().matches("^[ a-zA-z0-9]{2,
             jester: req.body.jester === 'on'
         };
 
+        const type = req.query.type || 'local';
         const name = req.body.name
         const code = generate_code();
         const newLobby = {
+            type: type,
             settings: settings,
             players: []
         };
         lobbyCollection.lobbies.set(code, newLobby);
-        req.session.backURL = '/new-online';
-        res.redirect(`/game-online?code=${code}&name=${name}`);
+        
+        req.session.backURL = `/new?type=${type}`;
+        res.redirect(`/game-${type}?code=${code}&name=${name}`);
     }
 });
 
