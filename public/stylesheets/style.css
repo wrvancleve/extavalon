@@ -70,6 +70,14 @@ body {
   color: #FF3333;
 }
 
+.suspicous {
+  color: #F7FE2E !important;
+}
+
+.first-player {
+  color: #FFD700 !important;
+}
+
 .errors {
   border: 1px solid;
   margin: 10px 0px;
@@ -255,11 +263,7 @@ select {
   color: #9debfb;
 }
 
-.first-player {
-  color: #FFD700 !important;
-}
-
-#players-local {
+#lobby-players {
   margin: auto;
   width: 80vw;
   max-width: 400px;
@@ -272,7 +276,7 @@ select {
   margin-block-start: 2vh;
 }
 
-#players-online {
+#game-players {
   margin: auto;
   width: 20vw;
   max-width: 300px;
@@ -289,7 +293,7 @@ select {
   position: absolute;
 }
 
-#players-local h2, #players-online h2 {
+#lobby-players h2, #game-players h2 {
   padding: 10px 20px;
   margin: 0px;
   font-size: 1.5em;
@@ -299,7 +303,7 @@ select {
   box-shadow: 0 0 4px rgba(2,157,187,0.65);
 }
 
-#players-local ul, #players-online ul {
+#lobby-players ul, #game-players ul {
   position: relative;
   padding-inline-start: 10px;
   margin-block-start: 0px;
@@ -309,7 +313,7 @@ select {
   box-shadow: 0 0 4px rgba(2,157,187,0.65);
 }
 
-#player-list li {
+#lobby-player-list li, #game-player-list li {
   list-style: none;
   padding: 10px;
   font-size: 1.25em;

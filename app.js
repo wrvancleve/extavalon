@@ -100,7 +100,7 @@ app.createServer = function() {
       io.sockets.to(code).emit('update-players',
         lobby.players.map(({ name, active }) => ({name, active})));
 
-      socket.on('start-game', () => {
+      socket.on('start-game-local', () => {
         const activePlayers = lobby.players.filter(player => player.active);
         const game = new Game(activePlayers.map(({ sessionId, name }) => ({ sessionId, name })), lobby.settings);
         lobby.game = game;
@@ -110,6 +110,22 @@ app.createServer = function() {
           io.sockets.to(currentPlayer.socketId).emit('start-game', {
             gameHTML: currentPlayer.gameInformation,
             amFirstPlayer: game.isFirstPlayer(currentPlayer.sessionId)
+          });
+        }
+      });
+
+      socket.on('start-game-online', () => {
+        const activePlayers = lobby.players.filter(player => player.active);
+        const game = new Game(activePlayers.map(({ sessionId, name }) => ({ sessionId, name })), lobby.settings);
+        lobby.game = game;
+        for (var i = 0; i < activePlayers.length; i++) {
+          const currentPlayer = activePlayers[i];
+          currentPlayer.gameInformation = game.getPlayerHTML(currentPlayer.sessionId);
+          console.log("About to send players");
+          io.sockets.to(currentPlayer.socketId).emit('start-game', {
+            gameHTML: currentPlayer.gameInformation,
+            players: game.getPlayerInformation(),
+            playerIndex: game.getPlayerIndex(socket.request.session.id)
           });
         }
       });

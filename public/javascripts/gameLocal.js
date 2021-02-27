@@ -21,7 +21,7 @@ document.addEventListener('DOMContentLoaded', function () {
     if (startGame) {
         const closeGame = document.getElementById("close-game-button");
         startGame.onclick = function () {
-            socket.emit('start-game');
+            socket.emit('start-game-local');
         };
         closeGame.onclick = function () {
             socket.emit('close-lobby');
@@ -32,8 +32,8 @@ document.addEventListener('DOMContentLoaded', function () {
 
     socket.on('update-players', currentPlayers => {
         const activePlayerCount = currentPlayers.filter(p => p.active).length;
-        document.getElementById("player-count").innerHTML = `Players [${activePlayerCount}]`;
-        document.getElementById("player-list").innerHTML = `
+        document.getElementById("lobby-player-count").innerHTML = `Players [${activePlayerCount}]`;
+        document.getElementById("lobby-player-list").innerHTML = `
             ${currentPlayers.map(player => `<li class="${player.active ? 'player-active' : 'player-inactive'}">${player.name}</li>`).join('')}
         `;
         if (startGame) {

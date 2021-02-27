@@ -37,6 +37,7 @@ class GameState {
         this.spys = [];
         this.settings = settings;
         this.players = this._createPlayers(playerInformation);
+        console.log("Created Players: %j", this.players);
         this.missions = this._createMissions();
         this.phase = GameState.PHASE_PROPOSE;
     }

@@ -3,19 +3,33 @@
         <h2 id="name">{{title}}</h2>
         <div class="future-color" id="lobby-information">
             <h2 id="game-code">Game Code: </h2>
-            <div id="players-online">
-                <h2 id="player-count">Players [0]</h2>
-                <ul id="player-list"></ul>
+            <div id="lobby-players">
+                <h2 id="lobby-player-count">Players [0]</h2>
+                <ul id="lobby-player-list"></ul>
             </div>
         </div>
         {{# if host }}
             <button class="future-color future-secondary-font future-disabled future-box" type="button"
                     id="start-game-button" disabled>Start Game</button>
             <button class="future-color future-secondary-font future-box" type="button" id="close-game-button">Close Game</button>
-        {{/if}}        
+        {{/if}}
     </div>
-    <button class="modal-open-button" id="game-information-open-button" title="Open Game Information"> # </button>
+    <div class="flex-column" id="game">
+        <h2 id="name">{{title}}</h2>
+        <div class="future-color" id="lobby-information">
+            <div id="game-players">
+                <h2 id="game-player-header">Players</h2>
+                <ul id="game-player-list"></ul>
+            </div>
+        </div>
+        {{# if host }}
+            <button class="future-color future-secondary-font future-disabled future-box" type="button"
+                    id="start-game-button" disabled>Start Game</button>
+            <button class="future-color future-secondary-font future-box" type="button" id="close-game-button">Close Game</button>
+        {{/if}}
+    </div>
     <button class="modal-open-button" id="roles-open-button" title="Open Role Information"> ? </button>
+    <button class="modal-open-button" id="game-information-open-button" title="Open Game Information"> # </button>
     <div class="modal-online" id="modal-game-information">
         <span class="modal-close-button" id="game-information-close-button">&times;</span>
         <h2>Waiting for role information...</h2>

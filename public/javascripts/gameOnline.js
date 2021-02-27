@@ -10,6 +10,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
     const lobby = document.getElementById("lobby");
     const lobbyInformation = document.getElementById("lobby-information");
+    const game = document.getElementById("game");
     const playerName = document.getElementById("name");
     const roles = document.getElementById("modal-roles");
     const openRoles = document.getElementById("roles-open-button");
@@ -21,8 +22,8 @@ document.addEventListener('DOMContentLoaded', function () {
 
     socket.on('update-players', currentPlayers => {
         const activePlayerCount = currentPlayers.filter(p => p.active).length;
-        document.getElementById("player-count").innerHTML = `Players [${activePlayerCount}]`;
-        document.getElementById("player-list").innerHTML = `
+        document.getElementById("lobby-player-count").innerHTML = `Players [${activePlayerCount}]`;
+        document.getElementById("lobby-player-list").innerHTML = `
             ${currentPlayers.map(player => `<li class="${player.active ? 'player-active' : 'player-inactive'}">${player.name}</li>`).join('')}
         `;
         if (startGame) {
@@ -38,35 +39,40 @@ document.addEventListener('DOMContentLoaded', function () {
     if (startGame) {
         const closeGame = document.getElementById("close-game-button");
         startGame.onclick = function () {
-            socket.emit('start-game');
+            socket.emit('start-game-online');
         };
         closeGame.onclick = function () {
             socket.emit('close-lobby');
         };
     }
     
-    socket.on('start-game', ({gameHTML, amFirstPlayer}) => {
-        lobbyInformation.style.display = "none";
+    socket.on('start-game', ({gameHTML, players, playerIndex}) => {
+        lobby.style.display = "none";
+        openGameInformation.style.display = "block";
+        game.style.display = "block";
 
-        if (amFirstPlayer) {
-            if (!playerName.classList.contains("first-player")) {
-                playerName.classList.add("first-player");
+        console.log("Players: %j", players);
+        console.log(`Player Index: ${playerIndex}`);
+
+        const currentPlayer = players[playerIndex];
+        if (currentPlayer.team === "Spies") {
+            for (let i = 0; i < players.length; i++) {
+                const player = players[i];
             }
         } else {
-            if (playerName.classList.contains("first-player")) {
-                playerName.classList.remove("first-player");
+            switch (currentPlayer.role) {
+                case "Merlin":
+                    break;
+                case "Arthur":
+                    break;
             }
         }
 
+        document.getElementById("game-player-list").innerHTML = `
+            ${players.map(player => `<li>${player.name}</li>`).join('')}
+        `;
+
         gameInformation.innerHTML = gameHTML;
-
-        if (!gameInformation.classList.contains("active")) {
-            gameInformation.classList.add("active");
-        }
-
-        if (startGame) {
-            startGame.innerHTML = 'Play Again';
-        }
     });
 
     socket.on('close-lobby', () => {
@@ -84,6 +90,8 @@ document.addEventListener('DOMContentLoaded', function () {
             gameInformation.style.display = "block";
         }
     }
+    openGameInformation.style.display = "none";
+    game.style.display = "none";
 
     closeGameInformation.onclick = function() {
         gameInformation.style.display = "none";

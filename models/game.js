@@ -26,6 +26,23 @@ class Game {
         return this.state.isFirstPlayer(sessionId);
     }
 
+    getPlayerInformation() {
+        const playerInformation = [];
+        for (let i = 0; i < this.state.playerCount; i++) {
+            const player = this.state.players[i];
+            playerInformation.push({
+                name: player.name,
+                role: player.role.name,
+                team: player.role.team
+            });
+        }
+        return playerInformation;
+    }
+
+    getPlayerIndex(sessionId) {
+        return this.state.playersBySession.get(sessionId).id;
+    }
+
     getPlayerName(index) {
         return this.state.getPlayerName(index);
     }
