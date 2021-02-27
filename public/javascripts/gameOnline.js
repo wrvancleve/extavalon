@@ -58,18 +58,47 @@ document.addEventListener('DOMContentLoaded', function () {
         if (currentPlayer.team === "Spies") {
             for (let i = 0; i < players.length; i++) {
                 const player = players[i];
+                if(player.team == "Spies"){
+                    player.status = "spy";
+                } else {
+                    player.status = "resistance";
+                }
             }
         } else {
-            switch (currentPlayer.role) {
-                case "Merlin":
-                    break;
-                case "Arthur":
-                    break;
+            for (let i = 0; i < players.length; i++) {
+                const player = players[i];
+                switch (currentPlayer.role) {
+                    case "Merlin":
+                        if(player.role == "spy" && player.role !== "Modred" || player.role == "Puck"){
+                            player.status = "suspicious";
+                        }
+                        break;
+                    case "Tristan":
+                        if(player.role == "Iseult"){
+                            player.status = "resistance";
+                        }
+                        break;
+                    case "Iseult":
+                        if(player.role == "Tristan"){
+                            player.status = "resistance";
+                        }
+                        break;
+                    case "Percival":
+                        if(player.role == "Merlin" || player.role == "Morgana"){
+                            player.status = "suspicious";
+                        }
+                        break;
+                    case "Guinevere":
+                        if(player.role == "Maelagant" || player.role == "Lancelot"){
+                            player.status = "suspicious";
+                        }
+                        break;
+                }
             }
         }
 
         document.getElementById("game-player-list").innerHTML = `
-            ${players.map(player => `<li>${player.name}</li>`).join('')}
+            ${players.map(player => `<li class="${player.status}">${player.name}</li>`).join('')}
         `;
 
         gameInformation.innerHTML = gameHTML;
