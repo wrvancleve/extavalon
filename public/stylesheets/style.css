@@ -3,6 +3,24 @@ body {
   font-family: 'Helvetica', sans-serif;
 }
 
+.home-button {
+  font-size: 1em;
+  font-weight: 25;
+
+  width: 5vw;
+  max-width: 20;
+  min-width: 50px;
+
+  min-height:28px;
+  height: 1.7vw;
+  max-height: 10;
+
+  margin: auto;
+
+  text-align: center;
+  vertical-align: middle;
+}
+
 /* Common Classes */
 
 .flex-column {

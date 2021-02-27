@@ -75,27 +75,33 @@ document.addEventListener('DOMContentLoaded', function () {
     });
 
     openGameInformation.onclick = function() {
-        openRoles.style.display = "none";
-        openGameInformation.style.display = "none";
-        gameInformation.style.display = "block";
+        if (gameInformation.style.display == "block") {
+            gameInformation.style.display = "none";
+        } else {
+            if (roles.style.display == 'block') {
+                roles.style.display = 'none';
+            }
+            gameInformation.style.display = "block";
+        }
     }
 
     closeGameInformation.onclick = function() {
         gameInformation.style.display = "none";
-        openRoles.style.display = "block";
-        openGameInformation.style.display = "block";
     }
 
     openRoles.onclick = function() {
-        openRoles.style.display = "none";
-        openGameInformation.style.display = "none";
-        roles.style.display = "block";
+        if (roles.style.display == "block") {
+            roles.style.display = "none";
+        } else {
+            if (gameInformation.style.display == "block") {
+                gameInformation.style.display = "none"
+            }
+            roles.style.display = "block";
+        }
     }
 
     closeRoles.onclick = function() {
         roles.style.display = "none";
-        openRoles.style.display = "block";
-        openGameInformation.style.display = "block";
     }
 
     socket.emit('join-lobby', {name, code});
