@@ -32,7 +32,6 @@ class GameState {
         this.resistanceWins = 0;
         this.spyWins = 0;
         this.playersByRole = new Map();
-        this.playersBySession = new Map();
         this.resistance = [];
         this.spys = [];
         this.settings = settings;
@@ -52,10 +51,8 @@ class GameState {
 
         for (let id = 0; id < this.playerCount; id++) {
             const playerRole = playerRoles.pop();
-            const player = new Player(this, id, playerInformation[id].sessionId, playerInformation[id].name, playerRole);
+            const player = new Player(this, id, playerInformation[id].name, playerRole);
             players.push(player);
-            this.playersBySession.set(playerInformation[id].sessionId, player);
-            console.log(`${player.name}: ${playerInformation[id].sessionId}`);
             this.playersByRole.set(playerRole, player);
             
             if (playerRole.team === "Resistance") {
@@ -173,14 +170,6 @@ class GameState {
         return shuffled ? shuffle(players) : players;
     }
 
-    getPlayerHTML(sessionId) {
-        return this.playersBySession.get(sessionId).getPlayerHTML();
-    }
-
-    isFirstPlayer(sessionId) {
-        return this.playersBySession.get(sessionId).id === this.currentLeaderId;
-    }
-
     getCurrentLeader() {
         return this.players[this.currentLeaderId];
     }
@@ -193,12 +182,12 @@ class GameState {
         return this.missions[this.currentMissionId].getCurrentProposal();
     }
 
-    getPlayerName(index) {
-        return this.players[index].name;
+    getPlayerName(id) {
+        return this.players[id].name;
     }
 
-    getPlayerRole(index) {
-        return this.players[index].role;
+    getPlayerRole(id) {
+        return this.players[id].role;
     }
 }
 

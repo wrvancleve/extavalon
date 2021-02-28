@@ -18,12 +18,12 @@ class Game {
         }
     }
 
-    getPlayerHTML(sessionId) {
-        return this.state.getPlayerHTML(sessionId);
+    getPlayerHTML(id) {
+        return this.state.players[id].getPlayerHTML();
     }
 
-    isFirstPlayer(sessionId) {
-        return this.state.isFirstPlayer(sessionId);
+    isFirstPlayer(id) {
+        return this.state.currentLeaderId === id;
     }
 
     getCurrentLeader() {
@@ -34,24 +34,22 @@ class Game {
         return this.state.getCurrentMission();
     }
 
-    getPlayerInformation(sessionId) {
+    getPlayerInformation(id) {
         const playerInformation = [];
-        const currentPlayer = this.state.playersBySession.get(sessionId);
+        const currentPlayer = this.state.players[id];
 
         if (currentPlayer.isSpy) {
             for (let i = 0; i < this.state.playerCount; i++) {
                 const player = this.state.players[i];
                 const status = player.isSpy ? "spy" : "resistance";
-                playerInformation.push({
-                    name: player.name,
-                    role: player.role.name,
-                    team: player.role.team,
-                    status: status
-                });
+                const playerObject = player.getPlayerObject();
+                playerObject.status = status;
+                playerInformation.push(playerObject);
             }
         } else {
             for (let i = 0; i < this.state.playerCount; i++) {
                 const player = this.state.players[i];
+                const playerObject = player.getPlayerObject();
                 let status = "unknown";
                 if (i === currentPlayer.id) {
                     status = "resistance"
@@ -90,24 +88,12 @@ class Game {
                     }
                 }
                 
-                playerInformation.push({
-                    name: player.name,
-                    role: player.role.name,
-                    team: player.role.team,
-                    status: status
-                });
+                playerObject.status = status;
+                playerInformation.push(playerObject);
             }
         }
         
         return playerInformation;
-    }
-
-    getPlayerName(index) {
-        return this.state.getPlayerName(index);
-    }
-
-    getPlayerRole(index) {
-        return this.state.getPlayerRole(index);
     }
 }
 

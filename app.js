@@ -102,25 +102,27 @@ app.createServer = function() {
 
       socket.on('start-game-local', () => {
         const activePlayers = lobby.players.filter(player => player.active);
-        const game = new Game(activePlayers.map(({ sessionId, name }) => ({ sessionId, name })), lobby.settings);
+        const game = new Game(activePlayers.map(({name}) => ({name})), lobby.settings);
         lobby.game = game;
         for (var i = 0; i < activePlayers.length; i++) {
           const currentPlayer = activePlayers[i];
-          currentPlayer.gameInformation = game.getPlayerHTML(currentPlayer.sessionId);
+          currentPlayer.id = i;
+          currentPlayer.gameInformation = game.getPlayerHTML(i);
           io.sockets.to(currentPlayer.socketId).emit('start-game', {
             gameHTML: currentPlayer.gameInformation,
-            amFirstPlayer: game.isFirstPlayer(currentPlayer.sessionId)
+            amFirstPlayer: game.isFirstPlayer(i)
           });
         }
       });
 
       socket.on('start-game-online', () => {
         const activePlayers = lobby.players.filter(player => player.active);
-        const game = new Game(activePlayers.map(({ sessionId, name }) => ({ sessionId, name })), lobby.settings);
+        const game = new Game(activePlayers.map(({name }) => ({name})), lobby.settings);
         lobby.game = game;
         for (var i = 0; i < activePlayers.length; i++) {
           const currentPlayer = activePlayers[i];
-          currentPlayer.gameInformation = game.getPlayerHTML(currentPlayer.sessionId);
+          currentPlayer.id = i;
+          currentPlayer.gameInformation = game.getPlayerHTML(i);
           /*
           io.sockets.to(currentPlayer.socketId).emit('start-game', {
             gameHTML: currentPlayer.gameInformation,
@@ -130,15 +132,14 @@ app.createServer = function() {
           */
           io.sockets.to(currentPlayer.socketId).emit('start-game', {
             gameHTML: currentPlayer.gameInformation,
-            players: game.getPlayerInformation(currentPlayer.socketId)
+            players: game.getPlayerInformation(i)
           });
         }
 
-        let firstLeader = game.getCurrentLeader();
-        firstLeader = activePlayers.filter(player => player.sessionId === firstLeader.sessionId)[0];
+        const firstLeader = game.getCurrentLeader().getPlayerObject();
         const firstMission = game.getCurrentMission();
         io.sockets.to(code).emit('update-leader', {leader: firstLeader});
-        io.sockets.to(firstLeader.socketId).emit('propose-team', {count: firstMission.teamSize});
+        io.sockets.to(activePlayers[firstLeader.id].socketId).emit('propose-team', {count: firstMission.teamSize});
       });
 
       socket.on('propose-team', ({team}) => {

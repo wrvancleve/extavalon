@@ -1,13 +1,21 @@
 const Roles = require('./roles');
 
 class Player {
-    constructor(gameState, id, sessionId, name, role) {
+    constructor(gameState, id, name, role) {
         this.gameState = gameState;
         this.id = id;
-        this.sessionId = sessionId;
         this.name = name;
         this.role = role;
         this.isSpy = role.team === 'Spies';
+    }
+
+    getPlayerObject() {
+        return {
+            id: this.id,
+            name: this.name,
+            role: this.role.name,
+            team: this.role.team
+        };
     }
 
     getPlayerHTML() {

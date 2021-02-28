@@ -52,9 +52,6 @@ document.addEventListener('DOMContentLoaded', function () {
         openGameInformation.style.display = "block";
         game.style.display = "block";
         gamePlayers = players;
-        document.getElementById("game-player-list").innerHTML = `
-            ${players.map(player => `<li class="${player.status}">${player.name}</li>`).join('')}
-        `;
         gameInformation.innerHTML = gameHTML;
 
         if (startGame) {
@@ -100,14 +97,50 @@ document.addEventListener('DOMContentLoaded', function () {
     }
 
     socket.on('update-leader', ({leader}) => {
-        document.getElementById("current-leader").innerHTML = `Current Leader: ${leader.name}`;
+        const gamePlayerListContent = gamePlayers.map(function(player) {
+            let listClass = player.status;
+            if (player.id === leader.id) {
+                listClass += " current-leader";
+            }
+            return `<li class="${listClass}">${player.name}</li>`;
+        }).join('');
+        document.getElementById("game-player-list").innerHTML = gamePlayerListContent;
     });
 
     const proposeTeam = document.getElementById("propose-team");
+    const proposalPlayerList = document.getElementById("proposal-player-list");
+    const proposalSubmitButton = document.getElementById("proposal-submit-button");
     socket.on('propose-team', ({count}) => {
         document.getElementById("proposal-header").innerHTML = `Select ${count} players`;
         proposeTeam.style.display = "block";
-        console.log(`Select ${count} players`);
+        proposalPlayerList.innerHTML = `
+            ${gamePlayers.map(player => `
+                <div class="setting-item">
+                    <h3 class="future-color future-secondary-font">${player.name}</h3>
+                    <input type="checkbox">
+                </div>
+            `).join('')}
+        `;
+
+        const checkboxes = proposalPlayerList.querySelectorAll("input[type=checkbox]");
+        for (let i = 0; i < checkboxes.length; i++) {
+            const checkbox = checkboxes[i];
+            checkbox.onclick = function() {
+                const checkedCount = proposalPlayerList.querySelectorAll("input[type=checkbox]:checked").length;
+                proposalSubmitButton.disabled = checkedCount !== count;
+                if (proposalSubmitButton.disabled) {
+                    proposalSubmitButton.classList.add("future-disabled");
+                } else {
+                    proposalSubmitButton.classList.remove("future-disabled");
+                }
+            }
+        }
+
+        proposalSubmitButton.onclick = function() {
+            proposeTeam.style.display = "none";
+            proposalSubmitButton.disabled = true;
+            proposalSubmitButton.classList.add("future-disabled");
+        }
     });
 
     socket.emit('join-lobby', {name, code});

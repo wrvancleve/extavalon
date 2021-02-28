@@ -11,15 +11,15 @@
     </div>
     <div class="flex-column" id="game">
         <h2 id="name">{{title}}</h2>
-        <h2 id="current-leader">Current Leader:</h2>
         <div class="future-color" id="game-players">
             <h2 id="game-player-header">Players</h2>
             <ul id="game-player-list"></ul>
         </div>
         <div class="future-color" id="propose-team">
             <h2 id="proposal-header">Select</h2>
-            <ul id="proposal-player-list"></ul>
-            <button id="proposal-submit-button" title="Submit Proposal"> Submit </button>
+            <div class="setting-container" id="proposal-player-list"></div>
+            <button class="future-disabled future-color future-secondary-font future-box" id="proposal-submit-button"
+                type="button" title="Submit Proposal" disabled>Submit</button>
         </div>
     </div>
     {{# if host }}
