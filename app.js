@@ -121,20 +121,24 @@ app.createServer = function() {
         for (var i = 0; i < activePlayers.length; i++) {
           const currentPlayer = activePlayers[i];
           currentPlayer.gameInformation = game.getPlayerHTML(currentPlayer.sessionId);
-          console.log("About to send players");
           /*
           io.sockets.to(currentPlayer.socketId).emit('start-game', {
             gameHTML: currentPlayer.gameInformation,
-            players: game.getPlayerInformation(),
+            players: game.getPlayerInformation(socket.request.session.id),
             playerIndex: game.getPlayerIndex(socket.request.session.id)
           });
           */
           io.sockets.to(currentPlayer.socketId).emit('start-game', {
             gameHTML: currentPlayer.gameInformation,
-            players: game.getPlayerInformation(),
-            playerIndex: game.getPlayerIndex(currentPlayer.socketId)
+            players: game.getPlayerInformation(currentPlayer.socketId)
           });
         }
+
+        let firstLeader = game.getCurrentLeader();
+        firstLeader = activePlayers.filter(player => player.sessionId === firstLeader.sessionId)[0];
+        const firstMission = game.getCurrentMission();
+        io.sockets.to(code).emit('update-leader', {leader: firstLeader});
+        io.sockets.to(firstLeader.socketId).emit('propose-team', {count: firstMission.teamSize});
       });
 
       socket.on('propose-team', ({team}) => {

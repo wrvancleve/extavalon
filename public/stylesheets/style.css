@@ -74,6 +74,10 @@ body {
   color: #F7FE2E !important;
 }
 
+.unknown {
+  color: #9debfb;
+}
+
 .first-player {
   color: #FFD700 !important;
 }
@@ -255,7 +259,7 @@ select {
 
 /* Game Lobby Page */
 
-#name {
+#name, #current-leader {
   text-align: center;
   margin: auto;
   font-size: 2em;
@@ -317,6 +321,10 @@ select {
   list-style: none;
   padding: 10px;
   font-size: 1.25em;
+}
+
+#propose-team {
+  display: none;
 }
 
 #modal-game-information {

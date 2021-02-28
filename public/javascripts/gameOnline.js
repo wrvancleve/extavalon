@@ -46,64 +46,20 @@ document.addEventListener('DOMContentLoaded', function () {
         };
     }
     
-    socket.on('start-game', ({gameHTML, players, playerIndex}) => {
+    let gamePlayers = [];
+    socket.on('start-game', ({gameHTML, players}) => {
         lobby.style.display = "none";
         openGameInformation.style.display = "block";
         game.style.display = "block";
-
-        console.log("Players: %j", players);
-        console.log(`Player Index: ${playerIndex}`);
-
-        const currentPlayer = players[playerIndex];
-        console.log("Player: %j", currentPlayer);
-        if (currentPlayer.team === "Spies") {
-            for (let i = 0; i < players.length; i++) {
-                const player = players[i];
-                if(player.team === "Spies"){
-                    player.status = "spy";
-                } else {
-                    player.status = "resistance";
-                }
-            }
-        } else {
-            for (let i = 0; i < players.length; i++) {
-                const player = players[i];
-                switch (currentPlayer.role) {
-                    case "Merlin":
-                        if(player.team === "Spies" && player.role !== "Mordred" || player.role === "Puck"){
-                            player.status = "suspicious";
-                        }
-                        break;
-                    case "Tristan":
-                        if(player.role === "Iseult"){
-                            player.status = "resistance";
-                        }
-                        break;
-                    case "Iseult":
-                        if(player.role === "Tristan"){
-                            player.status = "resistance";
-                        }
-                        break;
-                    case "Percival":
-                        if(player.role === "Merlin" || player.role === "Morgana"){
-                            player.status = "suspicious";
-                        }
-                        break;
-                    case "Guinevere":
-                        if(player.role === "Maelagant" || player.role === "Lancelot"){
-                            player.status = "suspicious";
-                        }
-                        break;
-                }
-            }
-        }
-
-        console.log("Altered Players: %j", players);
+        gamePlayers = players;
         document.getElementById("game-player-list").innerHTML = `
             ${players.map(player => `<li class="${player.status}">${player.name}</li>`).join('')}
         `;
-
         gameInformation.innerHTML = gameHTML;
+
+        if (startGame) {
+            startGame.innerHTML = 'Play Again';
+        }
     });
 
     socket.on('close-lobby', () => {
@@ -142,6 +98,17 @@ document.addEventListener('DOMContentLoaded', function () {
     closeRoles.onclick = function() {
         roles.style.display = "none";
     }
+
+    socket.on('update-leader', ({leader}) => {
+        document.getElementById("current-leader").innerHTML = `Current Leader: ${leader.name}`;
+    });
+
+    const proposeTeam = document.getElementById("propose-team");
+    socket.on('propose-team', ({count}) => {
+        document.getElementById("proposal-header").innerHTML = `Select ${count} players`;
+        proposeTeam.style.display = "block";
+        console.log(`Select ${count} players`);
+    });
 
     socket.emit('join-lobby', {name, code});
 });

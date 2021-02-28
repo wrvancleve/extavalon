@@ -26,21 +26,80 @@ class Game {
         return this.state.isFirstPlayer(sessionId);
     }
 
-    getPlayerInformation() {
-        const playerInformation = [];
-        for (let i = 0; i < this.state.playerCount; i++) {
-            const player = this.state.players[i];
-            playerInformation.push({
-                name: player.name,
-                role: player.role.name,
-                team: player.role.team
-            });
-        }
-        return playerInformation;
+    getCurrentLeader() {
+        return this.state.getCurrentLeader();
     }
 
-    getPlayerIndex(sessionId) {
-        return this.state.playersBySession.get(sessionId).id;
+    getCurrentMission() {
+        return this.state.getCurrentMission();
+    }
+
+    getPlayerInformation(sessionId) {
+        const playerInformation = [];
+        const currentPlayer = this.state.playersBySession.get(sessionId);
+
+        if (currentPlayer.isSpy) {
+            for (let i = 0; i < this.state.playerCount; i++) {
+                const player = this.state.players[i];
+                const status = player.isSpy ? "spy" : "resistance";
+                playerInformation.push({
+                    name: player.name,
+                    role: player.role.name,
+                    team: player.role.team,
+                    status: status
+                });
+            }
+        } else {
+            for (let i = 0; i < this.state.playerCount; i++) {
+                const player = this.state.players[i];
+                let status = "unknown";
+                if (i === currentPlayer.id) {
+                    status = "resistance"
+                } else {
+                    switch (currentPlayer.role) {
+                        case Roles.Merlin:
+                            if((player.isSpy && player.role !== Roles.Mordred) || player.role === Roles.Puck) {
+                                status = "suspicious";
+                            }
+                            break;
+                        case Roles.Tristan:
+                            if(player.role === Roles.Iseult){
+                                status = "resistance";
+                            }
+                            break;
+                        case Roles.Iseult:
+                            if(player.role === Roles.Tristan){
+                                status = "resistance";
+                            }
+                            break;
+                        case Roles.Percival:
+                            if(player.role === Roles.Merlin || player.role === Roles.Morgana){
+                                status = "suspicious";
+                            }
+                            break;
+                        case Roles.Guinevere:
+                            if(player.role === Roles.Maelagant || player.role === Roles.Lancelot){
+                                status = "suspicious";
+                            }
+                            break;
+                        case Roles.Uther:
+                            if (player == this.state.utherSight) {
+                                status = "resistance";
+                            }
+                            break;
+                    }
+                }
+                
+                playerInformation.push({
+                    name: player.name,
+                    role: player.role.name,
+                    team: player.role.team,
+                    status: status
+                });
+            }
+        }
+        
+        return playerInformation;
     }
 
     getPlayerName(index) {

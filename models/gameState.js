@@ -37,7 +37,6 @@ class GameState {
         this.spys = [];
         this.settings = settings;
         this.players = this._createPlayers(playerInformation);
-        console.log("Created Players: %j", this.players);
         this.missions = this._createMissions();
         this.phase = GameState.PHASE_PROPOSE;
     }
@@ -53,7 +52,7 @@ class GameState {
 
         for (let id = 0; id < this.playerCount; id++) {
             const playerRole = playerRoles.pop();
-            const player = new Player(this, id, playerInformation[id].name, playerRole);
+            const player = new Player(this, id, playerInformation[id].sessionId, playerInformation[id].name, playerRole);
             players.push(player);
             this.playersBySession.set(playerInformation[id].sessionId, player);
             console.log(`${player.name}: ${playerInformation[id].sessionId}`);
