@@ -11,11 +11,7 @@ class Game {
     }
 
     _gameOver() {
-        if (this.state.failedProposalCount === this.state.playerCount) {
-            return true;
-        } else {
-            return this.state.resistanceWins === 3 || this.state.spyWins === 3;
-        }
+        return this.state.resistanceWins === 3 || this.state.spyWins === 3;
     }
 
     getPlayerHTML(id) {
@@ -32,6 +28,10 @@ class Game {
 
     getCurrentMission() {
         return this.state.getCurrentMission();
+    }
+
+    getCurrentProposal() {
+        return this.state.getCurrentProposal();
     }
 
     getPlayerInformation(id) {
@@ -94,6 +94,87 @@ class Game {
         }
         
         return playerInformation;
+    }
+
+    createProposal(ids) {
+        const proposal = new Proposal(this.state.currentLeaderId, ids);
+        this.state.getCurrentMission().addProposal(this.state.currentLeaderId, proposal);
+    }
+
+    addProposalVote(id, vote) {
+        const currentProposal = this.state.getCurrentProposal();
+        currentProposal.addVote(id, vote);
+        if (currentProposal.voteCount === this.state.playerCount) {
+            const result = currentProposal.finalize();
+            const gameOver = this._processProposalResult(result);
+            return {proposal: currentProposal, approved: result, gameOver: gameOver};
+        } else {
+            return null;
+        }
+    }
+
+    _processProposalResult(result) {
+        if (!result) {
+            const currentMission = this.state.getCurrentMission();
+            currentMission.failedProposalCount += 1;
+            if (currentMission.failedProposalCount === this.state.playerCount) {
+                currentMission.result = 'Fail';
+                this._processMissionResult('Fail');
+            } else {
+                this._advanceLeader();
+            }
+        }
+
+        return false;
+    }
+
+    addMissionAction(id, action) {
+        const currentMission = this.state.getCurrentMission();
+        currentMission.addAction(id, action);
+        if (currentMission.actionCount === currentMission.teamSize) {
+            const result = currentMission.finalize();
+            const gameOver = this._processMissionResult(result);
+            return {result: result, gameOver: gameOver};
+        } else {
+            return null;
+        }
+    }
+
+    _processMissionResult(result) {
+        switch (result) {
+            case "Success":
+                this.state.resistanceWins += 1;
+                break;
+            case "Fail":
+                this.state.spyWins += 1;
+                break;
+        }
+
+        if (this._gameOver()) {
+            return true;
+        }
+
+        this.state.currentMissionId += 1;
+        this._advanceLeader();
+        return false;
+    }
+
+    _advanceLeader() {
+        this.state.currentLeaderId += 1;
+        this.state.currentLeaderId %= this.state.playerCount;
+    }
+
+    getPlayer(id) {
+        return this.state.players[id].getPlayerObject();
+    }
+
+    getPlayersByIds(ids) {
+        const players = [];
+        for (let i = 0; i < ids.length; i++) {
+            const id = ids[i];
+            players.push(this.state.players[id].getPlayerObject());
+        }
+        return players;
     }
 }
 

@@ -56,6 +56,11 @@ document.addEventListener('DOMContentLoaded', function () {
 
         if (startGame) {
             startGame.innerHTML = 'Play Again';
+            startGame.disabled = true;
+            startGame.style.display = "none";
+            const closeGame = document.getElementById("close-game-button");
+            closeGame.disabled = true;
+            closeGame.style.display = "none";
         }
     });
 
@@ -117,7 +122,7 @@ document.addEventListener('DOMContentLoaded', function () {
             ${gamePlayers.map(player => `
                 <div class="setting-item">
                     <h3 class="future-color future-secondary-font">${player.name}</h3>
-                    <input type="checkbox">
+                    <input name="${player.id}" type="checkbox">
                 </div>
             `).join('')}
         `;
@@ -140,6 +145,101 @@ document.addEventListener('DOMContentLoaded', function () {
             proposeTeam.style.display = "none";
             proposalSubmitButton.disabled = true;
             proposalSubmitButton.classList.add("future-disabled");
+            const selectedIds = [];
+            for (let i = 0; i < checkboxes.length; i++) {
+                const checkbox = checkboxes[i];
+                if (checkbox.checked) {
+                    const selectedId = parseInt(checkbox.name);
+                    selectedIds.push(selectedId);
+                }
+            }
+            socket.emit('propose-team', {selectedIds});
+        }
+    });
+
+    const voteTeam = document.getElementById("vote-team");
+    const voteHeader = document.getElementById("vote-header");
+    const approveTeamButton = document.getElementById("approve-team-button");
+    const rejectTeamButton = document.getElementById("reject-team-button");
+    socket.on('vote-team', ({leader, team}) => {
+        voteTeam.style.display = "block";
+        voteHeader.innerHTML = `
+            ${leader.name} proposes:<br>
+            ${team.map(player => `${player.name}`).join('<br>')}
+        `;
+
+        approveTeamButton.onclick = function() {
+            voteTeam.style.display = "none";
+            socket.emit('vote-team', {vote: true});
+        }
+
+        rejectTeamButton.onclick = function() {
+            voteTeam.style.display = "none";
+            socket.emit('vote-team', {vote: false});
+        }
+    });
+
+    socket.on('vote-result', ({result}) => {
+        console.log(result);
+    });
+
+    const conductMission = document.getElementById("conduct-mission");
+    const succeedMissionButton = document.getElementById("succeed-mission-button");
+    const failMissionButton = document.getElementById("fail-mission-button");
+    const reverseMissionButton = document.getElementById("reverse-mission-button");
+    socket.on('conduct-mission', ({failAllowed, reverseAllowed}) => {
+        conductMission.style.display = "block";
+
+        succeedMissionButton.disabled = false;
+        succeedMissionButton.classList.remove("future-disabled");
+        succeedMissionButton.style.display = "block";
+        succeedMissionButton.onclick = function() {
+            socket.emit('conduct-mission', {action: 'Succeed'});
+            conductMission.style.display = "none";
+            succeedMissionButton.style.display = "none";
+            succeedMissionButton.disabled = true;
+            succeedMissionButton.classList.add("future-disabled");
+        }
+
+        failMissionButton.disabled = !failAllowed;
+        if (failAllowed) {
+            failMissionButton.classList.remove("future-disabled");
+            failMissionButton.style.display = "block";
+            failMissionButton.onclick = function() {
+                socket.emit('conduct-mission', {action: 'Fail'});
+                conductMission.style.display = "none";
+                failMissionButton.style.display = "none";
+                failMissionButton.disabled = true;
+                failMissionButton.classList.add("future-disabled");
+            }
+        }
+
+        reverseMissionButton.disabled = !reverseAllowed;
+        if (reverseAllowed) {
+            reverseMissionButton.classList.remove("future-disabled");
+            reverseMissionButton.style.display = "block";
+            reverseMissionButton.onclick = function() {
+                socket.emit('conduct-mission', {action: 'Reverse'});
+                conductMission.style.display = "none";
+                reverseMissionButton.style.display = "none";
+                reverseMissionButton.disabled = true;
+                reverseMissionButton.classList.add("future-disabled");
+            }
+        }
+    });
+
+    socket.on('mission-result', ({result}) => {
+        console.log(result);
+    });
+
+    socket.on('game-result', ({result}) => {
+        console.log(result);
+        if (startGame) {
+            startGame.disable = false;
+            startGame.style.display = "block";
+            const closeGame = document.getElementById("close-game-button");
+            closeGame.disabled = false;
+            closeGame.style.display = "block";
         }
     });
 

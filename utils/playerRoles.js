@@ -56,9 +56,6 @@ function getResistanceRoles(resistanceCount, containsMorgana, settings) {
         } while (!possibleResistanceRoles.isEmpty() && !usedResistanceRoles.isFull());
 
         resistanceRoles = usedResistanceRoles.getRoles();
-        if (resistanceRoles === null) {
-            console.log("Requirements not met")
-        }
     } while (resistanceRoles === null);
 
     return shuffle(resistanceRoles);
@@ -67,10 +64,8 @@ function getResistanceRoles(resistanceCount, containsMorgana, settings) {
 module.exports.getRoles = (resistanceCount, spyCount, settings) => {
     const roles = [];
     const spyRoles = getSpyRoles(spyCount);
-    console.log("Spy Roles: %j", spyRoles);
     Array.prototype.push.apply(roles, spyRoles);
     const resistanceRoles = getResistanceRoles(resistanceCount, spyRoles.includes(Roles.Morgana), settings);
-    console.log("Resistance Roles: %j", resistanceRoles);
     Array.prototype.push.apply(roles, resistanceRoles);
     return shuffle(roles);
 }

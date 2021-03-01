@@ -47,10 +47,7 @@ class ResistanceRoleSelections {
 
         const tristanIndex = this.getIndex(Roles.Tristan);
         const iseultIndex = this.getIndex(Roles.Iseult);
-        console.log(`Tristan Index: ${tristanIndex}`);
-        console.log(`Iseult Index: ${iseultIndex}`);
         if ((tristanIndex === -1 && iseultIndex !== -1) || (tristanIndex !== -1 && iseultIndex === -1)) {
-            console.log(`Only one of Tristan and Iseult`);
             this.roleList[tristanIndex === -1 ? iseultIndex : tristanIndex] = Roles.Uther;
         }
 

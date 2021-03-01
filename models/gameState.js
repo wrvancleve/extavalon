@@ -170,6 +170,10 @@ class GameState {
         return shuffled ? shuffle(players) : players;
     }
 
+    createProposal(ids) {
+        
+    }
+
     getCurrentLeader() {
         return this.players[this.currentLeaderId];
     }

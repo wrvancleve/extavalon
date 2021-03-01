@@ -148,6 +148,10 @@ div.setting-item input[type=checkbox] {
   width: 25vw;
 }
 
+#succeed-mission-button, #fail-mission-button, #reverse-mission-button {
+  display: none;
+}
+
 ::placeholder {
   color: #08a5c4;
   opacity: 1;
@@ -353,7 +357,7 @@ li.current-leader::marker {
   color: #FFD700;
 }
 
-#propose-team {
+#propose-team, #vote-team, #conduct-mission {
   display: none;
   margin: auto;
   max-width: 400px;

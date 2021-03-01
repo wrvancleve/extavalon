@@ -60,9 +60,11 @@ router.post('/', [check('name', 'Invalid Name').trim().matches("^[ a-zA-z0-9]{2,
         const name = req.body.name
         const code = generate_code();
         const newLobby = {
+            code: code,
             type: type,
             settings: settings,
-            players: []
+            players: [],
+            socketsByPlayerId: new Map()
         };
         lobbyCollection.lobbies.set(code, newLobby);
         
