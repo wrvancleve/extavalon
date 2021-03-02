@@ -3,6 +3,7 @@ const router = express.Router();
 const { check, validationResult } = require('express-validator');
 const lobbyCollection = require('../models/lobbyCollection');
 
+
 /* GET game page. */
 router.get('/', [check('name', 'Invalid Name').trim().matches("^[ a-zA-z0-9]{2,12}$")],
     function(req, res) {

@@ -19,6 +19,8 @@ document.addEventListener('DOMContentLoaded', function () {
     const openGameInformation = document.getElementById("game-information-open-button");
     const closeGameInformation = document.getElementById("game-information-close-button");
     const startGame = document.getElementById("start-game-button");    
+    const gameBoard = document.getElementById("game-board")
+
 
     socket.on('update-players', currentPlayers => {
         const activePlayerCount = currentPlayers.filter(p => p.active).length;
@@ -48,6 +50,28 @@ document.addEventListener('DOMContentLoaded', function () {
     
     let gamePlayers = [];
     socket.on('start-game', ({gameHTML, players}) => {
+        console.log(players.length)
+        switch (players.length) {
+            case 5:
+                gameBoard.src = "/images/5playerBoard.png";
+                break;
+            case 6:
+                gameBoard.src = "/images/6playerBoard.png";
+                break;
+            case 7:
+                gameBoard.src = "/images/7playerBoard.png";
+                break;
+            case 8:
+                gameBoard.src = "/images/8playerBoard.png";
+                break;
+            case 9:
+                gameBoard.src = "/images/9playerBoard.png";
+                break;
+            case 10:
+                gameBoard.src = "/images/10playerBoard.png";
+                break;
+        }
+
         lobby.style.display = "none";
         openGameInformation.style.display = "block";
         game.style.display = "block";
@@ -187,6 +211,7 @@ document.addEventListener('DOMContentLoaded', function () {
     const succeedMissionButton = document.getElementById("succeed-mission-button");
     const failMissionButton = document.getElementById("fail-mission-button");
     const reverseMissionButton = document.getElementById("reverse-mission-button");
+
     socket.on('conduct-mission', ({failAllowed, reverseAllowed}) => {
         conductMission.style.display = "block";
 
@@ -195,6 +220,7 @@ document.addEventListener('DOMContentLoaded', function () {
         succeedMissionButton.style.display = "block";
         succeedMissionButton.onclick = function() {
             socket.emit('conduct-mission', {action: 'Succeed'});
+
             conductMission.style.display = "none";
             succeedMissionButton.style.display = "none";
             succeedMissionButton.disabled = true;
@@ -228,8 +254,40 @@ document.addEventListener('DOMContentLoaded', function () {
         }
     });
 
-    socket.on('mission-result', ({result}) => {
+    const failMissionToken = '/images/failMission.png'
+    const succeedMissionToken = '/images/succeedMission.png'
+   
+    socket.on('mission-result', ({result , missionNumber}) => {
         console.log(result);
+        console.log(missionNumber);
+        const missionResultCoin = document.getElementById("mission-result-coin1");
+        switch (missionNumber) {
+            case 1:
+                missionResultCoin = document.getElementById("mission-result-coin1");
+                break;
+            case 2:
+                missionResultCoin = document.getElementById("mission-result-coin2");
+                break;
+            case 3:
+                missionResultCoin = document.getElementById("mission-result-coin3");
+                break;
+            case 4:
+                missionResultCoin = document.getElementById("mission-result-coin4");
+                break;
+            case 5:
+                missionResultCoin = document.getElementById("mission-result-coin5");
+                break;
+        }
+        switch (result) {
+            case 'Success':
+                missionResultCoin.src = succeedMissionToken;
+                break;
+            case 'Fail':
+                missionResultCoin.src = failMissionToken;
+                break;
+        }
+        missionResultCoin.style.display = "block";
+
     });
 
     socket.on('game-result', ({result}) => {

@@ -175,12 +175,13 @@ app.createServer = function() {
     function conductMission(lobby, action) {
       const currentPlayer = lobby.players.filter(player => player.socketId === socket.id)[0];
       const result = lobby.game.addMissionAction(currentPlayer.id, action);
+      console.log(result.currentMission);
       if (result !== null) {
         if (result.gameOver) {
           const winner = result.result === 'Success' ? 'Resistance' : 'Spies';
           io.sockets.to(lobby.code).emit('game-result', {result: winner});
         } else {
-          io.sockets.to(lobby.code).emit('mission-result', {result: result.result});
+          io.sockets.to(lobby.code).emit('mission-result', {result: result.result, missionNumber: result.currentMission});
           advanceMission(lobby);
         }
       }

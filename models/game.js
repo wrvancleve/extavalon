@@ -131,6 +131,7 @@ class Game {
     addMissionAction(id, action) {
         const currentMission = this.state.getCurrentMission();
         currentMission.addAction(id, action);
+        console.log('currently in game.js, current mission: ', currentMission)
         if (currentMission.actionCount === currentMission.teamSize) {
             const result = currentMission.finalize();
             const gameOver = this._processMissionResult(result);

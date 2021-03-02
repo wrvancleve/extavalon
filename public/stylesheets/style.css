@@ -514,3 +514,42 @@ li.current-leader::marker {
   text-shadow: 0 0 4px rgba(161,236,251,0.65);
   font-size: 1.75em;
 }
+
+#game-board {
+  display: block;
+  margin-left: auto;
+  margin-right: auto;
+  width: 50%;
+}
+
+.mission-coin {
+  /* position:relative; 
+  height:60px;" */
+  position:absolute; 
+  top:23%; 
+  left:19%; 
+  width:25%; 
+  height:25%; 
+  border:none;
+}
+#mission-result-coin1{
+  left:19%; 
+  display: none;
+}
+#mission-result-coin2{
+  left:23%; 
+  display: none;
+}
+#mission-result-coin3{
+  left:25%; 
+  display: none;
+}
+#mission-result-coin4{
+  left:29%; 
+  display: none;
+}
+#mission-result-coin5{
+  left:35%; 
+  display: none;
+}
+/*style="position:absolute; top:23%; left:19%; width:28%; height:28%*/

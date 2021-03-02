@@ -49,6 +49,7 @@ document.addEventListener('DOMContentLoaded', function () {
     socket.on('start-game', ({gameHTML, amFirstPlayer}) => {
         lobbyInformation.style.display = "none";
 
+
         if (amFirstPlayer) {
             if (!playerName.classList.contains("first-player")) {
                 playerName.classList.add("first-player");

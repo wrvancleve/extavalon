@@ -11,6 +11,7 @@
     </div>
     <div class="flex-column" id="game">
         <h2 id="name">{{title}}</h2>
+        <img id="game-board" alt="5 player board"></img>
         <div class="future-color" id="game-players">
             <h2 id="game-player-header">Players</h2>
             <ul id="game-player-list"></ul>
@@ -36,6 +37,18 @@
                 type="button" title="Fail Mission" disabled>Fail</button>
             <button class="future-disabled future-color future-secondary-font future-box" id="reverse-mission-button"
                 type="button" title="Reverse Mission" disabled>Reverse</button>
+        </div>
+        <div class="mission-coin">
+            <img src='' display="none" id="mission-result-coin1" alt="mission result coin">
+
+            <img src='' display="none" id="mission-result-coin2" alt="mission result coin">
+
+            <img src='' display="none" id="mission-result-coin2" alt="mission result coin">
+
+            <img src='' display="none" id="mission-result-coin2" alt="mission result coin">
+
+            <img src='' display="none" id="mission-result-coin2" alt="mission result coin">
+
         </div>
     </div>
     {{# if host }}
