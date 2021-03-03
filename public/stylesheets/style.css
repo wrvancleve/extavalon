@@ -553,3 +553,37 @@ li.current-leader::marker {
   display: none;
 }
 /*style="position:absolute; top:23%; left:19%; width:28%; height:28%*/
+
+#drag-coin {
+  position: absolute;
+  width:25%; 
+  height:25%; 
+  border:none;
+}
+
+#drag-coin1 {
+  /* padding: 10px; */
+  position: absolute;
+  z-index: 10;
+  cursor: move;
+}
+#drag-coin2 {
+  position: absolute;
+  z-index: 11;
+  cursor: move;
+}
+#drag-coin3 {
+  position: absolute;
+  z-index: 12;
+  cursor: move;
+}
+#drag-coin4 {
+  position: absolute;
+  z-index: 13;
+  cursor: move;
+}
+#drag-coin5 {
+  position: absolute;
+  z-index: 14;
+  cursor: move;
+}

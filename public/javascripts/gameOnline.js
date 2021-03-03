@@ -257,9 +257,8 @@ document.addEventListener('DOMContentLoaded', function () {
     const failMissionToken = '/images/failMission.png'
     const succeedMissionToken = '/images/succeedMission.png'
    
-    socket.on('mission-result', ({result , missionNumber}) => {
+    socket.on('mission-result', ({result}) => {
         console.log(result);
-        console.log(missionNumber);
         const missionResultCoin = document.getElementById("mission-result-coin1");
         switch (missionNumber) {
             case 1:
@@ -300,6 +299,56 @@ document.addEventListener('DOMContentLoaded', function () {
             closeGame.style.display = "block";
         }
     });
+
+    dragCoin1 = document.getElementById("drag-coin1");
+    dragCoin1.onclick = function(){
+        if (dragCoin1.src === '/images/failMission.png'){
+            dragCoin1.src = '/images/succeedMission.png';
+        } else{
+            dragCoin1.src = '/images/failMission.png';
+        }
+    }
+
+    
+    dragElement(document.getElementById("drag-coin1"));
+    dragElement(document.getElementById("drag-coin2"));
+    dragElement(document.getElementById("drag-coin3"));
+    dragElement(document.getElementById("drag-coin4"));
+    dragElement(document.getElementById("drag-coin5"));
+    function dragElement(elmnt) {
+        var pos1 = 0, pos2 = 0, pos3 = 0, pos4 = 0;
+        elmnt.onmousedown = dragMouseDown;
+        
+        function dragMouseDown(e) {
+            e = e || window.event;
+            e.preventDefault();
+            // get the mouse cursor position at startup:
+            pos3 = e.clientX;
+            pos4 = e.clientY;
+            document.onmouseup = closeDragElement;
+            // call a function whenever the cursor moves:
+            document.onmousemove = elementDrag;
+        }
+      
+        function elementDrag(e) {
+            e = e || window.event;
+            e.preventDefault();
+            // calculate the new cursor position:
+            pos1 = pos3 - e.clientX;
+            pos2 = pos4 - e.clientY;
+            pos3 = e.clientX;
+            pos4 = e.clientY;
+            // set the element's new position:
+            elmnt.style.top = (elmnt.offsetTop - pos2) + "px";
+            elmnt.style.left = (elmnt.offsetLeft - pos1) + "px";
+        }
+        
+        function closeDragElement() {
+            // stop moving when mouse button is released:
+            document.onmouseup = null;
+            document.onmousemove = null;
+        }
+      }
 
     socket.emit('join-lobby', {name, code});
 });

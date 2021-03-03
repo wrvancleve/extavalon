@@ -181,7 +181,7 @@ app.createServer = function() {
           io.sockets.to(lobby.code).emit('game-result', {result: winner});
         } else {
           console.log(result.currentMission)
-          io.sockets.to(lobby.code).emit('mission-result', {result: result.result, missionNumber: result.currentMission});
+          io.sockets.to(lobby.code).emit('mission-result', {result: result.result});
           advanceMission(lobby);
         }
       }
