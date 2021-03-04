@@ -11,14 +11,14 @@ document.addEventListener('DOMContentLoaded', function () {
     const lobby = document.getElementById("lobby");
     const lobbyInformation = document.getElementById("lobby-information");
     const game = document.getElementById("game");
-    const playerName = document.getElementById("name");
     const roles = document.getElementById("modal-roles");
     const openRoles = document.getElementById("roles-open-button");
     const closeRoles = document.getElementById("roles-close-button");
     const gameInformation = document.getElementById("modal-game-information");
     const openGameInformation = document.getElementById("game-information-open-button");
     const closeGameInformation = document.getElementById("game-information-close-button");
-    const startGame = document.getElementById("start-game-button");    
+    const startGame = document.getElementById("start-game-button");
+    const gameBoard = document.getElementById("game-board");
 
     socket.on('update-players', currentPlayers => {
         const activePlayerCount = currentPlayers.filter(p => p.active).length;
@@ -47,12 +47,179 @@ document.addEventListener('DOMContentLoaded', function () {
     }
     
     let gamePlayers = [];
+    const leftPlayers = document.getElementById("left-players");
+    const topPlayers = document.getElementById("top-players");
+    const rightPlayers = document.getElementById("right-players");
     socket.on('start-game', ({gameHTML, players}) => {
+        gamePlayers = [];
+        switch (players.length) {
+            case 5:
+                gameBoard.src = "/images/5-player-board.png";
+                break;
+            case 6:
+                gameBoard.src = "/images/6-player-board.png";
+                break;
+            case 7:
+                gameBoard.src = "/images/7-player-board.png";
+                break;
+            case 8:
+                gameBoard.src = "/images/8-player-board.png";
+                break;
+            case 9:
+                gameBoard.src = "/images/9-player-board.png";
+                break;
+            case 10:
+                gameBoard.src = "/images/10-player-board.png";
+                break;
+        }
+
         lobby.style.display = "none";
         openGameInformation.style.display = "block";
         game.style.display = "block";
-        gamePlayers = players;
         gameInformation.innerHTML = gameHTML;
+
+        switch (players.length) {
+            case 5:
+                leftPlayers.innerHTML = `
+                    <h3 class="${players[0].status} left-player" id="player-0">${players[0].name}</h3>
+                `;
+                gamePlayers.push({element: document.getElementById("player-0"), id: 0, name: players[0].name});
+                topPlayers.innerHTML = `
+                    <h3 class="${players[1].status} top-player" id="player-1">${players[1].name}</h3>
+                    <h3 class="${players[2].status} top-player" id="player-2">${players[2].name}</h3>
+                    <h3 class="${players[3].status} top-player" id="player-3">${players[3].name}</h3>
+                `;
+                gamePlayers.push({element: document.getElementById("player-1"), id: 1, name: players[1].name});
+                gamePlayers.push({element: document.getElementById("player-2"), id: 2, name: players[2].name});
+                gamePlayers.push({element: document.getElementById("player-3"), id: 3, name: players[3].name});
+                rightPlayers.innerHTML = `
+                    <h3 class="${players[4].status} right-player" id="player-4">${players[4].name}</h3>
+                `;
+                gamePlayers.push({element: document.getElementById("player-4"), id: 4, name: players[4].name});
+                break;
+            case 6:
+                leftPlayers.innerHTML = `
+                    <h3 class="${players[1].status} left-player" id="player-1">${players[1].name}</h3>
+                    <h3 class="${players[0].status} left-player" id="player-0">${players[0].name}</h3>
+                `;
+                gamePlayers.push({element: document.getElementById("player-0"), id: 0, name:players[0].name});
+                gamePlayers.push({element: document.getElementById("player-1"), id: 1, name: players[1].name});
+                topPlayers.innerHTML = `
+                    <h3 class="${players[2].status} top-player" id="player-2">${players[2].name}</h3>
+                    <h3 class="${players[3].status} top-player" id="player-3">${players[3].name}</h3>
+                `;
+                
+                gamePlayers.push({element: document.getElementById("player-2"), id: 2, name: players[2].name});
+                gamePlayers.push({element: document.getElementById("player-3"), id: 3, name: players[3].name});
+                rightPlayers.innerHTML = `
+                    <h3 class="${players[4].status} right-player" id="player-4">${players[4].name}</h3>
+                    <h3 class="${players[5].status} right-player" id="player-5">${players[5].name}</h3>
+                `;
+                gamePlayers.push({element: document.getElementById("player-4"), id: 4, name: players[4].name});
+                gamePlayers.push({element: document.getElementById("player-5"), id: 5, name: players[5].name});
+                break;
+            case 7:
+                leftPlayers.innerHTML = `
+                    <h3 class="${players[1].status} left-player" id="player-1">${players[1].name}</h3>
+                    <h3 class="${players[0].status} left-player" id="player-0">${players[0].name}</h3>
+                `;
+                gamePlayers.push({element: document.getElementById("player-0"), id: 0, name:players[0].name});
+                gamePlayers.push({element: document.getElementById("player-1"), id: 1, name: players[1].name});
+                topPlayers.innerHTML = `
+                    <h3 class="${players[2].status} top-player" id="player-2">${players[2].name}</h3>
+                    <h3 class="${players[3].status} top-player" id="player-3">${players[3].name}</h3>
+                    <h3 class="${players[4].status} top-player" id="player-4">${players[4].name}</h3>
+                `;
+                
+                gamePlayers.push({element: document.getElementById("player-2"), id: 2, name: players[2].name});
+                gamePlayers.push({element: document.getElementById("player-3"), id: 3, name: players[3].name});
+                gamePlayers.push({element: document.getElementById("player-4"), id: 4, name: players[4].name});
+                rightPlayers.innerHTML = `
+                    <h3 class="${players[5].status} right-player" id="player-5">${players[5].name}</h3>
+                    <h3 class="${players[6].status} right-player" id="player-6">${players[6].name}</h3>
+                `;
+                gamePlayers.push({element: document.getElementById("player-5"), id: 5, name: players[5].name});
+                gamePlayers.push({element: document.getElementById("player-6"), id: 6, name: players[6].name});
+                break;
+            case 8:
+                leftPlayers.innerHTML = `
+                    <h3 class="${players[1].status} left-player" id="player-1">${players[1].name}</h3>
+                    <h3 class="${players[0].status} left-player" id="player-0">${players[0].name}</h3>
+                `;
+                gamePlayers.push({element: document.getElementById("player-0"), id: 0, name:players[0].name});
+                gamePlayers.push({element: document.getElementById("player-1"), id: 1, name: players[1].name});
+                topPlayers.innerHTML = `
+                    <h3 class="${players[2].status} top-player" id="player-2">${players[2].name}</h3>
+                    <h3 class="${players[3].status} top-player" id="player-3">${players[3].name}</h3>
+                    <h3 class="${players[4].status} top-player" id="player-4">${players[4].name}</h3>
+                    <h3 class="${players[5].status} top-player" id="player-5">${players[5].name}</h3>
+                `;
+                gamePlayers.push({element: document.getElementById("player-2"), id: 2, name: players[2].name});
+                gamePlayers.push({element: document.getElementById("player-3"), id: 3, name: players[3].name});
+                gamePlayers.push({element: document.getElementById("player-4"), id: 4, name: players[4].name});
+                gamePlayers.push({element: document.getElementById("player-5"), id: 5, name: players[5].name});
+                rightPlayers.innerHTML = `
+                    <h3 class="${players[6].status} right-player" id="player-6">${players[6].name}</h3>
+                    <h3 class="${players[7].status} right-player" id="player-7">${players[7].name}</h3>
+                `;
+                gamePlayers.push({element: document.getElementById("player-6"), id: 6, name: players[6].name});
+                gamePlayers.push({element: document.getElementById("player-7"), id: 7, name: players[7].name});
+                break;
+            case 9:
+                leftPlayers.innerHTML = `
+                    <h3 class="${players[2].status} left-player" id="player-2">${players[2].name}</h3>
+                    <h3 class="${players[1].status} left-player" id="player-1">${players[1].name}</h3>
+                    <h3 class="${players[0].status} left-player" id="player-0">${players[0].name}</h3>
+                `;
+                gamePlayers.push({element: document.getElementById("player-0"), id: 0, name:players[0].name});
+                gamePlayers.push({element: document.getElementById("player-1"), id: 1, name: players[1].name});
+                gamePlayers.push({element: document.getElementById("player-2"), id: 2, name: players[2].name});
+                topPlayers.innerHTML = `
+                    <h3 class="${players[3].status} top-player" id="player-3">${players[3].name}</h3>
+                    <h3 class="${players[4].status} top-player" id="player-4">${players[4].name}</h3>
+                    <h3 class="${players[5].status} top-player" id="player-5">${players[5].name}</h3>
+                `;
+                gamePlayers.push({element: document.getElementById("player-3"), id: 3, name: players[3].name});
+                gamePlayers.push({element: document.getElementById("player-4"), id: 4, name: players[4].name});
+                gamePlayers.push({element: document.getElementById("player-5"), id: 5, name: players[5].name});
+                rightPlayers.innerHTML = `
+                    <h3 class="${players[6].status} right-player" id="player-6">${players[6].name}</h3>
+                    <h3 class="${players[7].status} right-player" id="player-7">${players[7].name}</h3>
+                    <h3 class="${players[8].status} right-player" id="player-8">${players[8].name}</h3>
+                `;
+                gamePlayers.push({element: document.getElementById("player-6"), id: 6, name: players[6].name});
+                gamePlayers.push({element: document.getElementById("player-7"), id: 7, name: players[7].name});
+                gamePlayers.push({element: document.getElementById("player-8"), id: 8, name: players[8].name});
+                break;
+            case 10:
+                leftPlayers.innerHTML = `
+                    <h3 class="${players[2].status} left-player" id="player-2">${players[2].name}</h3>
+                    <h3 class="${players[1].status} left-player" id="player-1">${players[1].name}</h3>
+                    <h3 class="${players[0].status} left-player" id="player-0">${players[0].name}</h3>
+                `;
+                gamePlayers.push({element: document.getElementById("player-0"), id: 0, name:players[0].name});
+                gamePlayers.push({element: document.getElementById("player-1"), id: 1, name: players[1].name});
+                gamePlayers.push({element: document.getElementById("player-2"), id: 2, name: players[2].name});
+                topPlayers.innerHTML = `
+                    <h3 class="${players[3].status} top-player" id="player-3">${players[3].name}</h3>
+                    <h3 class="${players[4].status} top-player" id="player-4">${players[4].name}</h3>
+                    <h3 class="${players[5].status} top-player" id="player-5">${players[5].name}</h3>
+                    <h3 class="${players[6].status} top-player" id="player-6">${players[6].name}</h3>
+                `;
+                gamePlayers.push({element: document.getElementById("player-3"), id: 3, name: players[3].name});
+                gamePlayers.push({element: document.getElementById("player-4"), id: 4, name: players[4].name});
+                gamePlayers.push({element: document.getElementById("player-5"), id: 5, name: players[5].name});
+                gamePlayers.push({element: document.getElementById("player-6"), id: 6, name: players[6].name});
+                rightPlayers.innerHTML = `
+                    <h3 class="${players[7].status} right-player" id="player-7">${players[7].name}</h3>
+                    <h3 class="${players[8].status} right-player" id="player-8">${players[8].name}</h3>
+                    <h3 class="${players[9].status} right-player" id="player-9">${players[9].name}</h3>
+                `;
+                gamePlayers.push({element: document.getElementById("player-7"), id: 7, name: players[7].name});
+                gamePlayers.push({element: document.getElementById("player-8"), id: 8, name: players[8].name});
+                gamePlayers.push({element: document.getElementById("player-9"), id: 9, name: players[9].name});
+                break;
+        }
 
         if (startGame) {
             startGame.innerHTML = 'Play Again';
@@ -101,15 +268,15 @@ document.addEventListener('DOMContentLoaded', function () {
         roles.style.display = "none";
     }
 
-    socket.on('update-leader', ({leader}) => {
-        const gamePlayerListContent = gamePlayers.map(function(player) {
-            let listClass = player.status;
-            if (player.id === leader.id) {
-                listClass += " current-leader";
-            }
-            return `<li class="${listClass}">${player.name}</li>`;
-        }).join('');
-        document.getElementById("game-player-list").innerHTML = gamePlayerListContent;
+    socket.on('update-leader', ({previousLeaderId, leaderId}) => {
+        if (gamePlayers[previousLeaderId].element.classList.contains("current-leader")) {
+            gamePlayers[previousLeaderId].element.classList.remove("current-leader");
+        }
+        gamePlayers[leaderId].element.classList.add("current-leader");
+    });
+
+    socket.on('update-status', ({message}) => {
+        document.getElementById("status-message").innerHTML = message;
     });
 
     const proposeTeam = document.getElementById("propose-team");
@@ -157,25 +324,25 @@ document.addEventListener('DOMContentLoaded', function () {
         }
     });
 
-    const voteTeam = document.getElementById("vote-team");
-    const voteHeader = document.getElementById("vote-header");
-    const approveTeamButton = document.getElementById("approve-team-button");
-    const rejectTeamButton = document.getElementById("reject-team-button");
-    socket.on('vote-team', ({leader, team}) => {
-        voteTeam.style.display = "block";
-        voteHeader.innerHTML = `
-            ${leader.name} proposes:<br>
-            ${team.map(player => `${player.name}`).join('<br>')}
-        `;
+    const belowBoard = document.getElementById("below-board");
 
-        approveTeamButton.onclick = function() {
-            voteTeam.style.display = "none";
+    socket.on('vote-team', ({leader, team}) => {
+        belowBoard.innerHTML = `
+            <h2>
+            ${leader.name} proposes:<br> ${team.map(player => `${player.name}`).join('<br>')}
+            </h2>
+            <img class="clickable" id="approve-team-image" alt="Approve Team" src='/images/approve.png'></img>
+            <img class="clickable" id="reject-team-image" alt="Reject Team" src='/images/reject.png'></img>
+        `; 
+
+        document.getElementById("approve-team-image").onclick = function() {
             socket.emit('vote-team', {vote: true});
+            belowBoard.innerHTML= "";
         }
 
-        rejectTeamButton.onclick = function() {
-            voteTeam.style.display = "none";
+        document.getElementById("reject-team-image").onclick = function() {
             socket.emit('vote-team', {vote: false});
+            belowBoard.innerHTML= "";
         }
     });
 
@@ -183,53 +350,73 @@ document.addEventListener('DOMContentLoaded', function () {
         console.log(result);
     });
 
-    const conductMission = document.getElementById("conduct-mission");
-    const succeedMissionButton = document.getElementById("succeed-mission-button");
-    const failMissionButton = document.getElementById("fail-mission-button");
-    const reverseMissionButton = document.getElementById("reverse-mission-button");
     socket.on('conduct-mission', ({failAllowed, reverseAllowed}) => {
-        conductMission.style.display = "block";
-
-        succeedMissionButton.disabled = false;
-        succeedMissionButton.classList.remove("future-disabled");
-        succeedMissionButton.style.display = "block";
-        succeedMissionButton.onclick = function() {
-            socket.emit('conduct-mission', {action: 'Succeed'});
-            conductMission.style.display = "none";
-            succeedMissionButton.style.display = "none";
-            succeedMissionButton.disabled = true;
-            succeedMissionButton.classList.add("future-disabled");
+        belowBoard.innerHTML = `
+            <img class="clickable" id="succeed-mission-image" alt="Succeed Mission" src='/images/success.png'></img>
+        `; 
+        if (failAllowed) {
+            belowBoard.innerHTML += `
+                <img class="clickable" id="fail-mission-image" alt="Fail Mission" src='/images/fail.png'></img>
+            `;
+        }
+        if (reverseAllowed) {
+            belowBoard.innerHTML += `
+                <img class="clickable" id="reverse-mission-image" alt="Reverse Mission" src='/images/reverse.png'></img>
+            `;
         }
 
-        failMissionButton.disabled = !failAllowed;
+        document.getElementById("succeed-mission-image").onclick = function() {
+            socket.emit('conduct-mission', {action: 'Succeed'});
+            belowBoard.innerHTML = "";
+        }
         if (failAllowed) {
-            failMissionButton.classList.remove("future-disabled");
-            failMissionButton.style.display = "block";
-            failMissionButton.onclick = function() {
+            document.getElementById("fail-mission-image").onclick = function() {
                 socket.emit('conduct-mission', {action: 'Fail'});
-                conductMission.style.display = "none";
-                failMissionButton.style.display = "none";
-                failMissionButton.disabled = true;
-                failMissionButton.classList.add("future-disabled");
+                belowBoard.innerHTML = "";
             }
         }
-
-        reverseMissionButton.disabled = !reverseAllowed;
         if (reverseAllowed) {
-            reverseMissionButton.classList.remove("future-disabled");
-            reverseMissionButton.style.display = "block";
-            reverseMissionButton.onclick = function() {
+            document.getElementById("reverse-mission-image").onclick = function() {
                 socket.emit('conduct-mission', {action: 'Reverse'});
-                conductMission.style.display = "none";
-                reverseMissionButton.style.display = "none";
-                reverseMissionButton.disabled = true;
-                reverseMissionButton.classList.add("future-disabled");
+                belowBoard.innerHTML = "";
             }
         }
     });
 
+    const advanceButton = document.getElementById("advance-button");
     socket.on('mission-result', ({result}) => {
-        console.log(result);
+        /*
+        {
+            result: result,
+            successCount: currentMission.actionCount - currentMission.failActionCount - currentMission.reverseActionCount,
+            failCount: currentMission.failActionCount,
+            reverseCount: currentMission.reverseActionCount,
+            gameOver: gameOver
+        };
+        */
+        
+        belowBoard.innerHTML = "";
+        for (let i = 0; i < result.successCount; i++) {
+            belowBoard.innerHTML += `
+                <img id="succeed-mission-image" alt="Succeed Mission" src='/images/success.png'></img>
+            `;
+        }
+        for (let i = 0; i < result.failCount; i++) {
+            belowBoard.innerHTML += `
+                <img id="fail-mission-image" alt="Fail Mission" src='/images/fail.png'></img>
+            `;
+        }
+        for (let i = 0; i < result.reverseCount; i++) {
+            belowBoard.innerHTML += `
+                <img id="reverse-mission-image" alt="Reverse Mission" src='/images/reverse.png'></img>
+            `;
+        }
+
+        advanceButton.onclick = function() {
+            belowBoard.innerHTML = "";
+            socket.emit('advance-mission');
+            advanceButton.onclick = "";
+        }
     });
 
     socket.on('game-result', ({result}) => {

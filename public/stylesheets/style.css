@@ -148,10 +148,6 @@ div.setting-item input[type=checkbox] {
   width: 25vw;
 }
 
-#succeed-mission-button, #fail-mission-button, #reverse-mission-button {
-  display: none;
-}
-
 ::placeholder {
   color: #08a5c4;
   opacity: 1;
@@ -274,7 +270,7 @@ select {
 
 /* Game Lobby Page */
 
-#name, #current-leader {
+#name {
   text-align: center;
   margin: auto;
   font-size: 2em;
@@ -357,7 +353,7 @@ li.current-leader::marker {
   color: #FFD700;
 }
 
-#propose-team, #vote-team, #conduct-mission {
+#propose-team {
   display: none;
   margin: auto;
   max-width: 400px;
@@ -367,6 +363,10 @@ li.current-leader::marker {
   border: 2px solid #029dbb;
   box-shadow: 0 0 4px rgb(2 157 187 / 65%);
   text-align: center;
+}
+
+.clickable {
+  cursor: pointer;
 }
 
 #modal-game-information {
@@ -513,4 +513,90 @@ li.current-leader::marker {
   font-family: Candara, sans-serif;
   text-shadow: 0 0 4px rgba(161,236,251,0.65);
   font-size: 1.75em;
+}
+
+#above-board {
+  display: block;
+  position: absolute;
+  left: 50%;
+  margin-top: 0px;
+  top: 10px;
+  transform: translate(-50%);
+  color: #9debfb;
+  text-align: center;
+}
+
+.current-leader {
+  text-decoration: underline;
+}
+
+#advance-button {
+  width: 10vw;
+  height: 5vh;
+}
+
+#center {
+  display: flex;
+}
+
+#game-board {
+  width: 50%;
+  margin: auto;
+}
+
+#below-board {
+  display: flex;
+  margin: auto;
+  color: #9debfb;
+  justify-content: center;
+}
+
+#top-players {
+  text-align: center;
+  justify-content: center;
+  display: flex;
+  justify-content: space-between;
+  width: 50vw;
+  margin: auto;
+  padding-top: 100px;
+}
+
+.top-player {
+  text-align: center;
+}
+
+#left-players {
+  float: left;
+  height: 600px;
+  width: 200px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  margin-top: 20px;
+  margin-bottom: 20px;
+  text-align: center;
+}
+
+.left-player {
+  text-align: center;
+}
+
+#right-players {
+  float: right;
+  height: 600px;
+  width: 200px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  margin-top: 20px;
+  margin-bottom: 20px;
+  text-align: center;
+}
+
+.right-player {
+  text-align: center;
+}
+
+#approve-team-image, #reject-team-image {
+  cursor: pointer;
 }

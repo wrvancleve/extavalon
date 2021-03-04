@@ -128,11 +128,16 @@ app.createServer = function() {
           players: game.getPlayerInformation(i)
         });
       }
+      startProposal(lobby);
+    }
 
-      const firstLeader = game.getCurrentLeader().getPlayerObject();
-      const firstMission = game.getCurrentMission();
-      io.sockets.to(lobby.code).emit('update-leader', {leader: firstLeader});
-      io.sockets.to(lobby.socketsByPlayerId.get(firstLeader.id)).emit('propose-team', {count: firstMission.teamSize});
+    function startProposal(lobby) {
+      const leader = lobby.game.getCurrentLeader().getPlayerObject();
+      const previousLeaderId = lobby.game.getPreviousLeader().id;
+      const mission = lobby.game.getCurrentMission();
+      io.sockets.to(lobby.code).emit('update-leader', {previousLeaderId: previousLeaderId, leaderId: leader.id});
+      io.sockets.to(lobby.socketsByPlayerId.get(leader.id)).emit('propose-team', {count: mission.teamSize});
+      io.sockets.to(lobby.code).emit('update-status', {message: `${leader.name} is proposing mission team...`});
     }
 
     function proposeTeam(lobby, selectedIds) {
@@ -140,13 +145,7 @@ app.createServer = function() {
       const leader = lobby.game.getCurrentLeader().getPlayerObject();
       const team = lobby.game.getPlayersByIds(selectedIds);
       io.sockets.to(lobby.code).emit('vote-team', {leader: leader, team: team});
-    }
-
-    function advanceMission(lobby) {
-      const currentLeader = lobby.game.getCurrentLeader().getPlayerObject();
-      io.sockets.to(lobby.code).emit('update-leader', {leader: currentLeader});
-      const currentMission = lobby.game.getCurrentMission();
-      io.sockets.to(lobby.socketsByPlayerId.get(currentLeader.id)).emit('propose-team', {count: currentMission.teamSize});
+      io.sockets.to(lobby.code).emit('update-status', {message: "Voting on mission team..."});
     }
 
     function voteTeam(lobby, vote) {
@@ -162,12 +161,15 @@ app.createServer = function() {
             const failAllowed = playerTeam === "Spies" || playerRole === "Puck";
             const reverseAllowed = playerRole === "Lancelot" || playerRole === "Maelagant";
             io.sockets.to(lobby.socketsByPlayerId.get(id)).emit('conduct-mission', {failAllowed: failAllowed, reverseAllowed: reverseAllowed});
+            io.sockets.to(lobby.code).emit('update-status', {message: "Conducting mission..."});
           }
         } else if (result.gameOver) {
+          io.sockets.to(lobby.code).emit('update-status', {message: "Spies Win"});
           console.log("Game Over");
         } else {
           io.sockets.to(lobby.code).emit('vote-result', {result: 'Rejected'});
-          advanceMission(lobby);
+          io.sockets.to(lobby.code).emit('update-status', {message: "Proposal has been rejected!"});
+          startProposal(lobby);
         }
       }
     }
@@ -180,9 +182,24 @@ app.createServer = function() {
           const winner = result.result === 'Success' ? 'Resistance' : 'Spies';
           io.sockets.to(lobby.code).emit('game-result', {result: winner});
         } else {
-          io.sockets.to(lobby.code).emit('mission-result', {result: result.result});
-          advanceMission(lobby);
+          io.sockets.to(lobby.code).emit('mission-result', {result: result});
+          if (result.result === 'Success') {
+            io.sockets.to(lobby.code).emit('update-status', {message: "Mission was successful! Advance when ready"});
+          } else {
+            io.sockets.to(lobby.code).emit('update-status', {message: "Mission failed! Advance when ready"});
+          }
+          lobby.playersReady = 0;
         }
+      }
+    }
+
+    function advanceMission(lobby) {
+      lobby.playersReady += 1;
+      if (lobby.playersReady === lobby.socketsByPlayerId.size) {
+        lobby.playersReady = 0;
+        startProposal(lobby);
+      } else {
+        io.sockets.to(socket.id).emit('update-status', {message: "Advancing to next mission..."});
       }
     }
 
@@ -218,6 +235,10 @@ app.createServer = function() {
 
       socket.on('conduct-mission', ({action}) => {
         conductMission(lobby, action);
+      });
+
+      socket.on('advance-mission', () => {
+        advanceMission(lobby);
       });
 
       socket.on('close-lobby', () => {

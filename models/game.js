@@ -26,6 +26,12 @@ class Game {
         return this.state.getCurrentLeader();
     }
 
+    getPreviousLeader() {
+        return this.state.currentLeaderId === 0
+            ? this.state.players[this.state.playerCount - 1]
+            : this.state.players[this.state.currentLeaderId - 1]
+    }
+
     getCurrentMission() {
         return this.state.getCurrentMission();
     }
@@ -134,7 +140,13 @@ class Game {
         if (currentMission.actionCount === currentMission.teamSize) {
             const result = currentMission.finalize();
             const gameOver = this._processMissionResult(result);
-            return {result: result, gameOver: gameOver};
+            return {
+                result: result,
+                successCount: currentMission.actionCount - currentMission.failActionCount - currentMission.reverseActionCount,
+                failCount: currentMission.failActionCount,
+                reverseCount: currentMission.reverseActionCount,
+                gameOver: gameOver
+            };
         } else {
             return null;
         }

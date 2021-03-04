@@ -10,10 +10,19 @@
         </div>
     </div>
     <div class="flex-column" id="game">
-        <h2 id="name">{{title}}</h2>
-        <div class="future-color" id="game-players">
-            <h2 id="game-player-header">Players</h2>
-            <ul id="game-player-list"></ul>
+        <div id="above-board">
+            <h2 id="status-message"></h2>
+            <button class="future-color future-secondary-font future-box" type="button"
+                id="advance-button">Advance</button>
+        </div>
+        <div id="top-players">
+        </div>
+        <div id="center">
+            <div id="left-players">
+            </div>
+            <img id="game-board" alt="5 player board"></img>
+            <div id="right-players">
+            </div>
         </div>
         <div class="future-color" id="propose-team">
             <h2 id="proposal-header">Select</h2>
@@ -21,21 +30,7 @@
             <button class="future-disabled future-color future-secondary-font future-box" id="proposal-submit-button"
                 type="button" title="Submit Proposal" disabled>Submit</button>
         </div>
-        <div class="future-color" id="vote-team">
-            <h2 id="vote-header">Select</h2>
-            <button class="future-color future-secondary-font future-box" id="approve-team-button"
-                type="button" title="Approve Team">Approve</button>
-            <button class="future-color future-secondary-font future-box" id="reject-team-button"
-                type="button" title="Reject Team">Reject</button>
-        </div>
-        <div class="future-color" id="conduct-mission">
-            <h2 id="mission-header">Select Mission Action</h2>
-            <button class="future-disabled future-color future-secondary-font future-box" id="succeed-mission-button"
-                type="button" title="Succeed Mission" disabled>Succeed</button>
-            <button class="future-disabled future-color future-secondary-font future-box" id="fail-mission-button"
-                type="button" title="Fail Mission" disabled>Fail</button>
-            <button class="future-disabled future-color future-secondary-font future-box" id="reverse-mission-button"
-                type="button" title="Reverse Mission" disabled>Reverse</button>
+        <div id="below-board">
         </div>
     </div>
     {{# if host }}
