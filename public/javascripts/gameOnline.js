@@ -4,231 +4,420 @@ document.addEventListener('DOMContentLoaded', function () {
 
     const {name, code} = Qs.parse(location.search, {
         ignoreQueryPrefix: true
-    });
+    });    
 
-    document.getElementById("game-code").innerHTML = `Game Code: ${code}`;
-
+    // Get Elements
     const lobby = document.getElementById("lobby");
-    const lobbyInformation = document.getElementById("lobby-information");
+    const rolesModal = document.getElementById("roles-modal");
+    const openRolesModalButton = document.getElementById("open-roles-modal-button");
+    const closeRolesModalButton = document.getElementById("close-roles-modal-button");
+    const intelModal = document.getElementById("intel-modal");
+    const openIntelModalButton = document.getElementById("open-intel-modal-button");
+    const closeIntelModalButton = document.getElementById("close-intel-modal-button");
+    const startGameButton = document.getElementById("start-game-button");
+    const closeGameButton = document.getElementById("close-game-button");
     const game = document.getElementById("game");
-    const roles = document.getElementById("modal-roles");
-    const openRoles = document.getElementById("roles-open-button");
-    const closeRoles = document.getElementById("roles-close-button");
-    const gameInformation = document.getElementById("modal-game-information");
-    const openGameInformation = document.getElementById("game-information-open-button");
-    const closeGameInformation = document.getElementById("game-information-close-button");
-    const startGame = document.getElementById("start-game-button");
+    
+    const statusMessage = document.getElementById("status-message");
+    const advanceButton = document.getElementById("advance-button");
     const gameBoard = document.getElementById("game-board");
 
-    socket.on('update-players', currentPlayers => {
-        const activePlayerCount = currentPlayers.filter(p => p.active).length;
-        document.getElementById("lobby-player-count").innerHTML = `Players [${activePlayerCount}]`;
-        document.getElementById("lobby-player-list").innerHTML = `
-            ${currentPlayers.map(player => `<li class="${player.active ? 'player-active' : 'player-inactive'}">${player.name}</li>`).join('')}
-        `;
-        if (startGame) {
-            startGame.disabled = activePlayerCount < 5;
-            if (startGame.disabled) {
-                startGame.classList.add("future-disabled");
-            } else {
-                startGame.classList.remove("future-disabled");
-            }
-        }
-    });
+    let playerId = null;
+    const gamePlayers = [];
+    const leftPlayerArea = document.getElementById("left-player-area");
+    const topPlayerArea = document.getElementById("top-player-area");
+    const rightPlayerArea = document.getElementById("right-player-area");
 
-    if (startGame) {
-        const closeGame = document.getElementById("close-game-button");
-        startGame.onclick = function () {
+    const actionArea = document.getElementById("action-area");
+
+    let playersSelected = [];
+    let gunSelected = null;
+
+    const proposeTeam = document.getElementById("propose-team");
+    const proposalPlayerList = document.getElementById("proposal-player-list");
+    const proposalSubmitButton = document.getElementById("proposal-submit-button");
+
+    // Setup Page
+    document.getElementById("game-code").innerHTML = `Game Code: ${code}`;
+
+    openIntelModalButton.onclick = function() {
+        if (intelModal.style.display == "block") {
+            intelModal.style.display = "none";
+        } else {
+            if (rolesModal.style.display == 'block') {
+                rolesModal.style.display = 'none';
+            }
+            intelModal.style.display = "block";
+        }
+    }
+    openIntelModalButton.style.display = "none";
+    game.style.display = "none";
+
+    closeIntelModalButton.onclick = function() {
+        intelModal.style.display = "none";
+    }
+
+    openRolesModalButton.onclick = function() {
+        if (rolesModal.style.display === "block") {
+            rolesModal.style.display = "none";
+        } else {
+            if (intelModal.style.display === "block") {
+                intelModal.style.display = "none"
+            }
+            rolesModal.style.display = "block";
+        }
+    }
+
+    closeRolesModalButton.onclick = function() {
+        rolesModal.style.display = "none";
+    }
+
+    if (startGameButton) {
+        startGameButton.onclick = function () {
             socket.emit('start-game-online');
         };
-        closeGame.onclick = function () {
+        closeGameButton.onclick = function () {
             socket.emit('close-lobby');
         };
     }
-    
-    let gamePlayers = [];
-    const leftPlayers = document.getElementById("left-players");
-    const topPlayers = document.getElementById("top-players");
-    const rightPlayers = document.getElementById("right-players");
-    socket.on('start-game', ({gameHTML, players}) => {
+
+    // Helper Function
+    function hideElement(element) {
+        element.style.display = "none";
+        element.disable = true;
+    }
+
+    function createPlayer(player, section, unshift) {
+        const name = player.name;
+        const id = player.id;
+        const status = player.status;
+        const elementPrefix = `player-${id}`;
+        switch (section) {
+            case "Left":
+                leftPlayerArea.innerHTML += `
+                    <div>
+                        <img class="player-gun-slot" id="${elementPrefix}-gun-slot" alt="Gun Slot" visibility="hidden"></img>
+                        <h3 class="${status} right-player" id="${elementPrefix}-name">${name}</h3>
+                        <img class="player-vote-slot" id="${elementPrefix}-vote-slot" alt="Vote Slot" visibility="hidden"></img>
+                    </div>
+                `; 
+                break;
+            case "Top":
+                topPlayerArea.innerHTML += `
+                    <div>
+                        <img class="player-gun-slot" id="${elementPrefix}-gun-slot" alt="Gun Slot" visibility="hidden"></img>
+                        <h3 class="${status} right-player" id="${elementPrefix}-name">${name}</h3>
+                        <img class="player-vote-slot" id="${elementPrefix}-vote-slot" alt="Vote Slot" visibility="hidden"></img>
+                    </div>
+                `; 
+                break;
+            case "Right":
+                rightPlayerArea.innerHTML += `
+                    <div>
+                        <img class="player-vote-slot" id="${elementPrefix}-vote-slot" alt="Vote Slot" visibility="hidden"></img>
+                        <h3 class="${status} right-player" id="${elementPrefix}-name">${name}</h3>
+                        <img class="player-gun-slot" id="${elementPrefix}-gun-slot" alt="Gun Slot" visibility="hidden"></img>
+                    </div>
+                `; 
+                break;
+        }
+
+        const newPlayer = {
+            id: id,
+            nameId: `${elementPrefix}-name`,
+            gunSlotId: `${elementPrefix}-gun-slot`,
+            voteSlotId: `${elementPrefix}-vote-slot`
+        };
+        if (unshift) {
+            gamePlayers.unshift(newPlayer);
+        } else {
+            gamePlayers.push(newPlayer);
+        }
+    }
+
+    // Setup Socket Functions
+    function updateLobby(players) {
+        const activePlayerCount = players.filter(p => p.active).length;
+        document.getElementById("lobby-player-count").innerHTML = `Players [${activePlayerCount}]`;
+        document.getElementById("lobby-player-list").innerHTML = `
+            ${players.map(player => `<li class="${player.active ? 'player-active' : 'player-inactive'}">${player.name}</li>`).join('')}
+        `;
+        if (host) {
+            startGameButton.disabled = activePlayerCount < 5;
+            if (startGameButton.disabled) {
+                startGameButton.classList.add("future-disabled");
+            } else {
+                startGameButton.classList.remove("future-disabled");
+            }
+        }
+    }
+
+    function setupGame(gameHTML, players, id) {
+        playerId = id;
         gamePlayers = [];
+        gunSelected = null;
+        playersSelected = null;
+        leftPlayerArea.innerHTML = "";
+        topPlayerArea.innerHTML = "";
+        rightPlayerArea.innerHTML = "";
+        lobby.style.display = "none";
+        openIntelModalButton.style.display = "block";
+        game.style.display = "block";
+        intelModal.innerHTML = gameHTML;
+
         switch (players.length) {
             case 5:
                 gameBoard.src = "/images/5-player-board.png";
+                createPlayer(players[0], "Left");
+                createPlayer(players[1], "Top");
+                createPlayer(players[2], "Top");
+                createPlayer(players[3], "Top");
+                createPlayer(players[4], "Right");
                 break;
             case 6:
                 gameBoard.src = "/images/6-player-board.png";
+                createPlayer(players[1], "Left");
+                createPlayer(players[0], "Left", true);
+                createPlayer(players[2], "Top");
+                createPlayer(players[3], "Top");
+                createPlayer(players[4], "Right");
+                createPlayer(players[5], "Right");
                 break;
             case 7:
                 gameBoard.src = "/images/7-player-board.png";
+                createPlayer(players[1], "Left");
+                createPlayer(players[0], "Left", true);
+                createPlayer(players[2], "Top");
+                createPlayer(players[3], "Top");
+                createPlayer(players[4], "Top");
+                createPlayer(players[5], "Right");
+                createPlayer(players[6], "Right");
                 break;
             case 8:
                 gameBoard.src = "/images/8-player-board.png";
+                createPlayer(players[1], "Left");
+                createPlayer(players[0], "Left", true);
+                createPlayer(players[2], "Top");
+                createPlayer(players[3], "Top");
+                createPlayer(players[4], "Top");
+                createPlayer(players[5], "Top");
+                createPlayer(players[6], "Right");
+                createPlayer(players[7], "Right");
                 break;
             case 9:
                 gameBoard.src = "/images/9-player-board.png";
+                createPlayer(players[2], "Left");
+                createPlayer(players[1], "Left", true);
+                createPlayer(players[0], "Left", true);
+                createPlayer(players[3], "Top");
+                createPlayer(players[4], "Top");
+                createPlayer(players[5], "Top");
+                createPlayer(players[6], "Right");
+                createPlayer(players[7], "Right");
+                createPlayer(players[8], "Right");
                 break;
             case 10:
                 gameBoard.src = "/images/10-player-board.png";
+                createPlayer(players[2], "Left");
+                createPlayer(players[1], "Left", true);
+                createPlayer(players[0], "Left", true);
+                createPlayer(players[3], "Top");
+                createPlayer(players[4], "Top");
+                createPlayer(players[5], "Top");
+                createPlayer(players[6], "Top");
+                createPlayer(players[7], "Right");
+                createPlayer(players[8], "Right");
+                createPlayer(players[9], "Right");
                 break;
         }
 
-        lobby.style.display = "none";
-        openGameInformation.style.display = "block";
-        game.style.display = "block";
-        gameInformation.innerHTML = gameHTML;
+        if (startGameButton) {
+            startGameButton.innerHTML = 'Play Again';
+            hideElement(startGameButton);
+            hideElement(closeGameButton);
+        }
+    }
 
-        switch (players.length) {
-            case 5:
-                leftPlayers.innerHTML = `
-                    <h3 class="${players[0].status} left-player" id="player-0">${players[0].name}</h3>
-                `;
-                gamePlayers.push({element: document.getElementById("player-0"), id: 0, name: players[0].name});
-                topPlayers.innerHTML = `
-                    <h3 class="${players[1].status} top-player" id="player-1">${players[1].name}</h3>
-                    <h3 class="${players[2].status} top-player" id="player-2">${players[2].name}</h3>
-                    <h3 class="${players[3].status} top-player" id="player-3">${players[3].name}</h3>
-                `;
-                gamePlayers.push({element: document.getElementById("player-1"), id: 1, name: players[1].name});
-                gamePlayers.push({element: document.getElementById("player-2"), id: 2, name: players[2].name});
-                gamePlayers.push({element: document.getElementById("player-3"), id: 3, name: players[3].name});
-                rightPlayers.innerHTML = `
-                    <h3 class="${players[4].status} right-player" id="player-4">${players[4].name}</h3>
-                `;
-                gamePlayers.push({element: document.getElementById("player-4"), id: 4, name: players[4].name});
-                break;
-            case 6:
-                leftPlayers.innerHTML = `
-                    <h3 class="${players[1].status} left-player" id="player-1">${players[1].name}</h3>
-                    <h3 class="${players[0].status} left-player" id="player-0">${players[0].name}</h3>
-                `;
-                gamePlayers.push({element: document.getElementById("player-0"), id: 0, name:players[0].name});
-                gamePlayers.push({element: document.getElementById("player-1"), id: 1, name: players[1].name});
-                topPlayers.innerHTML = `
-                    <h3 class="${players[2].status} top-player" id="player-2">${players[2].name}</h3>
-                    <h3 class="${players[3].status} top-player" id="player-3">${players[3].name}</h3>
-                `;
-                
-                gamePlayers.push({element: document.getElementById("player-2"), id: 2, name: players[2].name});
-                gamePlayers.push({element: document.getElementById("player-3"), id: 3, name: players[3].name});
-                rightPlayers.innerHTML = `
-                    <h3 class="${players[4].status} right-player" id="player-4">${players[4].name}</h3>
-                    <h3 class="${players[5].status} right-player" id="player-5">${players[5].name}</h3>
-                `;
-                gamePlayers.push({element: document.getElementById("player-4"), id: 4, name: players[4].name});
-                gamePlayers.push({element: document.getElementById("player-5"), id: 5, name: players[5].name});
-                break;
-            case 7:
-                leftPlayers.innerHTML = `
-                    <h3 class="${players[1].status} left-player" id="player-1">${players[1].name}</h3>
-                    <h3 class="${players[0].status} left-player" id="player-0">${players[0].name}</h3>
-                `;
-                gamePlayers.push({element: document.getElementById("player-0"), id: 0, name:players[0].name});
-                gamePlayers.push({element: document.getElementById("player-1"), id: 1, name: players[1].name});
-                topPlayers.innerHTML = `
-                    <h3 class="${players[2].status} top-player" id="player-2">${players[2].name}</h3>
-                    <h3 class="${players[3].status} top-player" id="player-3">${players[3].name}</h3>
-                    <h3 class="${players[4].status} top-player" id="player-4">${players[4].name}</h3>
-                `;
-                
-                gamePlayers.push({element: document.getElementById("player-2"), id: 2, name: players[2].name});
-                gamePlayers.push({element: document.getElementById("player-3"), id: 3, name: players[3].name});
-                gamePlayers.push({element: document.getElementById("player-4"), id: 4, name: players[4].name});
-                rightPlayers.innerHTML = `
-                    <h3 class="${players[5].status} right-player" id="player-5">${players[5].name}</h3>
-                    <h3 class="${players[6].status} right-player" id="player-6">${players[6].name}</h3>
-                `;
-                gamePlayers.push({element: document.getElementById("player-5"), id: 5, name: players[5].name});
-                gamePlayers.push({element: document.getElementById("player-6"), id: 6, name: players[6].name});
-                break;
-            case 8:
-                leftPlayers.innerHTML = `
-                    <h3 class="${players[1].status} left-player" id="player-1">${players[1].name}</h3>
-                    <h3 class="${players[0].status} left-player" id="player-0">${players[0].name}</h3>
-                `;
-                gamePlayers.push({element: document.getElementById("player-0"), id: 0, name:players[0].name});
-                gamePlayers.push({element: document.getElementById("player-1"), id: 1, name: players[1].name});
-                topPlayers.innerHTML = `
-                    <h3 class="${players[2].status} top-player" id="player-2">${players[2].name}</h3>
-                    <h3 class="${players[3].status} top-player" id="player-3">${players[3].name}</h3>
-                    <h3 class="${players[4].status} top-player" id="player-4">${players[4].name}</h3>
-                    <h3 class="${players[5].status} top-player" id="player-5">${players[5].name}</h3>
-                `;
-                gamePlayers.push({element: document.getElementById("player-2"), id: 2, name: players[2].name});
-                gamePlayers.push({element: document.getElementById("player-3"), id: 3, name: players[3].name});
-                gamePlayers.push({element: document.getElementById("player-4"), id: 4, name: players[4].name});
-                gamePlayers.push({element: document.getElementById("player-5"), id: 5, name: players[5].name});
-                rightPlayers.innerHTML = `
-                    <h3 class="${players[6].status} right-player" id="player-6">${players[6].name}</h3>
-                    <h3 class="${players[7].status} right-player" id="player-7">${players[7].name}</h3>
-                `;
-                gamePlayers.push({element: document.getElementById("player-6"), id: 6, name: players[6].name});
-                gamePlayers.push({element: document.getElementById("player-7"), id: 7, name: players[7].name});
-                break;
-            case 9:
-                leftPlayers.innerHTML = `
-                    <h3 class="${players[2].status} left-player" id="player-2">${players[2].name}</h3>
-                    <h3 class="${players[1].status} left-player" id="player-1">${players[1].name}</h3>
-                    <h3 class="${players[0].status} left-player" id="player-0">${players[0].name}</h3>
-                `;
-                gamePlayers.push({element: document.getElementById("player-0"), id: 0, name:players[0].name});
-                gamePlayers.push({element: document.getElementById("player-1"), id: 1, name: players[1].name});
-                gamePlayers.push({element: document.getElementById("player-2"), id: 2, name: players[2].name});
-                topPlayers.innerHTML = `
-                    <h3 class="${players[3].status} top-player" id="player-3">${players[3].name}</h3>
-                    <h3 class="${players[4].status} top-player" id="player-4">${players[4].name}</h3>
-                    <h3 class="${players[5].status} top-player" id="player-5">${players[5].name}</h3>
-                `;
-                gamePlayers.push({element: document.getElementById("player-3"), id: 3, name: players[3].name});
-                gamePlayers.push({element: document.getElementById("player-4"), id: 4, name: players[4].name});
-                gamePlayers.push({element: document.getElementById("player-5"), id: 5, name: players[5].name});
-                rightPlayers.innerHTML = `
-                    <h3 class="${players[6].status} right-player" id="player-6">${players[6].name}</h3>
-                    <h3 class="${players[7].status} right-player" id="player-7">${players[7].name}</h3>
-                    <h3 class="${players[8].status} right-player" id="player-8">${players[8].name}</h3>
-                `;
-                gamePlayers.push({element: document.getElementById("player-6"), id: 6, name: players[6].name});
-                gamePlayers.push({element: document.getElementById("player-7"), id: 7, name: players[7].name});
-                gamePlayers.push({element: document.getElementById("player-8"), id: 8, name: players[8].name});
-                break;
-            case 10:
-                leftPlayers.innerHTML = `
-                    <h3 class="${players[2].status} left-player" id="player-2">${players[2].name}</h3>
-                    <h3 class="${players[1].status} left-player" id="player-1">${players[1].name}</h3>
-                    <h3 class="${players[0].status} left-player" id="player-0">${players[0].name}</h3>
-                `;
-                gamePlayers.push({element: document.getElementById("player-0"), id: 0, name:players[0].name});
-                gamePlayers.push({element: document.getElementById("player-1"), id: 1, name: players[1].name});
-                gamePlayers.push({element: document.getElementById("player-2"), id: 2, name: players[2].name});
-                topPlayers.innerHTML = `
-                    <h3 class="${players[3].status} top-player" id="player-3">${players[3].name}</h3>
-                    <h3 class="${players[4].status} top-player" id="player-4">${players[4].name}</h3>
-                    <h3 class="${players[5].status} top-player" id="player-5">${players[5].name}</h3>
-                    <h3 class="${players[6].status} top-player" id="player-6">${players[6].name}</h3>
-                `;
-                gamePlayers.push({element: document.getElementById("player-3"), id: 3, name: players[3].name});
-                gamePlayers.push({element: document.getElementById("player-4"), id: 4, name: players[4].name});
-                gamePlayers.push({element: document.getElementById("player-5"), id: 5, name: players[5].name});
-                gamePlayers.push({element: document.getElementById("player-6"), id: 6, name: players[6].name});
-                rightPlayers.innerHTML = `
-                    <h3 class="${players[7].status} right-player" id="player-7">${players[7].name}</h3>
-                    <h3 class="${players[8].status} right-player" id="player-8">${players[8].name}</h3>
-                    <h3 class="${players[9].status} right-player" id="player-9">${players[9].name}</h3>
-                `;
-                gamePlayers.push({element: document.getElementById("player-7"), id: 7, name: players[7].name});
-                gamePlayers.push({element: document.getElementById("player-8"), id: 8, name: players[8].name});
-                gamePlayers.push({element: document.getElementById("player-9"), id: 9, name: players[9].name});
-                break;
+    function setupProposal(count) {
+        for (let i = 0; i < count; i++) {
+            const gunImage = document.createElement('img');
+            gunImage.classList.add("clickable");
+            gunImage.alt = "Gun";
+            gunImage.src = `/images/gun-${i + 1}.png`;
+            gunImage.onclick = function () {
+                gunSelected = gunImage;
+            };
+            actionArea.appendChild(gunImage);
         }
 
-        if (startGame) {
-            startGame.innerHTML = 'Play Again';
-            startGame.disabled = true;
-            startGame.style.display = "none";
-            const closeGame = document.getElementById("close-game-button");
-            closeGame.disabled = true;
-            closeGame.style.display = "none";
+        advanceButton.disabled = true;
+        advanceButton.classList.add("future-disabled");
+
+        for (let id = 0; id < gamePlayers.length; id++) {
+            const playerName = document.getElementById(gamePlayers.nameId);
+            playerName.classList.add("clickable");
+            playerName.onclick = function () {
+                if (gunSelected) {
+                    const gunSlot = document.getElementById(gamePlayers.gunSlotId);
+                    gunSlot.style.visibility = "visible";
+                    gunSlot.src = gunImage.src;
+
+                    if (gunSelected.parentNode.id === actionArea.id) {
+                        gunSelected.remove();
+                    } else {
+                        gunSelected.src = "";
+                        gunSelected.style.visibility = "hidden";
+                    }
+
+                    if (actionArea.childElementCount > 0) {
+                        advanceButton.disabled = true;
+                        advanceButton.classList.add("future-disabled");
+                        advanceButton.onclick = "";
+                    } else {
+                        advanceButton.disabled = false;
+                        advanceButton.classList.remove("future-disabled");
+                        advanceButton.onclick = function() {
+                            const selectedIds = [];
+                            for (let i = 0; i < gamePlayers.length; i++) {
+                                if (document.getElementById(gamePlayers[i].gunSlotId).src) {
+                                    selectedIds.push(i);
+                                }
+                            }
+                            socket.emit('propose-team', {selectedIds});
+                            advanceButton.onclick = "";
+                            advanceButton.disabled = true;
+                            advanceButton.classList.add("future-disabled");
+                        };
+                    }
+                }
+            };
         }
+    }
+
+    function updateProposal () {
+
+    }
+
+    function setupVote() {
+        statusMessage.innerHTML = "Voting on team...";
+
+        actionArea.innerHTML = `
+            <img class="clickable" id="approve-team-image" alt="Approve Team" src='/images/approve.png'></img>
+            <img class="clickable" id="reject-team-image" alt="Reject Team" src='/images/reject.png'></img>
+        `; 
+
+        document.getElementById("approve-team-image").onclick = function() {
+            socket.emit('vote-team', {id: playerId, vote: true});
+            actionArea.innerHTML= "";
+        }
+
+        document.getElementById("reject-team-image").onclick = function() {
+            socket.emit('vote-team', {id: playerId, vote: false});
+            actionArea.innerHTML= "";
+        }
+    }
+
+    function showVoteResult(votes) {
+        for (let i = 0; i < gamePlayers.length; i++) {
+            const voteSlot = document.getElementById(gamePlayers[i].voteSlotId);
+            voteSlot.visibility = "visible";
+            if (votes[i]) {
+                voteSlot.src = "/images/approve.png";
+            } else {
+                voteSlot.src = "/images/reject.png";
+            }
+        }
+    }
+
+    function setupMission(failAllowed, reverseAllowed) {
+        actionArea.innerHTML = `
+            <img class="clickable" id="succeed-mission-image" alt="Succeed Mission" src='/images/success.png'></img>
+        `; 
+        if (failAllowed) {
+            actionArea.innerHTML += `
+                <img class="clickable" id="fail-mission-image" alt="Fail Mission" src='/images/fail.png'></img>
+            `;
+        }
+        if (reverseAllowed) {
+            actionArea.innerHTML += `
+                <img class="clickable" id="reverse-mission-image" alt="Reverse Mission" src='/images/reverse.png'></img>
+            `;
+        }
+
+        document.getElementById("succeed-mission-image").onclick = function() {
+            socket.emit('conduct-mission', {action: 'Succeed'});
+            actionArea.innerHTML = "";
+        }
+        if (failAllowed) {
+            document.getElementById("fail-mission-image").onclick = function() {
+                socket.emit('conduct-mission', {id: playerId, action: 'Fail'});
+                actionArea.innerHTML = "";
+            }
+        }
+        if (reverseAllowed) {
+            document.getElementById("reverse-mission-image").onclick = function() {
+                socket.emit('conduct-mission', {id: playerId, action: 'Reverse'});
+                actionArea.innerHTML = "";
+            }
+        }
+    }
+
+    function showMissionResult(result) {
+        actionArea.innerHTML = "";
+        for (let i = 0; i < result.successCount; i++) {
+            actionArea.innerHTML += `
+                <img id="succeed-mission-image" alt="Succeed Mission" src='/images/success.png'></img>
+            `;
+        }
+        for (let i = 0; i < result.failCount; i++) {
+            actionArea.innerHTML += `
+                <img id="fail-mission-image" alt="Fail Mission" src='/images/fail.png'></img>
+            `;
+        }
+        for (let i = 0; i < result.reverseCount; i++) {
+            actionArea.innerHTML += `
+                <img id="reverse-mission-image" alt="Reverse Mission" src='/images/reverse.png'></img>
+            `;
+        }
+
+        if (result.result === "Success") {
+            statusMessage.innerHTML = "Mission successful!";
+        } else {
+            statusMessage.innerHTML = "Mission failed!";
+        }
+
+        advanceButton.onclick = function() {
+            statusMessage.innerHTML = "Waiting for players to advance...";
+            socket.emit('advance-mission');
+            advanceButton.onclick = "";
+            advanceButton.disabled = true;
+            advanceButton.classList.add("future-disabled");
+        }
+    }
+
+    function advanceMission() {
+        for (let id = 0; id < gamePlayers.length; id++) {
+            const player = gamePlayers[id];
+            const playerVoteSlot = document.getElementById(player.voteSlotId);
+            playerVoteSlot.src = "";
+            playerVoteSlot.style.visibility = "hidden";
+            const playerGunSlot = document.getElementById(player.gunSlotId);
+            playerGunSlot.src = "";
+            playerGunSlot.style.visibility = "hidden";
+        }
+
+        actionArea.innerHTML = "";
+        gunSelected = null;
+        playersSelected = [];
+    }
+
+    // Attach Socket functions
+    socket.on('update-players', currentPlayers => {
+        updateLobby(currentPlayers);
+    });
+    
+    socket.on('start-game', ({gameHTML, players}) => {
+        setupGame(gameHTML, players);
     });
 
     socket.on('close-lobby', () => {
@@ -236,197 +425,53 @@ document.addEventListener('DOMContentLoaded', function () {
         location.replace("http://localhost:8080");
     });
 
-    openGameInformation.onclick = function() {
-        if (gameInformation.style.display == "block") {
-            gameInformation.style.display = "none";
-        } else {
-            if (roles.style.display == 'block') {
-                roles.style.display = 'none';
-            }
-            gameInformation.style.display = "block";
+    socket.on('update-leader', ({previousLeaderId, leader}) => {
+        if (gamePlayers[previousLeaderId].nameId.classList.contains("current-leader")) {
+            gamePlayers[previousLeaderId].nameId.classList.remove("current-leader");
         }
-    }
-    openGameInformation.style.display = "none";
-    game.style.display = "none";
-
-    closeGameInformation.onclick = function() {
-        gameInformation.style.display = "none";
-    }
-
-    openRoles.onclick = function() {
-        if (roles.style.display == "block") {
-            roles.style.display = "none";
-        } else {
-            if (gameInformation.style.display == "block") {
-                gameInformation.style.display = "none"
-            }
-            roles.style.display = "block";
-        }
-    }
-
-    closeRoles.onclick = function() {
-        roles.style.display = "none";
-    }
-
-    socket.on('update-leader', ({previousLeaderId, leaderId}) => {
-        if (gamePlayers[previousLeaderId].element.classList.contains("current-leader")) {
-            gamePlayers[previousLeaderId].element.classList.remove("current-leader");
-        }
-        gamePlayers[leaderId].element.classList.add("current-leader");
+        gamePlayers[leader.id].nameId.classList.add("current-leader");
+        statusMessage.innerHTML = `${leader.name} is proposing team...`;
     });
 
     socket.on('update-status', ({message}) => {
-        document.getElementById("status-message").innerHTML = message;
+        statusMessage.innerHTML = message;
     });
-
-    const proposeTeam = document.getElementById("propose-team");
-    const proposalPlayerList = document.getElementById("proposal-player-list");
-    const proposalSubmitButton = document.getElementById("proposal-submit-button");
+    
     socket.on('propose-team', ({count}) => {
-        document.getElementById("proposal-header").innerHTML = `Select ${count} players`;
-        proposeTeam.style.display = "block";
-        proposalPlayerList.innerHTML = `
-            ${gamePlayers.map(player => `
-                <div class="setting-item">
-                    <h3 class="future-color future-secondary-font">${player.name}</h3>
-                    <input name="${player.id}" type="checkbox">
-                </div>
-            `).join('')}
-        `;
-
-        const checkboxes = proposalPlayerList.querySelectorAll("input[type=checkbox]");
-        for (let i = 0; i < checkboxes.length; i++) {
-            const checkbox = checkboxes[i];
-            checkbox.onclick = function() {
-                const checkedCount = proposalPlayerList.querySelectorAll("input[type=checkbox]:checked").length;
-                proposalSubmitButton.disabled = checkedCount !== count;
-                if (proposalSubmitButton.disabled) {
-                    proposalSubmitButton.classList.add("future-disabled");
-                } else {
-                    proposalSubmitButton.classList.remove("future-disabled");
-                }
-            }
-        }
-
-        proposalSubmitButton.onclick = function() {
-            proposeTeam.style.display = "none";
-            proposalSubmitButton.disabled = true;
-            proposalSubmitButton.classList.add("future-disabled");
-            const selectedIds = [];
-            for (let i = 0; i < checkboxes.length; i++) {
-                const checkbox = checkboxes[i];
-                if (checkbox.checked) {
-                    const selectedId = parseInt(checkbox.name);
-                    selectedIds.push(selectedId);
-                }
-            }
-            socket.emit('propose-team', {selectedIds});
-        }
+        setupProposal(count);
     });
 
-    const belowBoard = document.getElementById("below-board");
+    socket.on('update-team', ({selectedIds}) => {
+        updateProposal(selectedIds);
+    });
 
-    socket.on('vote-team', ({leader, team}) => {
-        belowBoard.innerHTML = `
-            <h2>
-            ${leader.name} proposes:<br> ${team.map(player => `${player.name}`).join('<br>')}
-            </h2>
-            <img class="clickable" id="approve-team-image" alt="Approve Team" src='/images/approve.png'></img>
-            <img class="clickable" id="reject-team-image" alt="Reject Team" src='/images/reject.png'></img>
-        `; 
-
-        document.getElementById("approve-team-image").onclick = function() {
-            socket.emit('vote-team', {vote: true});
-            belowBoard.innerHTML= "";
-        }
-
-        document.getElementById("reject-team-image").onclick = function() {
-            socket.emit('vote-team', {vote: false});
-            belowBoard.innerHTML= "";
-        }
+    socket.on('vote-team', () => {
+        setupVote();
     });
 
     socket.on('vote-result', ({result}) => {
-        console.log(result);
+        showVoteResult(result);
     });
 
     socket.on('conduct-mission', ({failAllowed, reverseAllowed}) => {
-        belowBoard.innerHTML = `
-            <img class="clickable" id="succeed-mission-image" alt="Succeed Mission" src='/images/success.png'></img>
-        `; 
-        if (failAllowed) {
-            belowBoard.innerHTML += `
-                <img class="clickable" id="fail-mission-image" alt="Fail Mission" src='/images/fail.png'></img>
-            `;
-        }
-        if (reverseAllowed) {
-            belowBoard.innerHTML += `
-                <img class="clickable" id="reverse-mission-image" alt="Reverse Mission" src='/images/reverse.png'></img>
-            `;
-        }
-
-        document.getElementById("succeed-mission-image").onclick = function() {
-            socket.emit('conduct-mission', {action: 'Succeed'});
-            belowBoard.innerHTML = "";
-        }
-        if (failAllowed) {
-            document.getElementById("fail-mission-image").onclick = function() {
-                socket.emit('conduct-mission', {action: 'Fail'});
-                belowBoard.innerHTML = "";
-            }
-        }
-        if (reverseAllowed) {
-            document.getElementById("reverse-mission-image").onclick = function() {
-                socket.emit('conduct-mission', {action: 'Reverse'});
-                belowBoard.innerHTML = "";
-            }
-        }
+        setupMission(failAllowed, reverseAllowed);
     });
 
-    const advanceButton = document.getElementById("advance-button");
     socket.on('mission-result', ({result}) => {
-        /*
-        {
-            result: result,
-            successCount: currentMission.actionCount - currentMission.failActionCount - currentMission.reverseActionCount,
-            failCount: currentMission.failActionCount,
-            reverseCount: currentMission.reverseActionCount,
-            gameOver: gameOver
-        };
-        */
-        
-        belowBoard.innerHTML = "";
-        for (let i = 0; i < result.successCount; i++) {
-            belowBoard.innerHTML += `
-                <img id="succeed-mission-image" alt="Succeed Mission" src='/images/success.png'></img>
-            `;
-        }
-        for (let i = 0; i < result.failCount; i++) {
-            belowBoard.innerHTML += `
-                <img id="fail-mission-image" alt="Fail Mission" src='/images/fail.png'></img>
-            `;
-        }
-        for (let i = 0; i < result.reverseCount; i++) {
-            belowBoard.innerHTML += `
-                <img id="reverse-mission-image" alt="Reverse Mission" src='/images/reverse.png'></img>
-            `;
-        }
+        showMissionResult(result);  
+    });
 
-        advanceButton.onclick = function() {
-            belowBoard.innerHTML = "";
-            socket.emit('advance-mission');
-            advanceButton.onclick = "";
-        }
+    socket.on('advance-mission', () => {
+        advanceMission();
     });
 
     socket.on('game-result', ({result}) => {
-        console.log(result);
-        if (startGame) {
-            startGame.disable = false;
-            startGame.style.display = "block";
-            const closeGame = document.getElementById("close-game-button");
-            closeGame.disabled = false;
-            closeGame.style.display = "block";
+        statusMessage.innerHTML = `${result} wins!`;
+        if (startGameButton) {
+            startGameButton.disable = false;
+            startGameButton.style.display = "block";
+            closeGameButton.disabled = false;
+            closeGameButton.style.display = "block";
         }
     });
 

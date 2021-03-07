@@ -3,24 +3,6 @@ body {
   font-family: 'Helvetica', sans-serif;
 }
 
-.home-button {
-  font-size: 1em;
-  font-weight: 25;
-
-  width: 5vw;
-  max-width: 20;
-  min-width: 50px;
-
-  min-height:28px;
-  height: 1.7vw;
-  max-height: 10;
-
-  margin: auto;
-
-  text-align: center;
-  vertical-align: middle;
-}
-
 /* Common Classes */
 
 .flex-column {
@@ -291,24 +273,7 @@ select {
   margin-block-start: 2vh;
 }
 
-#game-players {
-  margin: auto;
-  width: 20vw;
-  max-width: 300px;
-  border-bottom: 20px solid #029dbb;
-  box-shadow: 0 0 4px rgba(0,157,187,0);
-  color: #9debfb;
-  background: transparent;
-  border-bottom-left-radius: 10px;
-  border-bottom-right-radius: 10px;
-  margin-block-start: 2vh;
-  top: 55px;
-  right: 10px;
-  margin-top: 0px;
-  position: absolute;
-}
-
-#lobby-players h2, #game-players h2 {
+#lobby-players h2 {
   padding: 10px 20px;
   margin: 0px;
   font-size: 1.5em;
@@ -328,29 +293,10 @@ select {
   box-shadow: 0 0 4px rgba(2,157,187,0.65);
 }
 
-#game-players ul {
-  position: relative;
-  padding-inline-start: 1.75em;
-  margin-block-start: 0px;
-  margin-block-end: 0px;
-  text-align: left;
-  border: 1px solid #029dbb;
-  box-shadow: 0 0 4px rgba(2,157,187,0.65);
-}
-
-#lobby-player-list li, #game-player-list li, #proposal-player-list li {
+#lobby-player-list li, #proposal-player-list li {
   list-style: none;
   padding: 10px;
   font-size: 1.25em;
-}
-
-li.current-leader {
-  list-style: disc outside none !important;
-}
-
-li.current-leader::marker {
-  content: "➤";
-  color: #FFD700;
 }
 
 #propose-team {
@@ -367,15 +313,6 @@ li.current-leader::marker {
 
 .clickable {
   cursor: pointer;
-}
-
-#modal-game-information {
-  color: #b6f0fc;
-  display: none;
-  background-color: black;
-  border: 2px solid #029dbb;
-  box-shadow: 0 0 4px rgba(2,157,187,0.65);
-  font-family: 'Helvetica', sans-serif;
 }
 
 #game-information {
@@ -409,7 +346,7 @@ li.current-leader::marker {
   overflow: auto;
 }
 
-.modal-online {
+.online-modal {
   max-height: 96vh;
   box-sizing: border-box;
   top: 2vh;
@@ -421,29 +358,20 @@ li.current-leader::marker {
   transform: translate(-50%, -50%);
 }
 
-.modal-close-button {
+.close-modal-button {
   float: right;
   font-size: 28px;
   font-weight: bold;
 }
 
-.modal-close-button:hover,
-.modal-close-button:focus {
+.close-modal-button:hover,
+.close-modal-button:focus {
   text-decoration: none;
   cursor: pointer;
-}
-
-#roles-close-button:hover,
-#roles-close-button:focus {
   color: #08a5c4;
 }
 
-#game-information-close-button:hover,
-#game-information-close-button:focus {
-  color: #08a5c4;
-}
-
-.modal-open-button {
+.open-modal-button {
   border-radius: 50%;
   -webkit-border-radius: 50%;
   width: 1.5em;
@@ -457,13 +385,13 @@ li.current-leader::marker {
   cursor: pointer;
 }
 
-#roles-open-button {
+#open-roles-modal-button {
   color: #9debfb;
   background: transparent;
   border: 2px solid #029dbb;
 }
 
-#game-information-open-button {
+#open-intel-modal-button {
   color: #9debfb;
   background: transparent;
   border: 2px solid #029dbb;
@@ -480,7 +408,7 @@ li.current-leader::marker {
   cursor: pointer;
 }
 
-.lobby-open-button {
+#toggle-lobby-button {
   border-radius: 50%;
   -webkit-border-radius: 50%;
   width: 1.5em;
@@ -492,15 +420,12 @@ li.current-leader::marker {
   position: absolute;
   z-index: 5;
   cursor: pointer;
-}
-
-#lobby-open-button {
   color: #9debfb;
   background: transparent;
   border: 2px solid #029dbb;
 }
 
-#modal-roles {
+#roles-modal {
   display: none;
   color: #b6f0fc;
   background-color: transparent;
@@ -509,13 +434,34 @@ li.current-leader::marker {
   font-family: 'Helvetica', sans-serif;
 }
 
-#modal-roles h1 {
+#roles-modal h1 {
   font-family: Candara, sans-serif;
   text-shadow: 0 0 4px rgba(161,236,251,0.65);
   font-size: 1.75em;
 }
 
-#above-board {
+#intel-modal {
+  color: #b6f0fc;
+  display: none;
+  background-color: black;
+  border: 2px solid #029dbb;
+  box-shadow: 0 0 4px rgba(2,157,187,0.65);
+  font-family: 'Helvetica', sans-serif;
+}
+
+#intel-modal section {
+  margin: 0.67em 0em;
+}
+
+#intel-modal h2 {
+  font-family: Candara, sans-serif;
+}
+
+#intel-modal p {
+  margin: 0px;
+}
+
+#status-area {
   display: block;
   position: absolute;
   left: 50%;
@@ -526,32 +472,12 @@ li.current-leader::marker {
   text-align: center;
 }
 
-.current-leader {
-  text-decoration: underline;
-}
-
 #advance-button {
   width: 10vw;
   height: 5vh;
 }
 
-#center {
-  display: flex;
-}
-
-#game-board {
-  width: 50%;
-  margin: auto;
-}
-
-#below-board {
-  display: flex;
-  margin: auto;
-  color: #9debfb;
-  justify-content: center;
-}
-
-#top-players {
+#top-player-area {
   text-align: center;
   justify-content: center;
   display: flex;
@@ -565,7 +491,11 @@ li.current-leader::marker {
   text-align: center;
 }
 
-#left-players {
+#center-area {
+  display: flex;
+}
+
+#left-player-area {
   float: left;
   height: 600px;
   width: 200px;
@@ -581,7 +511,12 @@ li.current-leader::marker {
   text-align: center;
 }
 
-#right-players {
+#game-board {
+  width: 50%;
+  margin: auto;
+}
+
+#right-player-area {
   float: right;
   height: 600px;
   width: 200px;
@@ -595,6 +530,17 @@ li.current-leader::marker {
 
 .right-player {
   text-align: center;
+}
+
+.current-leader {
+  text-decoration: underline;
+}
+
+#action-area {
+  display: flex;
+  margin: auto;
+  color: #9debfb;
+  justify-content: center;
 }
 
 #approve-team-image, #reject-team-image {

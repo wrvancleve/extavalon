@@ -6,47 +6,72 @@ document.addEventListener('DOMContentLoaded', function () {
         ignoreQueryPrefix: true
     });
 
+    // Get elements
+    const lobby = document.getElementById("lobby")
+    const lobbyInformation = document.getElementById("lobby-information");
+    const toggleLobbyButton = document.getElementById("toggle-lobby-button");
+    const playerName = document.getElementById("name");
+    const rolesModal = document.getElementById("roles-modal");
+    const openRolesModalButton = document.getElementById("open-roles-modal-button");
+    const closeRolesModalButton = document.getElementById("close-roles-modal-button");
+    const startGameButton = document.getElementById("start-game-button");
+    const closeGameButton = document.getElementById("close-game-button");
+    const gameInformation = document.getElementById("game-information");
+
+    // Setup Page
     document.getElementById("game-code").innerHTML = `Game Code: ${code}`;
 
-    const openLobby = document.getElementById("lobby-open-button");
-    const lobby = document.getElementById("lobby");
-    const lobbyInformation = document.getElementById("lobby-information");
-    const gameInformation = document.getElementById("game-information");
-    const playerName = document.getElementById("name");
-    const roles = document.getElementById("modal-roles");
-    const openRoles = document.getElementById("roles-open-button");
-    const closeRoles = document.getElementById("roles-close-button");
-    const startGame = document.getElementById("start-game-button");
+    toggleLobbyButton.onclick = function() {
+        if (lobbyInformation.style.display === "none") {
+            lobbyInformation.style.display = "block";
+        } else {
+            lobbyInformation.style.display = "none";
+        }
+    }
 
-    if (startGame) {
-        const closeGame = document.getElementById("close-game-button");
-        startGame.onclick = function () {
+    openRolesModalButton.onclick = function() {
+        lobby.style.display = "none";
+        openRolesModalButton.style.display = "none";
+        toggleLobbyButton.style.display = "none";
+        rolesModal.style.display = "block";
+    }
+
+    closeRolesModalButton.onclick = function() {
+        rolesModal.style.display = "none";
+        lobby.style.display = "flex";
+        openRolesModalButton.style.display = "block";
+        toggleLobbyButton.style.display = "block";
+    }
+
+    if (startGameButton) {
+        startGameButton.onclick = function () {
             socket.emit('start-game-local');
         };
-        closeGame.onclick = function () {
+        closeGameButton.onclick = function () {
             socket.emit('close-lobby');
         };
     } else {
         lobbyInformation.style.display = "none";
     }
 
-    socket.on('update-players', currentPlayers => {
-        const activePlayerCount = currentPlayers.filter(p => p.active).length;
+    // Setup Socket Functions
+    function updateLobby(players) {
+        const activePlayerCount = players.filter(p => p.active).length;
         document.getElementById("lobby-player-count").innerHTML = `Players [${activePlayerCount}]`;
         document.getElementById("lobby-player-list").innerHTML = `
-            ${currentPlayers.map(player => `<li class="${player.active ? 'player-active' : 'player-inactive'}">${player.name}</li>`).join('')}
+            ${players.map(player => `<li class="${player.active ? 'player-active' : 'player-inactive'}">${player.name}</li>`).join('')}
         `;
-        if (startGame) {
-            startGame.disabled = activePlayerCount < 5;
-            if (startGame.disabled) {
-                startGame.classList.add("future-disabled");
+        if (startGameButton) {
+            startGameButton.disabled = activePlayerCount < 5;
+            if (startGameButton.disabled) {
+                startGameButton.classList.add("future-disabled");
             } else {
-                startGame.classList.remove("future-disabled");
+                startGameButton.classList.remove("future-disabled");
             }
         }
-    });
-    
-    socket.on('start-game', ({gameHTML, amFirstPlayer}) => {
+    }
+
+    function startGame(gameHTML, amFirstPlayer) {
         lobbyInformation.style.display = "none";
 
         if (amFirstPlayer) {
@@ -65,37 +90,24 @@ document.addEventListener('DOMContentLoaded', function () {
             gameInformation.classList.add("active");
         }
 
-        if (startGame) {
-            startGame.innerHTML = 'Play Again';
+        if (startGameButton) {
+            startGameButton.innerHTML = 'Play Again';
         }
+    }
+
+    // Attach Socket functions
+    socket.on('update-players', currentPlayers => {
+        updateLobby(currentPlayers);
+    });
+    
+    socket.on('start-game', ({gameHTML, amFirstPlayer}) => {
+        startGame(gameHTML, amFirstPlayer);
     });
 
     socket.on('close-lobby', () => {
         //location.replace("https://extavalon.com/");
         location.replace("http://localhost:8080");
     });
-
-    openLobby.onclick = function() {
-        if (lobbyInformation.style.display === "none") {
-            lobbyInformation.style.display = "block";
-        } else {
-            lobbyInformation.style.display = "none";
-        }
-    }
-
-    openRoles.onclick = function() {
-        lobby.style.display = "none";
-        openRoles.style.display = "none";
-        openLobby.style.display = "none";
-        roles.style.display = "block";
-    }
-
-    closeRoles.onclick = function() {
-        roles.style.display = "none";
-        lobby.style.display = "flex";
-        openRoles.style.display = "block";
-        openLobby.style.display = "block";
-    }
 
     socket.emit('join-lobby', {name, code});
 });

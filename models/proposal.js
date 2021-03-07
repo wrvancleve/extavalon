@@ -7,6 +7,10 @@ class Proposal {
         this.votesByPlayerId = new Map();
     }
 
+    getVotes() {
+        return this.votesByPlayerId;
+    }
+
     addVote(playerId, vote) {
         this.votesByPlayerId.set(playerId, vote);
         this.voteCount += 1;
@@ -16,15 +20,8 @@ class Proposal {
     }
 
     finalize() {
-        return this.rejectCount < Math.ceil(this.voteCount / 2);
-    }
-
-    getVote(playerId) {
-        return this.votesByPlayerId.get(playerId);
-    }
-
-    getVotes() {
-        return this.votesByPlayerId;
+        this.approved = this.rejectCount < Math.ceil(this.voteCount / 2);
+        return this.approved;
     }
 }
 

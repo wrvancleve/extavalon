@@ -19,10 +19,10 @@
             <button class="future-color future-secondary-font future-box" type="button" id="close-game-button">Close Game</button>
         {{/if}}
     </div>
-    <button class="lobby-open-button" id="lobby-open-button" title="Open Lobby Information"> # </button>
-    <button class="modal-open-button" id="roles-open-button" title="Open Role Information"> ? </button>
-    <div class="modal" id="modal-roles">
-        <span class="modal-close-button" id="roles-close-button">&times;</span>
+    <button id="toggle-lobby-button" title="Toggle Lobby Information"> # </button>
+    <button class="open-modal-button" id="open-roles-modal-button" title="Open Role Information"> ? </button>
+    <div class="modal" id="roles-modal">
+        <span class="close-modal-button" id="close-roles-modal-button">&times;</span>
         <h1>Resistance Roles</h1>
         <ul>
             {{# if settings.puck }}

@@ -15,8 +15,20 @@ class GameState {
         return 1;
     }
 
-    static get PHASE_CONDUCT() {
+    static get PHASE_VOTE_REACT() {
         return 2;
+    }
+
+    static get PHASE_CONDUCT() {
+        return 3;
+    }
+
+    static get PHASE_CONDUCT_REACT() {
+        return 4;
+    }
+
+    static get PHASE_ASSASSINATION() {
+        return 5;
     }
 
     static get NUM_WINS() {
@@ -28,7 +40,6 @@ class GameState {
     }
 
     constructor(playerInformation, settings) {
-        this.phase = GameState.PHASE_SETUP;
         this.resistanceWins = 0;
         this.spyWins = 0;
         this.playersByRole = new Map();
@@ -168,30 +179,6 @@ class GameState {
         }
 
         return shuffled ? shuffle(players) : players;
-    }
-
-    createProposal(ids) {
-        
-    }
-
-    getCurrentLeader() {
-        return this.players[this.currentLeaderId];
-    }
-
-    getCurrentMission() {
-        return this.missions[this.currentMissionId];
-    }
-
-    getCurrentProposal() {
-        return this.missions[this.currentMissionId].getCurrentProposal();
-    }
-
-    getPlayerName(id) {
-        return this.players[id].name;
-    }
-
-    getPlayerRole(id) {
-        return this.players[id].role;
     }
 }
 
