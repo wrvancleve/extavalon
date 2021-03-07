@@ -169,15 +169,10 @@ app.createServer = function() {
       lobby.playersReady += 1;
       if (lobby.playersReady === lobby.socketsByPlayerId.size) {
         lobby.playersReady = 0;
-        if (lobby.game.state.phase === GameState.PHASE_VOTE_REACT) {
-          if (lobby.game.advance() === GameState.PHASE_PROPOSE) {
-            startProposal(lobby);
-          } else {
-            conductMission(lobby);
-          }
-        } else {
-          lobby.game.advance();
+        if (lobby.game.advance() === GameState.PHASE_PROPOSE) {
           startProposal(lobby);
+        } else {
+          conductMission(lobby);
         }
       }
     }

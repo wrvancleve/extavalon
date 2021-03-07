@@ -238,6 +238,29 @@ document.addEventListener('DOMContentLoaded', function () {
         }
     }
 
+    function updateLeader(previousLeaderId, leader) {
+        for (let id = 0; id < gamePlayers.length; id++) {
+            const player = gamePlayers[id];
+            const playerVoteSlot = document.getElementById(player.voteSlotId);
+            playerVoteSlot.src = "";
+            playerVoteSlot.style.visibility = "hidden";
+            const playerGunSlot = document.getElementById(player.gunSlotId);
+            playerGunSlot.src = "";
+            playerGunSlot.style.visibility = "hidden";
+
+            if (id === previousLeaderId) {
+                player.nameId.classList.remove("current-leader");
+            } else if (id === leader.id) {
+                player.nameId.classList.add("current-leader");
+            }
+        }
+
+        actionArea.innerHTML = "";
+        gunSelected = null;
+        playersSelected = [];
+        statusMessage.innerHTML = `${leader.name} is proposing team...`;
+    }
+
     function setupProposal(count) {
         for (let i = 0; i < count; i++) {
             const gunImage = document.createElement('img');
@@ -317,7 +340,13 @@ document.addEventListener('DOMContentLoaded', function () {
         }
     }
 
-    function showVoteResult(votes) {
+    function showVoteResult(votes, approved) {
+        if (approved) {
+            statusMessage.innerHTML = "Proposal Approved!";
+        } else {
+            statusMessage.innerHTML = "Proposal Rejected!";
+        }
+
         for (let i = 0; i < gamePlayers.length; i++) {
             const voteSlot = document.getElementById(gamePlayers[i].voteSlotId);
             voteSlot.visibility = "visible";
@@ -395,22 +424,6 @@ document.addEventListener('DOMContentLoaded', function () {
         }
     }
 
-    function advanceMission() {
-        for (let id = 0; id < gamePlayers.length; id++) {
-            const player = gamePlayers[id];
-            const playerVoteSlot = document.getElementById(player.voteSlotId);
-            playerVoteSlot.src = "";
-            playerVoteSlot.style.visibility = "hidden";
-            const playerGunSlot = document.getElementById(player.gunSlotId);
-            playerGunSlot.src = "";
-            playerGunSlot.style.visibility = "hidden";
-        }
-
-        actionArea.innerHTML = "";
-        gunSelected = null;
-        playersSelected = [];
-    }
-
     // Attach Socket functions
     socket.on('update-players', currentPlayers => {
         updateLobby(currentPlayers);
@@ -426,11 +439,7 @@ document.addEventListener('DOMContentLoaded', function () {
     });
 
     socket.on('update-leader', ({previousLeaderId, leader}) => {
-        if (gamePlayers[previousLeaderId].nameId.classList.contains("current-leader")) {
-            gamePlayers[previousLeaderId].nameId.classList.remove("current-leader");
-        }
-        gamePlayers[leader.id].nameId.classList.add("current-leader");
-        statusMessage.innerHTML = `${leader.name} is proposing team...`;
+        updateLeader(previousLeaderId, leader);
     });
 
     socket.on('update-status', ({message}) => {
@@ -449,8 +458,8 @@ document.addEventListener('DOMContentLoaded', function () {
         setupVote();
     });
 
-    socket.on('vote-result', ({result}) => {
-        showVoteResult(result);
+    socket.on('vote-result', ({votes, approved}) => {
+        showVoteResult(votes, approved);
     });
 
     socket.on('conduct-mission', ({failAllowed, reverseAllowed}) => {
@@ -459,10 +468,6 @@ document.addEventListener('DOMContentLoaded', function () {
 
     socket.on('mission-result', ({result}) => {
         showMissionResult(result);  
-    });
-
-    socket.on('advance-mission', () => {
-        advanceMission();
     });
 
     socket.on('game-result', ({result}) => {
