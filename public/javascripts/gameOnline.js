@@ -22,20 +22,13 @@ document.addEventListener('DOMContentLoaded', function () {
     const advanceButton = document.getElementById("advance-button");
     const gameBoard = document.getElementById("game-board");
 
-    let playerId = null;
-    const gamePlayers = [];
+    let gamePlayers = [];
+    let gunSelected = null;
     const leftPlayerArea = document.getElementById("left-player-area");
     const topPlayerArea = document.getElementById("top-player-area");
     const rightPlayerArea = document.getElementById("right-player-area");
 
     const actionArea = document.getElementById("action-area");
-
-    let playersSelected = [];
-    let gunSelected = null;
-
-    const proposeTeam = document.getElementById("propose-team");
-    const proposalPlayerList = document.getElementById("proposal-player-list");
-    const proposalSubmitButton = document.getElementById("proposal-submit-button");
 
     // Setup Page
     document.getElementById("game-code").innerHTML = `Game Code: ${code}`;
@@ -95,28 +88,28 @@ document.addEventListener('DOMContentLoaded', function () {
         switch (section) {
             case "Left":
                 leftPlayerArea.innerHTML += `
-                    <div>
-                        <img class="player-gun-slot" id="${elementPrefix}-gun-slot" alt="Gun Slot" visibility="hidden"></img>
-                        <h3 class="${status} right-player" id="${elementPrefix}-name">${name}</h3>
-                        <img class="player-vote-slot" id="${elementPrefix}-vote-slot" alt="Vote Slot" visibility="hidden"></img>
+                    <div class="horizontal-player">
+                        <img class="gun-image" id="${elementPrefix}-gun-slot" alt="Gun Slot" style="visibility:hidden"></img>
+                        <h3 class="${status}" id="${elementPrefix}-name">${name}</h3>
+                        <img class="vote-image" id="${elementPrefix}-vote-slot" alt="Vote Slot" style="visibility:hidden"></img>
                     </div>
                 `; 
                 break;
             case "Top":
                 topPlayerArea.innerHTML += `
-                    <div>
-                        <img class="player-gun-slot" id="${elementPrefix}-gun-slot" alt="Gun Slot" visibility="hidden"></img>
-                        <h3 class="${status} right-player" id="${elementPrefix}-name">${name}</h3>
-                        <img class="player-vote-slot" id="${elementPrefix}-vote-slot" alt="Vote Slot" visibility="hidden"></img>
+                    <div class="vertical-player">
+                        <img class="gun-image" id="${elementPrefix}-gun-slot" alt="Gun Slot" style="visibility:hidden"></img>
+                        <h3 class="${status}" id="${elementPrefix}-name">${name}</h3>
+                        <img class="vote-image" id="${elementPrefix}-vote-slot" alt="Vote Slot" style="visibility:hidden"></img>
                     </div>
                 `; 
                 break;
             case "Right":
                 rightPlayerArea.innerHTML += `
-                    <div>
-                        <img class="player-vote-slot" id="${elementPrefix}-vote-slot" alt="Vote Slot" visibility="hidden"></img>
-                        <h3 class="${status} right-player" id="${elementPrefix}-name">${name}</h3>
-                        <img class="player-gun-slot" id="${elementPrefix}-gun-slot" alt="Gun Slot" visibility="hidden"></img>
+                    <div class="horizontal-player">
+                        <img class="vote-image" id="${elementPrefix}-vote-slot" alt="Vote Slot" style="visibility:hidden"></img>
+                        <h3 class="${status}" id="${elementPrefix}-name">${name}</h3>
+                        <img class="gun-image" id="${elementPrefix}-gun-slot" alt="Gun Slot" style="visibility:hidden"></img>
                     </div>
                 `; 
                 break;
@@ -135,6 +128,34 @@ document.addEventListener('DOMContentLoaded', function () {
         }
     }
 
+    function getGunSlotSrcs() {
+        const gunSlotSrcs = [];
+        for (let i = 0; i < gamePlayers.length; i++) {
+            const gunSlot = document.getElementById(gamePlayers[i].gunSlotId);
+            if (gunSlot.style.visibility === "visible") {
+                gunSlotSrcs.push(gunSlot.alt);
+            } else {
+                gunSlotSrcs.push("");
+            }
+        }
+        return gunSlotSrcs;
+    }
+
+    function updateGunSlotSrcs(gunSlotSrcs) {
+        for (let i = 0; i < gamePlayers.length; i++) {
+            const gunSlot = document.getElementById(gamePlayers[i].gunSlotId);
+            gunSlot.style.visibility = "visible";
+            if (gunSlotSrcs[i]) {
+                gunSlot.src = `/images/${gunSlotSrcs[i]}`;
+                gunSlot.alt = gunSlotSrcs[i];
+            } else {
+                gunSlot.src = "";
+                gunSlot.alt = "Gun Slot";
+                gunSlot.style.visibility = "hidden";
+            }
+        }
+    }
+
     // Setup Socket Functions
     function updateLobby(players) {
         const activePlayerCount = players.filter(p => p.active).length;
@@ -142,7 +163,7 @@ document.addEventListener('DOMContentLoaded', function () {
         document.getElementById("lobby-player-list").innerHTML = `
             ${players.map(player => `<li class="${player.active ? 'player-active' : 'player-inactive'}">${player.name}</li>`).join('')}
         `;
-        if (host) {
+        if (startGameButton) {
             startGameButton.disabled = activePlayerCount < 5;
             if (startGameButton.disabled) {
                 startGameButton.classList.add("future-disabled");
@@ -153,7 +174,6 @@ document.addEventListener('DOMContentLoaded', function () {
     }
 
     function setupGame(gameHTML, players, id) {
-        playerId = id;
         gamePlayers = [];
         gunSelected = null;
         playersSelected = null;
@@ -244,98 +264,131 @@ document.addEventListener('DOMContentLoaded', function () {
             const playerVoteSlot = document.getElementById(player.voteSlotId);
             playerVoteSlot.src = "";
             playerVoteSlot.style.visibility = "hidden";
+            playerVoteSlot.alt = "Vote Slot";
             const playerGunSlot = document.getElementById(player.gunSlotId);
             playerGunSlot.src = "";
             playerGunSlot.style.visibility = "hidden";
+            playerGunSlot.alt = "Gun Slot";
 
             if (id === previousLeaderId) {
-                player.nameId.classList.remove("current-leader");
+                document.getElementById(player.nameId).classList.remove("current-leader");
             } else if (id === leader.id) {
-                player.nameId.classList.add("current-leader");
+                document.getElementById(player.nameId).classList.add("current-leader");
             }
         }
 
         actionArea.innerHTML = "";
         gunSelected = null;
-        playersSelected = [];
         statusMessage.innerHTML = `${leader.name} is proposing team...`;
     }
 
     function setupProposal(count) {
-        for (let i = 0; i < count; i++) {
-            const gunImage = document.createElement('img');
-            gunImage.classList.add("clickable");
-            gunImage.alt = "Gun";
-            gunImage.src = `/images/gun-${i + 1}.png`;
-            gunImage.onclick = function () {
-                gunSelected = gunImage;
-            };
-            actionArea.appendChild(gunImage);
-        }
-
         advanceButton.disabled = true;
         advanceButton.classList.add("future-disabled");
 
-        for (let id = 0; id < gamePlayers.length; id++) {
-            const playerName = document.getElementById(gamePlayers.nameId);
+        for (let i = 0; i < count; i++) {
+            const gunImage = document.createElement('img');
+            gunImage.classList.add("gun-image");
+            gunImage.classList.add("clickable");
+            gunImage.alt = `gun-${i + 1}.png`;
+            gunImage.src = `/images/gun-${i + 1}.png`;
+            gunImage.onclick = function () {
+                gunSelected = gunImage;
+                attachNameClicks();
+            };
+            actionArea.appendChild(gunImage);
+        }
+    }
+
+    function attachNameClicks() {
+        for (let i = 0; i < gamePlayers.length; i++) {
+            const playerName = document.getElementById(gamePlayers[i].nameId);
             playerName.classList.add("clickable");
             playerName.onclick = function () {
-                if (gunSelected) {
-                    const gunSlot = document.getElementById(gamePlayers.gunSlotId);
-                    gunSlot.style.visibility = "visible";
-                    gunSlot.src = gunImage.src;
+                handleNameClick(i);
 
-                    if (gunSelected.parentNode.id === actionArea.id) {
-                        gunSelected.remove();
-                    } else {
-                        gunSelected.src = "";
-                        gunSelected.style.visibility = "hidden";
-                    }
+                gunSelected = null;
+                removeNameClicks();
 
-                    if (actionArea.childElementCount > 0) {
-                        advanceButton.disabled = true;
-                        advanceButton.classList.add("future-disabled");
-                        advanceButton.onclick = "";
-                    } else {
-                        advanceButton.disabled = false;
-                        advanceButton.classList.remove("future-disabled");
-                        advanceButton.onclick = function() {
-                            const selectedIds = [];
-                            for (let i = 0; i < gamePlayers.length; i++) {
-                                if (document.getElementById(gamePlayers[i].gunSlotId).src) {
-                                    selectedIds.push(i);
-                                }
-                            }
-                            socket.emit('propose-team', {selectedIds});
-                            advanceButton.onclick = "";
-                            advanceButton.disabled = true;
-                            advanceButton.classList.add("future-disabled");
-                        };
-                    }
+                socket.emit('update-team', {gunSlotSrcs: getGunSlotSrcs()});
+                if (actionArea.childElementCount > 0) {
+                    advanceButton.disabled = true;
+                    advanceButton.classList.add("future-disabled");
+                    advanceButton.onclick = "";
+                } else {
+                    advanceButton.disabled = false;
+                    advanceButton.classList.remove("future-disabled");
+                    advanceButton.onclick = function() {
+                        submitProposal();
+                    };
                 }
             };
         }
     }
 
-    function updateProposal () {
+    function removeNameClicks() {
+        for (let i = 0; i < gamePlayers.length; i++) {
+            const playerName = document.getElementById(gamePlayers[i].nameId);
+            playerName.classList.remove("clickable");
+            playerName.onclick = "";
+        }
+    }
 
+    function handleNameClick(i) {
+        const gunSlot = document.getElementById(gamePlayers[i].gunSlotId);
+        gunSlot.style.visibility = "visible";
+        gunSlot.src = `/images/${gunSelected.alt}`;
+        gunSlot.alt = gunSelected.alt;
+        gunSlot.classList.add("clickable");
+        gunSlot.onclick = function () {
+            gunSelected = gunSlot;
+            attachNameClicks();
+        };
+
+        if (gunSelected.parentNode.id === actionArea.id) {
+            gunSelected.remove();
+        } else {
+            gunSelected.src = "";
+            gunSelected.alt = "Gun Slot";
+            gunSelected.classList.remove("clickable");
+            gunSelected.onclick = "";
+            gunSelected.style.visibility = "hidden";
+        }
+    }
+
+    function submitProposal() {
+        const selectedIds = [];
+        for (let i = 0; i < gamePlayers.length; i++) {
+            const gunSlot = document.getElementById(gamePlayers[i].gunSlotId);
+            if (gunSlot.style.visibility === "visible") {
+                selectedIds.push(i);
+                gunSlot.classList.remove("clickable");
+                gunSlot.onclick = "";
+            }
+        }
+
+        advanceButton.onclick = "";
+        advanceButton.disabled = true;
+        advanceButton.classList.add("future-disabled");
+
+        socket.emit('propose-team', {selectedIds});
     }
 
     function setupVote() {
         statusMessage.innerHTML = "Voting on team...";
 
         actionArea.innerHTML = `
-            <img class="clickable" id="approve-team-image" alt="Approve Team" src='/images/approve.png'></img>
-            <img class="clickable" id="reject-team-image" alt="Reject Team" src='/images/reject.png'></img>
+            <img class="vote-image clickable" id="approve-team-image" alt="Approve Team" src='/images/approve.png'></img>
+            <img class="vote-image clickable" id="reject-team-image" alt="Reject Team" src='/images/reject.png'></img>
         `; 
 
         document.getElementById("approve-team-image").onclick = function() {
-            socket.emit('vote-team', {id: playerId, vote: true});
+            socket.emit('vote-team', {vote: true});
             actionArea.innerHTML= "";
         }
 
         document.getElementById("reject-team-image").onclick = function() {
-            socket.emit('vote-team', {id: playerId, vote: false});
+            socket.emit('vote-team', {vote: false});
             actionArea.innerHTML= "";
         }
     }
@@ -349,27 +402,38 @@ document.addEventListener('DOMContentLoaded', function () {
 
         for (let i = 0; i < gamePlayers.length; i++) {
             const voteSlot = document.getElementById(gamePlayers[i].voteSlotId);
-            voteSlot.visibility = "visible";
+            voteSlot.style.visibility = "visible";
+            console.log(`Player${i} Vote: ${votes[i]}`);
             if (votes[i]) {
                 voteSlot.src = "/images/approve.png";
             } else {
                 voteSlot.src = "/images/reject.png";
             }
         }
+
+        advanceButton.disabled = false;
+        advanceButton.classList.remove("future-disabled");
+        advanceButton.onclick = function() {
+            statusMessage.innerHTML = "Waiting for players to advance...";
+            socket.emit('advance-mission');
+            advanceButton.onclick = "";
+            advanceButton.disabled = true;
+            advanceButton.classList.add("future-disabled");
+        };
     }
 
     function setupMission(failAllowed, reverseAllowed) {
         actionArea.innerHTML = `
-            <img class="clickable" id="succeed-mission-image" alt="Succeed Mission" src='/images/success.png'></img>
+            <img class="action-image clickable" id="succeed-mission-image" alt="Succeed Mission" src='/images/success.png'></img>
         `; 
         if (failAllowed) {
             actionArea.innerHTML += `
-                <img class="clickable" id="fail-mission-image" alt="Fail Mission" src='/images/fail.png'></img>
+                <img class="action-image clickable" id="fail-mission-image" alt="Fail Mission" src='/images/fail.png'></img>
             `;
         }
         if (reverseAllowed) {
             actionArea.innerHTML += `
-                <img class="clickable" id="reverse-mission-image" alt="Reverse Mission" src='/images/reverse.png'></img>
+                <img class="action-image clickable" id="reverse-mission-image" alt="Reverse Mission" src='/images/reverse.png'></img>
             `;
         }
 
@@ -379,13 +443,13 @@ document.addEventListener('DOMContentLoaded', function () {
         }
         if (failAllowed) {
             document.getElementById("fail-mission-image").onclick = function() {
-                socket.emit('conduct-mission', {id: playerId, action: 'Fail'});
+                socket.emit('conduct-mission', {action: 'Fail'});
                 actionArea.innerHTML = "";
             }
         }
         if (reverseAllowed) {
             document.getElementById("reverse-mission-image").onclick = function() {
-                socket.emit('conduct-mission', {id: playerId, action: 'Reverse'});
+                socket.emit('conduct-mission', {action: 'Reverse'});
                 actionArea.innerHTML = "";
             }
         }
@@ -395,17 +459,17 @@ document.addEventListener('DOMContentLoaded', function () {
         actionArea.innerHTML = "";
         for (let i = 0; i < result.successCount; i++) {
             actionArea.innerHTML += `
-                <img id="succeed-mission-image" alt="Succeed Mission" src='/images/success.png'></img>
+                <img class="action-image" id="succeed-mission-image" alt="Succeed Mission" src='/images/success.png'></img>
             `;
         }
         for (let i = 0; i < result.failCount; i++) {
             actionArea.innerHTML += `
-                <img id="fail-mission-image" alt="Fail Mission" src='/images/fail.png'></img>
+                <img class="action-image" id="fail-mission-image" alt="Fail Mission" src='/images/fail.png'></img>
             `;
         }
         for (let i = 0; i < result.reverseCount; i++) {
             actionArea.innerHTML += `
-                <img id="reverse-mission-image" alt="Reverse Mission" src='/images/reverse.png'></img>
+                <img class="action-image" id="reverse-mission-image" alt="Reverse Mission" src='/images/reverse.png'></img>
             `;
         }
 
@@ -415,6 +479,8 @@ document.addEventListener('DOMContentLoaded', function () {
             statusMessage.innerHTML = "Mission failed!";
         }
 
+        advanceButton.disabled = false;
+        advanceButton.classList.remove("future-disabled");
         advanceButton.onclick = function() {
             statusMessage.innerHTML = "Waiting for players to advance...";
             socket.emit('advance-mission');
@@ -450,8 +516,8 @@ document.addEventListener('DOMContentLoaded', function () {
         setupProposal(count);
     });
 
-    socket.on('update-team', ({selectedIds}) => {
-        updateProposal(selectedIds);
+    socket.on('update-team', ({gunSlotSrcs}) => {
+        updateGunSlotSrcs(gunSlotSrcs);
     });
 
     socket.on('vote-team', () => {
@@ -459,6 +525,7 @@ document.addEventListener('DOMContentLoaded', function () {
     });
 
     socket.on('vote-result', ({votes, approved}) => {
+        console.log(votes);
         showVoteResult(votes, approved);
     });
 
@@ -472,6 +539,9 @@ document.addEventListener('DOMContentLoaded', function () {
 
     socket.on('game-result', ({result}) => {
         statusMessage.innerHTML = `${result} wins!`;
+        advanceButton.onclick = "";
+        advanceButton.disabled = true;
+        advanceButton.classList.add("future-disabled");
         if (startGameButton) {
             startGameButton.disable = false;
             startGameButton.style.display = "block";

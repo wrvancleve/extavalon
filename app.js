@@ -126,8 +126,7 @@ app.createServer = function() {
         lobby.socketsByPlayerId.set(i, currentPlayer.socketId);
         io.sockets.to(currentPlayer.socketId).emit('start-game', {
           gameHTML: game.getPlayerHTML(i),
-          players: game.getPlayerInformation(i),
-          id: i
+          players: game.getPlayerInformation(i)
         });
       }
       startProposal(lobby);
@@ -141,8 +140,8 @@ app.createServer = function() {
       io.sockets.to(lobby.socketsByPlayerId.get(leader.id)).emit('propose-team', {count: mission.teamSize});
     }
 
-    function updateTeam(lobby, selectedIds) {
-      io.sockets.to(lobby.code).emit('update-team', {selectedIds: selectedIds});
+    function updateTeam(lobby, gunSlotSrcs) {
+      io.sockets.to(lobby.code).emit('update-team', {gunSlotSrcs: gunSlotSrcs});
     }
 
     function proposeTeam(lobby, selectedIds) {
@@ -150,9 +149,11 @@ app.createServer = function() {
       io.sockets.to(lobby.code).emit('vote-team');
     }
 
-    function voteTeam(lobby, id, vote) {
-      const result = lobby.game.addProposalVote(id, vote);
+    function voteTeam(lobby, vote) {
+      const playerId = lobby.players.filter(player => player.socketId === socket.id)[0].id;
+      const result = lobby.game.addProposalVote(playerId, vote);
       if (result !== null) {
+        console.log("%j", Object.fromEntries(result.votes));
         io.sockets.to(lobby.code).emit('vote-result', {votes: Object.fromEntries(result.votes), approved: result.approved});
         if (result.gameOver) {
           io.sockets.to(lobby.code).emit('game-result', {result: "Spies"});
@@ -190,8 +191,9 @@ app.createServer = function() {
       }
     }
 
-    function processMissionAction(lobby, id, action) {
-      const result = lobby.game.addMissionAction(id, action);
+    function processMissionAction(lobby, action) {
+      const playerId = lobby.players.filter(player => player.socketId === socket.id)[0].id;
+      const result = lobby.game.addMissionAction(playerId, action);
       if (result !== null) {
         io.sockets.to(lobby.code).emit('mission-result', {result: result});
         if (result.gameOver) {
@@ -225,20 +227,20 @@ app.createServer = function() {
         startOnlineGame(lobby);
       });
 
-      socket.on('update-team', ({selectedIds}) => {
-        updateTeam(lobby, selectedIds);
+      socket.on('update-team', ({gunSlotSrcs}) => {
+        updateTeam(lobby, gunSlotSrcs);
       });
 
       socket.on('propose-team', ({selectedIds}) => {
         proposeTeam(lobby, selectedIds);
       });
 
-      socket.on('vote-team', ({id, vote}) => {
-        voteTeam(lobby, id, vote);
+      socket.on('vote-team', ({vote}) => {
+        voteTeam(lobby, vote);
       });
 
-      socket.on('conduct-mission', ({id, action}) => {
-        processMissionAction(lobby, id, action);
+      socket.on('conduct-mission', ({action}) => {
+        processMissionAction(lobby, action);
       });
 
       socket.on('advance-mission', () => {

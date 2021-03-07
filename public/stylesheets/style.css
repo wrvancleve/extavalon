@@ -461,7 +461,7 @@ select {
   margin: 0px;
 }
 
-#status-area {
+#status-message {
   display: block;
   position: absolute;
   left: 50%;
@@ -473,67 +473,83 @@ select {
 }
 
 #advance-button {
-  width: 10vw;
-  height: 5vh;
+  width: calc(3px + 4.5em);
+  height: 4vh;
+  position: absolute;
+  top: calc(10px + 1.5em + 2vh);
+  margin-top: 0px;
+  right: 10px;
+  font-size: 1em;
 }
 
-#top-player-area {
-  text-align: center;
-  justify-content: center;
+.vertical-player-area {
   display: flex;
-  justify-content: space-between;
+  align-items: center;
+  justify-content: space-around;
   width: 50vw;
   margin: auto;
-  padding-top: 100px;
+  padding-top: 4vh;
 }
 
-.top-player {
+.vertical-player {
   text-align: center;
+}
+
+.vertical-player h3 {
+  margin: 0.5vh 0.5vw;
 }
 
 #center-area {
   display: flex;
 }
 
-#left-player-area {
-  float: left;
-  height: 600px;
-  width: 200px;
+#game-board {
+  width: 50vw;
+  height: 50vh;
+}
+
+.horizontal-player-area {
+  height: 40vh;
+  width: 25vw;
   display: flex;
   flex-direction: column;
   justify-content: space-between;
-  margin-top: 20px;
-  margin-bottom: 20px;
-  text-align: center;
-}
-
-.left-player {
-  text-align: center;
-}
-
-#game-board {
-  width: 50%;
   margin: auto;
 }
 
-#right-player-area {
-  float: right;
-  height: 600px;
-  width: 200px;
+.horizontal-player {
   display: flex;
-  flex-direction: column;
-  justify-content: space-between;
-  margin-top: 20px;
-  margin-bottom: 20px;
-  text-align: center;
+  justify-content: center;
+  align-items: center;
 }
 
-.right-player {
-  text-align: center;
+.horizontal-player h3 {
+  margin: 0.5vh 0.5vw;
 }
 
 .current-leader {
   text-decoration: underline;
+}
+
+.gun-image {
+  height: 6vh;
+  width: 10vw;
+  min-height: 6vh;
+  min-width: 10vw;
+}
+
+.vote-image {
+  height: 10vh;
+  width: 6vw;
+  min-height: 10vh;
+  min-width: 6vw;
+}
+
+.action-image {
+  height: 16vh;
+  width: 12vw;
+  min-height: 16vh;
+  min-width: 12vw;
 }
 
 #action-area {
@@ -543,6 +559,6 @@ select {
   justify-content: center;
 }
 
-#approve-team-image, #reject-team-image {
-  cursor: pointer;
+img + img {
+  margin-left: 0.5vw;
 }

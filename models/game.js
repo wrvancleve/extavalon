@@ -173,7 +173,7 @@ class Game {
 
     createProposal(ids) {
         const proposal = new Proposal(this.state.currentLeaderId, ids);
-        this.state.getCurrentMission().addProposal(this.state.currentLeaderId, proposal);
+        this.getCurrentMission().addProposal(this.state.currentLeaderId, proposal);
         this.advance();
     }
 
@@ -204,7 +204,7 @@ class Game {
     }
 
     addMissionAction(id, action) {
-        const currentMission = this.state.getCurrentMission();
+        const currentMission = this.getCurrentMission();
         currentMission.addAction(id, action);
         if (currentMission.actionCount === currentMission.teamSize) {
             currentMission.finalize();
@@ -216,7 +216,7 @@ class Game {
     }
 
     getMissionResult() {
-        const currentMission = this.state.getCurrentMission();
+        const currentMission = this.getCurrentMission();
         const result = currentMission.result;
         let gameOver = this.state.spyWins === 2 && this.state.resistanceWins === 2;
         if (!gameOver) {
