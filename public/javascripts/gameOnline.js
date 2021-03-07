@@ -20,6 +20,7 @@ document.addEventListener('DOMContentLoaded', function () {
     
     const statusMessage = document.getElementById("status-message");
     const advanceButton = document.getElementById("advance-button");
+    const boardArea = document.getElementById("board-area");
     const gameBoard = document.getElementById("game-board");
 
     let gamePlayers = [];
@@ -173,7 +174,7 @@ document.addEventListener('DOMContentLoaded', function () {
         }
     }
 
-    function setupGame(gameHTML, players, id) {
+    function setupGame(gameHTML, players) {
         gamePlayers = [];
         gunSelected = null;
         playersSelected = null;
@@ -184,6 +185,10 @@ document.addEventListener('DOMContentLoaded', function () {
         openIntelModalButton.style.display = "block";
         game.style.display = "block";
         intelModal.innerHTML = gameHTML;
+
+        while (boardArea.children.length > 1) {
+            boardArea.removeChild(boardArea.lastChild);
+        }
 
         switch (players.length) {
             case 5:
@@ -473,11 +478,41 @@ document.addEventListener('DOMContentLoaded', function () {
             `;
         }
 
+        const missionId = boardArea.children.length - 1;
+        const resultImage = document.createElement('img');
+        resultImage.classList.add("result-image");
         if (result.result === "Success") {
             statusMessage.innerHTML = "Mission successful!";
+            resultImage.alt = "Successful Mission";
+            resultImage.src = "/images/successful-mission.png";
         } else {
             statusMessage.innerHTML = "Mission failed!";
+            resultImage.alt = "Failed Mission";
+            resultImage.src = "/images/failed-mission.png";
         }
+        switch (missionId) {
+            case 0:
+                resultImage.style.left = "1.5vw";
+                resultImage.style.top = "20.25vh";
+                break;
+            case 1:
+                resultImage.style.left = "10.5vw";
+                resultImage.style.top = "20vh";
+                break;
+            case 2:
+                resultImage.style.left = "19.75vw";
+                resultImage.style.top = "19.75vh";
+                break;
+            case 3:
+                resultImage.style.left = "28.75vw";
+                resultImage.style.top = "19.75vh";
+                break;
+            case 4:
+                resultImage.style.left = "38vw";
+                resultImage.style.top = "19.5vh";
+                break;
+        }
+        boardArea.appendChild(resultImage);
 
         advanceButton.disabled = false;
         advanceButton.classList.remove("future-disabled");

@@ -506,6 +506,18 @@ select {
 #game-board {
   width: 50vw;
   height: 50vh;
+  z-index: 0;
+}
+
+#board-area {
+  position: relative;
+}
+
+.result-image {
+  z-index: 1;
+  position: absolute;
+  height: 11vh;
+  width: 9vw;
 }
 
 .horizontal-player-area {
