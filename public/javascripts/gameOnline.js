@@ -25,11 +25,16 @@ document.addEventListener('DOMContentLoaded', function () {
 
     let gamePlayers = [];
     let gunSelected = null;
+    let playersSelected = null;
     const leftPlayerArea = document.getElementById("left-player-area");
     const topPlayerArea = document.getElementById("top-player-area");
     const rightPlayerArea = document.getElementById("right-player-area");
 
     const actionArea = document.getElementById("action-area");
+
+    const resultModal = document.getElementById("result-modal");
+    const closeResultModalButton = document.getElementById("close-result-modal-button");
+    const resultArea = document.getElementById("result-area");
 
     // Setup Page
     document.getElementById("game-code").innerHTML = `Game Code: ${code}`;
@@ -64,6 +69,10 @@ document.addEventListener('DOMContentLoaded', function () {
 
     closeRolesModalButton.onclick = function() {
         rolesModal.style.display = "none";
+    }
+
+    closeResultModalButton.onclick = function() {
+        resultModal.style.display = "none";
     }
 
     if (startGameButton) {
@@ -143,16 +152,18 @@ document.addEventListener('DOMContentLoaded', function () {
     }
 
     function updateGunSlotSrcs(gunSlotSrcs) {
-        for (let i = 0; i < gamePlayers.length; i++) {
-            const gunSlot = document.getElementById(gamePlayers[i].gunSlotId);
-            gunSlot.style.visibility = "visible";
-            if (gunSlotSrcs[i]) {
-                gunSlot.src = `/images/${gunSlotSrcs[i]}`;
-                gunSlot.alt = gunSlotSrcs[i];
-            } else {
-                gunSlot.src = "";
-                gunSlot.alt = "Gun Slot";
-                gunSlot.style.visibility = "hidden";
+        if (gunSlotSrcs) {
+            for (let i = 0; i < gamePlayers.length; i++) {
+                const gunSlot = document.getElementById(gamePlayers[i].gunSlotId);
+                gunSlot.style.visibility = "visible";
+                if (gunSlotSrcs[i]) {
+                    gunSlot.src = `/images/${gunSlotSrcs[i]}`;
+                    gunSlot.alt = gunSlotSrcs[i];
+                } else {
+                    gunSlot.src = "";
+                    gunSlot.alt = "Gun Slot";
+                    gunSlot.style.visibility = "hidden";
+                }
             }
         }
     }
@@ -182,6 +193,7 @@ document.addEventListener('DOMContentLoaded', function () {
         topPlayerArea.innerHTML = "";
         rightPlayerArea.innerHTML = "";
         lobby.style.display = "none";
+        resultModal.style.display = "none";
         openIntelModalButton.style.display = "block";
         game.style.display = "block";
         intelModal.innerHTML = gameHTML;
@@ -525,6 +537,120 @@ document.addEventListener('DOMContentLoaded', function () {
         }
     }
 
+    function disableAssassinationConfirm() {
+        const confirmAssassinationButton = document.getElementById("confirm-assassination-button");
+        confirmAssassinationButton.disabled = true;
+        confirmAssassinationButton.classList.add("future-disabled");
+        confirmAssassinationButton.onclick = "";
+    }
+
+    function handleAssassinationClick(id) {
+        const index = playersSelected.indexOf(id);
+        if (index !== -1) {
+            playersSelected.splice(index, 1);
+        } else {
+            playersSelected.push(id);
+        }
+
+        const confirmAssassinationButton = document.getElementById("confirm-assassination-button");
+        const assassinationHeader = document.getElementById("assassination-header");
+
+        if (playersSelected.length === 0) {
+            assassinationHeader.innerHTML = "Select Player(s) To Assassinate";
+            disableAssassinationConfirm();
+        } else if (playersSelected.length > 2) {
+            assassinationHeader.innerHTML = "Too Many Players Selected! Please Reset";
+            disableAssassinationConfirm();
+        } else {
+            assassinationHeader.innerHTML = `
+                Assassinate ${playersSelected.map(i => document.getElementById(gamePlayers[i].nameId).innerHTML).join(' and ')} as:
+            `;
+
+            const assassinationRolesSelect = document.getElementById("assassination-roles-select");
+            assassinationRolesSelect.onchange = function() {
+                if (assassinationRolesSelect.value) {
+                    confirmAssassinationButton.disabled = false;
+                    confirmAssassinationButton.classList.remove("future-disabled");
+                    confirmAssassinationButton.onclick = function () {
+                        socket.emit('conduct-assassination', {ids: playersSelected, role: assassinationRolesSelect.value});
+                        actionArea.innerHTML = "";
+                    };
+                } else {
+                    disableAssassinationConfirm();
+                }
+            }
+            
+            if (playersSelected.length === 2) {
+                assassinationRolesSelect.innerHTML = `
+                    <option value=""></option>
+                    <option value="Lovers">Lovers</option>
+                `;
+            } else {
+                assassinationRolesSelect.innerHTML = `
+                    <option value=""></option>
+                    <option value="Merlin">Merlin</option>
+                    <option value="Arthur">Arthur</option>
+                `;
+            }
+        }
+    }
+
+    function setupAssassination() {
+        playersSelected = [];
+        actionArea.innerHTML += `
+            <div id="assassination-area">
+                <h2 id="assassination-header">Select Player(s) To Assassinate</h2>
+                <select id="assassination-roles-select">
+                    <option value=""></option>
+                    <option value="Merlin">Merlin</option>
+                    <option value="Arthur">Arthur</option>
+                    <option value="Lovers">Lovers</option>
+                </select>
+                <button class="future-color future-secondary-font future-box" type="button"
+                    id="reset-assassination-button">Reset Assassination</button>
+                <button class="future-color future-secondary-font future-disabled future-box" type="button"
+                    id="confirm-assassination-button" disabled>Confirm Assassination</button>
+            </div>
+        `;
+
+        for (let i = 0; i < gamePlayers.length; i++) {
+            const nameElement = document.getElementById(gamePlayers[i].nameId);
+            if (nameElement.classList.contains("resistance")) {
+                nameElement.classList.add("clickable");
+                nameElement.onclick = function () {
+                    handleAssassinationClick(i);
+                };
+            }
+        }
+
+        document.getElementById("reset-assassination-button").onclick = function () {
+            playersSelected = [];
+            document.getElementById("assassination-header").innerHTML = "Select Player(s) To Assassinate";
+            document.getElementById("assassination-roles-select").innerHTML = `
+                <option value=""></option>
+                <option value="Merlin">Merlin</option>
+                <option value="Arthur">Arthur</option>
+                <option value="Lovers">Lovers</option>
+            `;
+            disableAssassinationConfirm();
+        };
+    }
+
+    function showGameResult(winner, message) {
+        resultModal.style.display = "block";
+        resultArea.innerHTML = message;
+        statusMessage.innerHTML = `${winner} wins!`;
+        advanceButton.onclick = "";
+        advanceButton.disabled = true;
+        advanceButton.classList.add("future-disabled");
+        if (startGameButton) {
+            startGameButton.disable = false;
+            startGameButton.style.display = "block";
+            closeGameButton.disabled = false;
+            closeGameButton.style.display = "block";
+        }
+    }
+
     // Attach Socket functions
     socket.on('update-players', currentPlayers => {
         updateLobby(currentPlayers);
@@ -572,17 +698,12 @@ document.addEventListener('DOMContentLoaded', function () {
         showMissionResult(result);  
     });
 
-    socket.on('game-result', ({result}) => {
-        statusMessage.innerHTML = `${result} wins!`;
-        advanceButton.onclick = "";
-        advanceButton.disabled = true;
-        advanceButton.classList.add("future-disabled");
-        if (startGameButton) {
-            startGameButton.disable = false;
-            startGameButton.style.display = "block";
-            closeGameButton.disabled = false;
-            closeGameButton.style.display = "block";
-        }
+    socket.on('conduct-assassination', () => {
+        setupAssassination();
+    });
+
+    socket.on('game-result', ({winner, message}) => {
+        showGameResult(winner, message);
     });
 
     socket.emit('join-lobby', {name, code});

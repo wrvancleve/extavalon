@@ -31,6 +31,10 @@ class GameState {
         return 5;
     }
 
+    static get PHASE_DONE() {
+        return 5;
+    }
+
     static get NUM_WINS() {
         return 3;
     }
@@ -49,6 +53,7 @@ class GameState {
         this.players = this._createPlayers(playerInformation);
         this.missions = this._createMissions();
         this.phase = GameState.PHASE_PROPOSE;
+        this.winner = null;
     }
 
     _createPlayers(playerInformation) {

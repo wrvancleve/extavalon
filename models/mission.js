@@ -48,7 +48,6 @@ class Mission {
             missionFailed = !missionFailed;
         }
         this.result = missionFailed ? "Fail" : "Success";
-        return this.result;
     }
 
     getMissionTeam() {

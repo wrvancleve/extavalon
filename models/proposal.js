@@ -5,6 +5,7 @@ class Proposal {
         this.voteCount = 0;
         this.rejectCount = 0;
         this.votesByPlayerId = new Map();
+        this.result = null;
     }
 
     getVotes() {
@@ -20,8 +21,7 @@ class Proposal {
     }
 
     finalize() {
-        this.approved = this.rejectCount < Math.ceil(this.voteCount / 2);
-        return this.approved;
+        this.result = this.rejectCount < Math.ceil(this.voteCount / 2);
     }
 }
 

@@ -356,6 +356,7 @@ select {
   top: 50%;
   left: 50%;
   transform: translate(-50%, -50%);
+  z-index: 5;
 }
 
 .close-modal-button {
@@ -459,6 +460,15 @@ select {
 
 #intel-modal p {
   margin: 0px;
+}
+
+#results-modal {
+  color: #b6f0fc;
+  display: none;
+  background-color: black;
+  border: 2px solid #029dbb;
+  box-shadow: 0 0 4px rgba(2,157,187,0.65);
+  font-family: 'Helvetica', sans-serif;
 }
 
 #status-message {
@@ -569,8 +579,27 @@ select {
   margin: auto;
   color: #9debfb;
   justify-content: center;
+  align-items: center;
 }
 
 img + img {
   margin-left: 0.5vw;
+}
+
+#assassination-area {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin-left: 2vw;
+}
+
+#assassination-area h3 {
+  margin-top: 1vh;
+  margin-bottom: 1vh;
+}
+
+#reset-assassination-button, #confirm-assassination-button {
+  width: 20vw;
+  height: 5vh;
+  margin-top: 1vh;
 }

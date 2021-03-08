@@ -8,6 +8,7 @@ const Proposal = require('./proposal');
 class Game {
     constructor(playerInformation, settings) {
         this.state = new GameState(playerInformation, settings);
+        this.resultHTML = null;
     }
 
     getPlayerHTML(id) {
@@ -102,6 +103,18 @@ class Game {
         return this.state.players[id].getPlayerObject();
     }
 
+    getPlayerOfRole(role) {
+        return this.state.playersByRole.get(role);
+    }
+
+    isRoleActive(role) {
+        return this.state.playersByRole.has(role);
+    }
+
+    isGameOver() {
+        return this.state.winner !== null; 
+    }
+
     _advanceLeader() {
         this.state.currentLeaderId += 1;
         this.state.currentLeaderId %= this.state.playerCount;
@@ -136,7 +149,21 @@ class Game {
                 this.state.phase = GameState.PHASE_VOTE;
                 break;
             case GameState.PHASE_VOTE:
-                this.state.phase = GameState.PHASE_VOTE_REACT;
+                const proposalResult = this.getProposalResult();
+                if (!proposalResult.gameOver) {
+                    this.state.phase = GameState.PHASE_VOTE_REACT;
+                } else {
+                    this.state.winner = "Spies";
+                    this.resultHTML = `
+                        <p>
+                            Resistance failed to propose a mission!
+                        </p>
+                        <p>
+                            Spies win!
+                        </p>
+                    `;
+                    this.state.phase = GameState.PHASE_DONE;
+                }
                 break;
             case GameState.PHASE_VOTE_REACT:
                 const proposalResult = this.getProposalResult();
@@ -154,7 +181,22 @@ class Game {
                 }
                 break;
             case GameState.PHASE_CONDUCT:
-                this.state.phase = GameState.PHASE_CONDUCT_REACT
+                const missionResult = this.getMissionResult();
+                if (!missionResult.gameOver) {
+                    this.state.phase = GameState.PHASE_CONDUCT_REACT;
+                } else {
+                    if (missionResult.result === "Success") {
+                        this.state.phase = GameState.PHASE_ASSASSINATION;
+                    } else {
+                        this.state.winner = "Spies";
+                        this.resultHTML = `
+                            <p>
+                                Spies win!
+                            </p>
+                        `;
+                        this.state.phase = GameState.PHASE_DONE;
+                    }
+                }
                 break;
             case GameState.PHASE_CONDUCT_REACT:
                 const missionResult = this.getMissionResult();
@@ -166,6 +208,9 @@ class Game {
                 this._advanceLeader();
                 this.state.currentMissionId += 1;
                 this.state.phase = GameState.PHASE_PROPOSE;
+                break;
+            case GameState.PHASE_ASSASSINATION:
+                this.state.phase = GameState.PHASE_DONE;
                 break;
         }
         return this.state.phase;
@@ -183,24 +228,26 @@ class Game {
         if (currentProposal.voteCount === this.state.playerCount) {
             currentProposal.finalize();
             this.advance();
-            return this.getProposalResult();
+            return true;
         } else {
-            return null;
+            return false;
         }
     }
 
     getProposalResult() {
         const currentProposal = this.getCurrentProposal();
-        const approved = currentProposal.approved;
-        const currentMission = this.getCurrentMission();
-        const advanceMission = !approved && currentMission.failedProposalCount === this.state.playerCount;
-        const gameOver = advanceMission && (this.state.spyWins + 1 === this.state.NUM_WINS);
-        return {
-            votes: currentProposal.votesByPlayerId,
-            approved: approved,
-            advanceMission: advanceMission,
-            gameOver: gameOver
-        };
+        if (currentProposal.result) {
+            const approved = currentProposal.result;
+            const currentMission = this.getCurrentMission();
+            const advanceMission = !approved && currentMission.failedProposalCount === this.state.playerCount;
+            return {
+                votes: currentProposal.votesByPlayerId,
+                approved: approved,
+                advanceMission: advanceMission
+            };
+        } else {
+            return null;
+        }
     }
 
     addMissionAction(id, action) {
@@ -209,26 +256,28 @@ class Game {
         if (currentMission.actionCount === currentMission.teamSize) {
             currentMission.finalize();
             this.advance();
-            return this.getMissionResult();
+            return true;
         } else {
-            return null;
+            return false;
         }
     }
 
-    getMissionResult() {
-        const currentMission = this.getCurrentMission();
-        const result = currentMission.result;
-        let gameOver = this.state.spyWins === 2 && this.state.resistanceWins === 2;
-        if (!gameOver) {
-            gameOver = result === "Success" ? this.state.resistanceWins === 2 : this.state.spyWins === 2;
+    getMissionResult(missionId) {
+        if (!missionId) {
+            missionId = this.state.currentMissionId;
         }
-        return {
-            result: result,
-            successCount: currentMission.actionCount - currentMission.failActionCount - currentMission.reverseActionCount,
-            failCount: currentMission.failActionCount,
-            reverseCount: currentMission.reverseActionCount,
-            gameOver: gameOver
-        };
+        const currentMission = this.state.missions[missionId];
+
+        if (currentMission.result) {
+            return {
+                result: currentMission.result,
+                successCount: currentMission.actionCount - currentMission.failActionCount - currentMission.reverseActionCount,
+                failCount: currentMission.failActionCount,
+                reverseCount: currentMission.reverseActionCount
+            };
+        } else {
+            return null;
+        }
     }
 }
 
