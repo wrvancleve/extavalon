@@ -22,6 +22,7 @@ const lobbyCollection = require('./models/lobbyCollection');
 const Game = require('./models/game');
 const GameState = require('./models/gameState');
 const Roles = require('./models/roles');
+const { PHASE_VOTE_REACT } = require('./models/gameState');
 
 const app = express();
 
@@ -251,10 +252,11 @@ app.createServer = function() {
       const voteResult = lobby.game.getProposalResult();
       if (voteResult) {
         io.sockets.to(receiver).emit('vote-result', {votes: Object.fromEntries(voteResult.votes), approved: voteResult.approved});
-        if (lobby.game.isGameOver()) {
-          sendGameResult(lobby, receiver);
-        } else if (voteResult.advanceMission) {
+        if (lobby.game.getCurrentPhase() !== GameState.PHASE_VOTE_REACT) {
           sendMissionResult(lobby, receiver);
+          if (lobby.game.isGameOver()) {
+            sendGameResult(lobby, receiver);
+          }
         }
       }
     }
@@ -271,7 +273,8 @@ app.createServer = function() {
       const player = lobby.players.filter(player => player.socketId === socket.id)[0];
       player.ready = true;
       if (confirmPlayerReady(lobby)) {
-        if (lobby.game.advance() === GameState.PHASE_PROPOSE) {
+        lobby.game.advance();
+        if (lobby.game.getCurrentPhase() === GameState.PHASE_PROPOSE) {
           startProposal(lobby);
         } else {
           conductMission(lobby);
@@ -309,24 +312,17 @@ app.createServer = function() {
       }
     }
 
-    /*
-    function processVoteTeam(lobby, vote) {
-      const playerId = lobby.players.filter(player => player.socketId === socket.id)[0].id;
-      if (lobby.game.addProposalVote(playerId, vote)) {
-        setPlayerReady(lobby, false);
-        sendVoteResult(lobby, lobby.code);
-      }
-    }
-    */
-
     function processMissionAction(lobby, action) {
       const playerId = lobby.players.filter(player => player.socketId === socket.id)[0].id;
       if (lobby.game.addMissionAction(playerId, action)) {
         setPlayerReady(lobby, false);
         sendMissionResult(lobby, lobby.code);
-        if (lobby.game.isGameOver()) {
-          const winner = missionResult.result === 'Success' ? 'Resistance' : 'Spies';
-          processInitialGameWinner(lobby, winner);
+        if (lobby.game.getCurrentPhase() === GameState.PHASE_ASSASSINATION) {
+          const assassin = lobby.players.filter(player => player.id === lobby.game.state.assassinId)[0];
+          sendConductAssassination(assassin.socketId);
+          sendStatusMessage(`${assassin.name} is choosing who to assassinate...`, lobby.code);
+        } else if (lobby.game.isGameOver()) {
+          sendGameResult(lobby, lobby.code);
         }
       }
     }
@@ -336,124 +332,12 @@ app.createServer = function() {
     }
 
     function sendGameResult(lobby, receiver) {
-      io.sockets.to(receiver).emit('game-result', {winner: lobby.game.state.winner, message: lobby.game.resultHTML});
-    }
-
-    function processInitialGameWinner(lobby, winner) {
-      if (winner === "Resistance") {
-        lobby.game.state.phase = GameState.PHASE_ASSASSINATION;
-        const assassin = lobby.players.filter(player => player.id === lobby.game.state.assassinId)[0];
-        sendConductAssassination(assassin.socketId);
-        sendStatusMessage(`${assassin.name} is choosing who to assassinate...`, lobby.code);
-      } else {
-        lobby.game.state.phase = GameState.PHASE_DONE;
-        lobby.game.state.winner = 
-        sendGameResult(winner, lobby, lobby.code);
-      }
-    }
-
-    function createJesterWinMessage(lobby, ids, role, winner) {
-      return `
-        <p>
-        ${lobby.game.getPlayer(lobby.game.state.assassinId).name} attempted to assassinate
-        ${ids.map(id => lobby.game.getPlayer(id).name).join(' and ')} as ${role}.
-        </p>
-        <p>
-        However, ${winner} was the Jester. ${winner} wins!
-        </p>
-      `;
-    }
-
-    function createCorrectAssassinationMessage(lobby, ids, role) {
-      return `
-        <p>
-        ${lobby.game.getPlayer(lobby.game.state.assassinId).name} correctly assassinated
-        ${ids.map(id => lobby.game.getPlayer(id).name).join(' and ')} as ${role}.
-        </p>
-        <p>
-        Spies win!
-        </p>
-      `;
-    }
-
-    function createIncorrectAssassinationMessage(lobby, ids, role) {
-      let winnerDescriptor = "";
-      let loserDescriptor = "Resistance";
-
-      if (lobby.game.isRoleActive(Roles.Puck)) {
-        const puckName = lobby.game.getPlayerOfRole(Roles.Puck).name;
-        if (lobby.game.state.currentMissionId === 4) {
-          winnerDescriptor = `Resistance (including ${puckName} as Puck)`;
-        } else {
-          loserDescriptor = `
-            ${puckName} failed to extend the game to 5 rounds and has lost as Puck
-          `;
-        }
-      } else if (lobby.game.isRoleActive(Roles.Jester)) {
-        loserDescriptor = `
-          ${lobby.game.getPlayerOfRole(Roles.Jester).name} failed to get assassinated and has lost as Jester
-        `;
-      }
-
-      return `
-        <p>
-        ${lobby.game.getPlayer(lobby.game.state.assassinId).name} incorrectly assassinated
-        ${ids.map(id => lobby.game.getPlayer(id).name).join(' and ')} as ${role}.
-        </p>
-        <p>
-        ${winnerDescriptor} wins! ${loserDescriptor}
-        </p>
-      `;
+      const gameResult = lobby.game.getGameResult();
+      io.sockets.to(receiver).emit('game-result', {winner: gameResult.winner, message: gameResult.message});
     }
 
     function handleAssassination(lobby, ids, role) {
-      let winner = null;
-      let message = null;
-      const targetOne = lobby.game.getPlayer(ids[0]);
-      const targetTwo = role === "Lovers" ? lobby.game.getPlayer(ids[1]) : null;
-
-      if (targetOne.role === "Jester") {
-        winner = targetOne.name;
-        message = createJesterWinMessage(winner);
-      } else if (targetTwo && targetTwo.role === "Jester") {
-        winner = targetTwo.name;
-        message = createJesterWinMessage(winner);
-      } else {
-        switch (role) {
-          case "Merlin":
-            if (targetOne.role === "Merlin") {
-              winner = "Spies";
-              message = createCorrectAssassinationMessage(lobby, ids, role);
-            } else {
-              winner = "Resistance";
-              message = createIncorrectAssassinationMessage(lobby, ids, role);
-            }
-            break;
-          case "Arthur":
-            if (targetOne.role === "Arthur") {
-              winner = "Spies";
-              message = createCorrectAssassinationMessage(lobby, ids, role);
-            } else {
-              winner = "Resistance";
-              message = createIncorrectAssassinationMessage(lobby, ids, role);
-            }
-            break;
-          case "Lovers":
-            if ((targetOne.role === "Tristan" || targetOne.role === "Iseult")
-              && (targetTwo.role === "Tristan" || targetTwo.role === "Iseult")) {
-              winner = "Spies";
-              message = createCorrectAssassinationMessage(lobby, ids, role);
-            } else {
-              winner = "Resistance";
-              message = createIncorrectAssassinationMessage(lobby, ids, role);
-            }
-            break;
-        }
-      }
-
-      lobby.game.state.phase = GameState.PHASE_DONE;
-      lobby.game.state.winner = winner;
-      lobby.game.resultHTML = message;
+      lobby.game.processAssassinationAttempt(ids, role);
       sendGameResult(lobby, lobby.code);
     }
 

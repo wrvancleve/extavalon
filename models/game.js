@@ -81,6 +81,10 @@ class Game {
         return this.state.currentLeaderId === id;
     }
 
+    getCurrentPhase() {
+        return this.state.phase;
+    }
+
     getCurrentLeader() {
         return this.state.players[this.state.currentLeaderId];
     }
@@ -103,25 +107,13 @@ class Game {
         return this.state.players[id].getPlayerObject();
     }
 
-    getPlayerOfRole(role) {
-        return this.state.playersByRole.get(role);
-    }
-
-    isRoleActive(role) {
-        return this.state.playersByRole.has(role);
-    }
-
     isGameOver() {
-        return this.state.winner !== null; 
+        return this.state.phase === GameState.PHASE_DONE; 
     }
 
     _advanceLeader() {
         this.state.currentLeaderId += 1;
         this.state.currentLeaderId %= this.state.playerCount;
-    }
-
-    _gameOver() {
-        return this.state.resistanceWins === 3 || this.state.spyWins === 3;
     }
 
     _processMissionResult(result) {
@@ -134,13 +126,13 @@ class Game {
                 break;
         }
 
-        if (this._gameOver()) {
-            return true;
+        if (this.state.resistanceWins === 3) {
+            return "Resistance";
+        } else if (this.state.spyWins === 3) {
+            return "Spies";
         }
 
-        this.state.currentMissionId += 1;
-        this._advanceLeader();
-        return false;
+        return null;
     }
 
     advance() {
@@ -150,19 +142,30 @@ class Game {
                 break;
             case GameState.PHASE_VOTE:
                 const proposalResult = this.getProposalResult();
-                if (!proposalResult.gameOver) {
+                if (proposalResult.approved) {
                     this.state.phase = GameState.PHASE_VOTE_REACT;
                 } else {
-                    this.state.winner = "Spies";
-                    this.resultHTML = `
-                        <p>
-                            Resistance failed to propose a mission!
-                        </p>
-                        <p>
-                            Spies win!
-                        </p>
-                    `;
-                    this.state.phase = GameState.PHASE_DONE;
+                    const currentMission = this.getCurrentMission();
+                    currentMission.failedProposalCount += 1;
+                    if (currentMission.failedProposalCount === this.state.playerCount) {
+                        currentMission.result = 'Fail';
+                        if (this._processMissionResult(currentMission.result)) {
+                            this.state.winner = "Spies";
+                            this.resultHTML = `
+                                <p>
+                                    Resistance failed to propose a mission!
+                                </p>
+                                <p>
+                                    Spies win!
+                                </p>
+                            `;
+                            this.state.phase = GameState.PHASE_DONE;
+                        } else {
+                            this.state.phase = GameState.PHASE_CONDUCT_REACT;
+                        }
+                    } else {
+                        this.state.phase = GameState.PHASE_VOTE_REACT;
+                    }
                 }
                 break;
             case GameState.PHASE_VOTE_REACT:
@@ -171,23 +174,14 @@ class Game {
                     this.state.phase = GameState.PHASE_CONDUCT;
                 } else {
                     this._advanceLeader();
-                    const currentMission = this.getCurrentMission();
-                    currentMission.failedProposalCount += 1;
-                    if (currentMission.failedProposalCount === this.state.playerCount) {
-                        currentMission.result = 'Fail';
-                        this.state.currentMissionId += 1;
-                    }
                     this.state.phase = GameState.PHASE_PROPOSE;
                 }
                 break;
             case GameState.PHASE_CONDUCT:
                 const missionResult = this.getMissionResult();
-                if (!missionResult.gameOver) {
-                    this.state.phase = GameState.PHASE_CONDUCT_REACT;
-                } else {
-                    if (missionResult.result === "Success") {
-                        this.state.phase = GameState.PHASE_ASSASSINATION;
-                    } else {
+                const roundsWinner = this._processMissionResult(missionResult.result);
+                if (roundsWinner) {
+                    if (roundsWinner === "Spies") {
                         this.state.winner = "Spies";
                         this.resultHTML = `
                             <p>
@@ -195,16 +189,14 @@ class Game {
                             </p>
                         `;
                         this.state.phase = GameState.PHASE_DONE;
+                    } else {
+                        this.state.phase = GameState.PHASE_ASSASSINATION;
                     }
+                } else {
+                    this.state.phase = GameState.PHASE_CONDUCT_REACT;
                 }
                 break;
-            case GameState.PHASE_CONDUCT_REACT:
-                const missionResult = this.getMissionResult();
-                if (missionResult.result === 'Success') {
-                    this.state.resistanceWins += 1;
-                } else {
-                    this.state.spyWins += 1;
-                }                
+            case GameState.PHASE_CONDUCT_REACT:             
                 this._advanceLeader();
                 this.state.currentMissionId += 1;
                 this.state.phase = GameState.PHASE_PROPOSE;
@@ -213,7 +205,6 @@ class Game {
                 this.state.phase = GameState.PHASE_DONE;
                 break;
         }
-        return this.state.phase;
     }
 
     createProposal(ids) {
@@ -238,12 +229,9 @@ class Game {
         const currentProposal = this.getCurrentProposal();
         if (currentProposal.result) {
             const approved = currentProposal.result;
-            const currentMission = this.getCurrentMission();
-            const advanceMission = !approved && currentMission.failedProposalCount === this.state.playerCount;
             return {
                 votes: currentProposal.votesByPlayerId,
-                approved: approved,
-                advanceMission: advanceMission
+                approved: approved
             };
         } else {
             return null;
@@ -266,15 +254,123 @@ class Game {
         if (!missionId) {
             missionId = this.state.currentMissionId;
         }
-        const currentMission = this.state.missions[missionId];
+        const mission = this.state.missions[missionId];
 
-        if (currentMission.result) {
+        if (mission.result) {
             return {
-                result: currentMission.result,
-                successCount: currentMission.actionCount - currentMission.failActionCount - currentMission.reverseActionCount,
-                failCount: currentMission.failActionCount,
-                reverseCount: currentMission.reverseActionCount
+                result: mission.result,
+                successCount: mission.actionCount - mission.failActionCount - mission.reverseActionCount,
+                failCount: mission.failActionCount,
+                reverseCount: mission.reverseActionCount
             };
+        } else {
+            return null;
+        }
+    }
+
+    processAssassinationAttempt(ids, role) {
+        const targetOne = this.getPlayer(ids[0]);
+        const targetTwo = role === "Lovers" ? this.getPlayer(ids[1]) : null;
+
+        if (targetOne.role === "Jester") {
+            this.state.winner = targetOne.name;
+            this.resultHTML = this._createJesterWinMessage(ids, role, winner);
+        } else if (targetTwo && targetTwo.role === "Jester") {
+            this.state.winner = targetTwo.name;
+            this.resultHTML = this._createJesterWinMessage(ids, role, winner);
+        } else {
+            switch (role) {
+                case "Merlin":
+                    if (targetOne.role === "Merlin") {
+                        this.state.winner = "Spies";
+                        this.resultHTML = this._createCorrectAssassinationMessage(ids, role);
+                    } else {
+                        this.state.winner = "Resistance";
+                        this.resultHTML = this._createIncorrectAssassinationMessage(ids, role);
+                    }
+                    break;
+                case "Arthur":
+                    if (targetOne.role === "Arthur") {
+                        this.state.winner = "Spies";
+                        this.resultHTML = this._createCorrectAssassinationMessage(ids, role);
+                    } else {
+                        this.state.winner = "Resistance";
+                        this.resultHTML = this._createIncorrectAssassinationMessage(ids, role);
+                    }
+                    break;
+                case "Lovers":
+                    if ((targetOne.role === "Tristan" || targetOne.role === "Iseult")
+                        && (targetTwo.role === "Tristan" || targetTwo.role === "Iseult")) {
+                        this.state.winner = "Spies";
+                        this.resultHTML = this._createCorrectAssassinationMessage(ids, role);
+                    } else {
+                        this.state.winner = "Resistance";
+                        this.resultHTML = this._createIncorrectAssassinationMessage(ids, role);
+                    }
+                    break;
+            }
+        }
+
+        this.advance();
+    }
+
+    _createJesterWinMessage(ids, role, winner) {
+        return `
+          <p>
+          ${this.getPlayer(this.state.assassinId).name} attempted to assassinate
+          ${ids.map(id => this.getPlayer(id).name).join(' and ')} as ${role}.
+          </p>
+          <p>
+          However, ${winner} was the Jester. ${winner} wins!
+          </p>
+        `;
+    }
+  
+    _createCorrectAssassinationMessage(ids, role) {
+        return `
+            <p>
+            ${this.getPlayer(this.state.assassinId).name} correctly assassinated
+            ${ids.map(id => this.getPlayer(id).name).join(' and ')} as ${role}.
+            </p>
+            <p>
+            Spies win!
+            </p>
+        `;
+    }
+
+    _createIncorrectAssassinationMessage(ids, role) {
+        let winnerDescriptor = "";
+        let loserDescriptor = "Resistance";
+
+        if (this.state.playersByRole.has(Roles.Puck)) {
+            const puckName = this.state.playersByRole.get(Roles.Puck).name;
+            if (this.state.currentMissionId === 4) {
+                winnerDescriptor = `Resistance (including ${puckName} as Puck)`;
+            } else {
+                loserDescriptor = `
+                    ${puckName} failed to extend the game to 5 rounds and has lost as Puck
+                `;
+            }
+        } else if (this.state.playersByRole.has(Roles.Jester)) {
+            loserDescriptor = `
+                ${this.state.playersByRole.get(Roles.Jester).name} failed to get assassinated and has lost as Jester
+            `;
+        }
+
+        return `
+            <p>
+            ${this.getPlayer(this.state.assassinId).name} incorrectly assassinated
+            ${ids.map(id => this.getPlayer(id).name).join(' and ')} as ${role}.
+            </p>
+            <p>
+            ${winnerDescriptor} wins! ${loserDescriptor}
+            </p>
+        `;
+    }
+
+    getGameResult() {
+        if (this.state.winner) {
+            return {winner: this.state.winner, message: this.resultHTML};
         } else {
             return null;
         }
