@@ -441,34 +441,37 @@ select {
   font-size: 1.75em;
 }
 
-#intel-modal {
-  color: #b6f0fc;
-  display: none;
-  background-color: black;
-  border: 2px solid #029dbb;
-  box-shadow: 0 0 4px rgba(2,157,187,0.65);
-  font-family: 'Helvetica', sans-serif;
+#results-area, #intel-modal-area {
+  text-align: center;
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  -ms-transform: translate(-50%, -50%);
+  transform: translate(-50%, -50%);
+  min-width: 25vw;
 }
 
-#intel-modal section {
+#intel-modal-area section {
   margin: 0.67em 0em;
 }
 
-#intel-modal h2 {
+#intel-modal-area h2 {
   font-family: Candara, sans-serif;
 }
 
-#intel-modal p {
+#intel-modal-area p {
   margin: 0px;
 }
 
-#results-modal {
+#intel-modal, #result-modal {
   color: #b6f0fc;
   display: none;
   background-color: black;
   border: 2px solid #029dbb;
   box-shadow: 0 0 4px rgba(2,157,187,0.65);
   font-family: 'Helvetica', sans-serif;
+  min-width: 30vw;
+  min-height: 30vh;
 }
 
 #status-message {

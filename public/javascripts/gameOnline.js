@@ -12,6 +12,7 @@ document.addEventListener('DOMContentLoaded', function () {
     const openRolesModalButton = document.getElementById("open-roles-modal-button");
     const closeRolesModalButton = document.getElementById("close-roles-modal-button");
     const intelModal = document.getElementById("intel-modal");
+    const intelModalArea = document.getElementById("intel-modal-area");
     const openIntelModalButton = document.getElementById("open-intel-modal-button");
     const closeIntelModalButton = document.getElementById("close-intel-modal-button");
     const startGameButton = document.getElementById("start-game-button");
@@ -49,12 +50,11 @@ document.addEventListener('DOMContentLoaded', function () {
             intelModal.style.display = "block";
         }
     }
-    openIntelModalButton.style.display = "none";
-    game.style.display = "none";
-
     closeIntelModalButton.onclick = function() {
         intelModal.style.display = "none";
     }
+    openIntelModalButton.style.display = "none";
+    game.style.display = "none";
 
     openRolesModalButton.onclick = function() {
         if (rolesModal.style.display === "block") {
@@ -196,7 +196,7 @@ document.addEventListener('DOMContentLoaded', function () {
         resultModal.style.display = "none";
         openIntelModalButton.style.display = "block";
         game.style.display = "block";
-        intelModal.innerHTML = gameHTML;
+        intelModalArea.innerHTML = gameHTML;
 
         while (boardArea.children.length > 1) {
             boardArea.removeChild(boardArea.lastChild);
@@ -273,6 +273,8 @@ document.addEventListener('DOMContentLoaded', function () {
             hideElement(startGameButton);
             hideElement(closeGameButton);
         }
+
+        intelModal.style.display = "block";
     }
 
     function updateLeader(previousLeaderId, leader) {
@@ -420,7 +422,6 @@ document.addEventListener('DOMContentLoaded', function () {
         for (let i = 0; i < gamePlayers.length; i++) {
             const voteSlot = document.getElementById(gamePlayers[i].voteSlotId);
             voteSlot.style.visibility = "visible";
-            console.log(`Player${i} Vote: ${votes[i]}`);
             if (votes[i]) {
                 voteSlot.src = "/images/approve.png";
             } else {
@@ -495,45 +496,178 @@ document.addEventListener('DOMContentLoaded', function () {
         resultImage.classList.add("result-image");
         if (result.result === "Success") {
             statusMessage.innerHTML = "Mission successful!";
-            resultImage.alt = "Successful Mission";
+            resultImage.alt = "Success";
             resultImage.src = "/images/successful-mission.png";
         } else {
             statusMessage.innerHTML = "Mission failed!";
-            resultImage.alt = "Failed Mission";
+            resultImage.alt = "Fail";
             resultImage.src = "/images/failed-mission.png";
         }
         switch (missionId) {
             case 0:
-                resultImage.style.left = "1.5vw";
-                resultImage.style.top = "20.25vh";
+                switch (gamePlayers.length) {
+                    case 5:
+                        resultImage.style.left = "1.5vw";
+                        resultImage.style.top = "20.25vh";
+                        break;
+                    case 6:
+                        resultImage.style.left = "2.75vw";
+                        resultImage.style.top = "18.75vh";
+                        break;
+                    case 7:
+                        resultImage.style.left = "1.5vw";
+                        resultImage.style.top = "20.25vh";
+                        break;
+                    case 8:
+                        resultImage.style.left = "1.5vw";
+                        resultImage.style.top = "20.25vh";
+                        break;
+                    case 9:
+                        resultImage.style.left = "1.5vw";
+                        resultImage.style.top = "20.75vh";
+                        break;
+                    case 10:
+                        resultImage.style.left = "1.5vw";
+                        resultImage.style.top = "19.35vh";
+                        break;
+                }
                 break;
             case 1:
-                resultImage.style.left = "10.5vw";
-                resultImage.style.top = "20vh";
+                switch (gamePlayers.length) {
+                    case 5:
+                        resultImage.style.left = "10.5vw";
+                        resultImage.style.top = "20vh";
+                        break;
+                    case 6:
+                        resultImage.style.left = "11vw";
+                        resultImage.style.top = "18.75vh";
+                        break;
+                    case 7:
+                        resultImage.style.left = "10.6vw";
+                        resultImage.style.top = "20vh";
+                        break;
+                    case 8:
+                        resultImage.style.left = "10.35vw";
+                        resultImage.style.top = "20vh";
+                        break;
+                    case 9:
+                        resultImage.style.left = "10.5vw";
+                        resultImage.style.top = "20.5vh";
+                        break;
+                    case 10:
+                        resultImage.style.left = "10.5vw";
+                        resultImage.style.top = "19.35vh";
+                        break;
+                }
                 break;
             case 2:
-                resultImage.style.left = "19.75vw";
-                resultImage.style.top = "19.75vh";
+                switch (gamePlayers.length) {
+                    case 5:
+                        resultImage.style.left = "19.75vw";
+                        resultImage.style.top = "19.75vh";
+                        break;
+                    case 6:
+                        resultImage.style.left = "19vw";
+                        resultImage.style.top = "18.75vh";
+                        break;
+                    case 7:
+                        resultImage.style.left = "19vw";
+                        resultImage.style.top = "20vh";
+                        break;
+                    case 8:
+                        resultImage.style.left = "18.75vw";
+                        resultImage.style.top = "20vh";
+                        break;
+                    case 9:
+                        resultImage.style.left = "19.45vw";
+                        resultImage.style.top = "20.5vh";
+                        break;
+                    case 10:
+                        resultImage.style.left = "19.5vw";
+                        resultImage.style.top = "19.35vh";
+                        break;
+                }
                 break;
             case 3:
-                resultImage.style.left = "28.75vw";
-                resultImage.style.top = "19.75vh";
+                switch (gamePlayers.length) {
+                    case 5:
+                        resultImage.style.left = "28.75vw";
+                        resultImage.style.top = "19.75vh";
+                        break;
+                    case 6:
+                        resultImage.style.left = "26.75vw";
+                        resultImage.style.top = "18.75vh";
+                        break;
+                    case 7:
+                        resultImage.style.left = "27.35vw";
+                        resultImage.style.top = "20vh";
+                        break;
+                    case 8:
+                        resultImage.style.left = "27.05vw";
+                        resultImage.style.top = "20vh";
+                        break;
+                    case 9:
+                        resultImage.style.left = "28.25vw";
+                        resultImage.style.top = "20.5vh";
+                        break;
+                    case 10:
+                        resultImage.style.left = "28.35vw";
+                        resultImage.style.top = "19.35vh";
+                        break;
+                }
                 break;
             case 4:
-                resultImage.style.left = "38vw";
-                resultImage.style.top = "19.5vh";
+                switch (gamePlayers.length) {
+                    case 5:
+                        resultImage.style.left = "38vw";
+                        resultImage.style.top = "19.5vh";
+                        break;
+                    case 6:
+                        resultImage.style.left = "34.8vw";
+                        resultImage.style.top = "18.75vh";
+                        break;
+                    case 7:
+                        resultImage.style.left = "36vw";
+                        resultImage.style.top = "20vh";
+                        break;
+                    case 8:
+                        resultImage.style.left = "35.75vw";
+                        resultImage.style.top = "19.75vh";
+                        break;
+                    case 9:
+                        resultImage.style.left = "37.25vw";
+                        resultImage.style.top = "20.5vh";
+                        break;
+                    case 10:
+                        resultImage.style.left = "37.35vw";
+                        resultImage.style.top = "19.35vh";
+                        break;
+                }
                 break;
         }
         boardArea.appendChild(resultImage);
 
-        advanceButton.disabled = false;
-        advanceButton.classList.remove("future-disabled");
-        advanceButton.onclick = function() {
-            statusMessage.innerHTML = "Waiting for players to advance...";
-            socket.emit('advance-mission');
-            advanceButton.onclick = "";
-            advanceButton.disabled = true;
-            advanceButton.classList.add("future-disabled");
+        let resistanceWins = 0;
+        let spyWins = 0;
+        for (let i = 0; i < boardArea.children.length; i++) {
+            const child = boardArea.children[i];
+            if (child.alt === "Success") {
+                resistanceWins += 1;
+            } else {
+                spyWins += 1;
+            }
+        }
+
+        if (resistanceWins != 3 && spyWins != 3) {
+            advanceButton.disabled = false;
+            advanceButton.classList.remove("future-disabled");
+            advanceButton.onclick = function() {
+                statusMessage.innerHTML = "Waiting for players to advance...";
+                socket.emit('advance-mission');
+                advanceButton.onclick = "";
+                advanceButton.disabled = true;
+                advanceButton.classList.add("future-disabled");
+            }
         }
     }
 
@@ -592,6 +726,7 @@ document.addEventListener('DOMContentLoaded', function () {
                     <option value="Arthur">Arthur</option>
                 `;
             }
+            disableAssassinationConfirm();
         }
     }
 
@@ -686,7 +821,6 @@ document.addEventListener('DOMContentLoaded', function () {
     });
 
     socket.on('vote-result', ({votes, approved}) => {
-        console.log(votes);
         showVoteResult(votes, approved);
     });
 

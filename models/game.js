@@ -136,12 +136,13 @@ class Game {
     }
 
     advance() {
+        let proposalResult = null;
         switch (this.state.phase) {
             case GameState.PHASE_PROPOSE:
                 this.state.phase = GameState.PHASE_VOTE;
                 break;
             case GameState.PHASE_VOTE:
-                const proposalResult = this.getProposalResult();
+                proposalResult = this.getProposalResult();
                 if (proposalResult.approved) {
                     this.state.phase = GameState.PHASE_VOTE_REACT;
                 } else {
@@ -169,7 +170,7 @@ class Game {
                 }
                 break;
             case GameState.PHASE_VOTE_REACT:
-                const proposalResult = this.getProposalResult();
+                proposalResult = this.getProposalResult();
                 if (proposalResult.approved) {
                     this.state.phase = GameState.PHASE_CONDUCT;
                 } else {
@@ -274,10 +275,10 @@ class Game {
 
         if (targetOne.role === "Jester") {
             this.state.winner = targetOne.name;
-            this.resultHTML = this._createJesterWinMessage(ids, role, winner);
+            this.resultHTML = this._createJesterWinMessage(ids, role, targetOne.name);
         } else if (targetTwo && targetTwo.role === "Jester") {
             this.state.winner = targetTwo.name;
-            this.resultHTML = this._createJesterWinMessage(ids, role, winner);
+            this.resultHTML = this._createJesterWinMessage(ids, role, targetTwo.name);
         } else {
             switch (role) {
                 case "Merlin":
@@ -339,8 +340,8 @@ class Game {
     }
 
     _createIncorrectAssassinationMessage(ids, role) {
-        let winnerDescriptor = "";
-        let loserDescriptor = "Resistance";
+        let winnerDescriptor = "Resistance";
+        let loserDescriptor = "";
 
         if (this.state.playersByRole.has(Roles.Puck)) {
             const puckName = this.state.playersByRole.get(Roles.Puck).name;
@@ -348,24 +349,34 @@ class Game {
                 winnerDescriptor = `Resistance (including ${puckName} as Puck)`;
             } else {
                 loserDescriptor = `
-                    ${puckName} failed to extend the game to 5 rounds and has lost as Puck
+                    ${puckName} failed to extend the game to 5 rounds and has lost as Puck!
                 `;
             }
         } else if (this.state.playersByRole.has(Roles.Jester)) {
             loserDescriptor = `
-                ${this.state.playersByRole.get(Roles.Jester).name} failed to get assassinated and has lost as Jester
+                ${this.state.playersByRole.get(Roles.Jester).name} failed to get assassinated and has lost as Jester!
             `;
         }
 
-        return `
+        let message = `
             <p>
             ${this.getPlayer(this.state.assassinId).name} incorrectly assassinated
             ${ids.map(id => this.getPlayer(id).name).join(' and ')} as ${role}.
             </p>
             <p>
-            ${winnerDescriptor} wins! ${loserDescriptor}
+            ${winnerDescriptor} wins!
             </p>
         `;
+
+        if (loserDescriptor) {
+            message += `
+                <p>
+                ${loserDescriptor}
+                </p>
+            `;
+        }
+
+        return message;
     }
 
     getGameResult() {
