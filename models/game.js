@@ -160,6 +160,7 @@ class Game {
                                     Spies win!
                                 </p>
                             `;
+                            console.log("Set to done inside proposal failed");
                             this.state.phase = GameState.PHASE_DONE;
                         } else {
                             this.state.phase = GameState.PHASE_CONDUCT_REACT;
@@ -189,6 +190,7 @@ class Game {
                                 Spies win!
                             </p>
                         `;
+                        console.log("Set to done after round failed");
                         this.state.phase = GameState.PHASE_DONE;
                     } else {
                         this.state.phase = GameState.PHASE_ASSASSINATION;
@@ -203,6 +205,7 @@ class Game {
                 this.state.phase = GameState.PHASE_PROPOSE;
                 break;
             case GameState.PHASE_ASSASSINATION:
+                console.log("Set to done after advance");
                 this.state.phase = GameState.PHASE_DONE;
                 break;
         }
@@ -228,7 +231,7 @@ class Game {
 
     getProposalResult() {
         const currentProposal = this.getCurrentProposal();
-        if (currentProposal.result) {
+        if (currentProposal && currentProposal.result) {
             const approved = currentProposal.result;
             return {
                 votes: currentProposal.votesByPlayerId,
@@ -252,12 +255,12 @@ class Game {
     }
 
     getMissionResult(missionId) {
-        if (!missionId) {
+        if (missionId === undefined) {
             missionId = this.state.currentMissionId;
         }
         const mission = this.state.missions[missionId];
 
-        if (mission.result) {
+        if (mission && mission.result) {
             return {
                 result: mission.result,
                 successCount: mission.actionCount - mission.failActionCount - mission.reverseActionCount,
@@ -312,6 +315,7 @@ class Game {
             }
         }
 
+        console.log("(End of handle assassination) About to advance");
         this.advance();
     }
 

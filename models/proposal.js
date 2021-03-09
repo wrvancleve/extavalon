@@ -20,6 +20,10 @@ class Proposal {
         }
     }
 
+    hasVoted(playerId) {
+        return this.votesByPlayerId.has(playerId);
+    }
+
     finalize() {
         this.result = this.rejectCount < Math.ceil(this.voteCount / 2);
     }

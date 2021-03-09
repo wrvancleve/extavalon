@@ -22,7 +22,6 @@ const lobbyCollection = require('./models/lobbyCollection');
 const Game = require('./models/game');
 const GameState = require('./models/gameState');
 const Roles = require('./models/roles');
-const { PHASE_VOTE_REACT } = require('./models/gameState');
 
 const app = express();
 
@@ -112,10 +111,9 @@ app.createServer = function() {
         if (lobby.type === 'online') {
           sendStartOnlineGame(lobby.game, currentPlayer);
           sendUpdateLeader(lobby.game, currentPlayer.socketId);
+          sendMissionResults(lobby, currentPlayer.socketId);
           sendUpdateTeam(lobby.lastGunSlotSrcs, currentPlayer.socketId);
           sendVoteResult(lobby, currentPlayer.socketId);
-          sendMissionResult(lobby, currentPlayer.socketId);
-          sendGameResult(lobby, currentPlayer.socketId);
 
           switch (lobby.game.state.phase) {
             case GameState.PHASE_PROPOSE:
@@ -124,18 +122,25 @@ app.createServer = function() {
               }
               break;
             case GameState.PHASE_VOTE:
-              sendVoteTeam(currentPlayer.socketId);
+              const currentProposal = lobby.game.getCurrentProposal();
+              if (!currentProposal.hasVoted(currentPlayer.id)) {
+                sendVoteTeam(currentPlayer.socketId);
+              } else {
+                sendStatusMessage("Voting on team...", currentPlayer.socketId);
+              }
               break;
             case GameState.PHASE_VOTE_REACT:
-
+              // Anything?
               break;
             case GameState.PHASE_CONDUCT:
-              if (lobby.game.getCurrentProposal().team.contains(currentPlayer.id)) {
+              const currentMission = lobby.game.getCurrentMission();
+              if (currentMission.getMissionTeam().includes(currentPlayer.id) && !currentMission.hasConducted(currentPlayer.id)) {
                 sendConductMission(lobby.game, currentPlayer);
               }
-              sendStatusMessage("Conducting mission...", currentPlayer.soccketId);
+              sendStatusMessage("Conducting mission...", currentPlayer.socketId);
               break;
             case GameState.PHASE_CONDUCT_REACT:
+              // Anything?
               break;
             case GameState.PHASE_ASSASSINATION:
               const assassin = lobby.players.filter(player => player.id === lobby.game.state.assassinId)[0];
@@ -145,7 +150,7 @@ app.createServer = function() {
               sendStatusMessage(`${assassin.name} is choosing who to assassinate...`, currentPlayer.socketId);
               break;
             case GameState.PHASE_DONE:
-              sendGameResult(lobby, currentPlayer.socketId);
+              //sendGameResult(lobby, currentPlayer.socketId);
               break;
           }
         } else {
@@ -224,6 +229,7 @@ app.createServer = function() {
     }
 
     function startProposal(lobby) {
+      lobby.lastGunSlotSrcs = null;
       const leaderId = sendUpdateLeader(lobby.game, lobby.code);
       sendProposeTeam(lobby.game, lobby.socketsByPlayerId.get(leaderId))
     }
@@ -255,6 +261,7 @@ app.createServer = function() {
         if (lobby.game.getCurrentPhase() !== GameState.PHASE_VOTE_REACT) {
           sendMissionResult(lobby, receiver);
           if (lobby.game.isGameOver()) {
+            console.log("Game is set to over");
             sendGameResult(lobby, receiver);
           }
         }
@@ -273,6 +280,7 @@ app.createServer = function() {
       const player = lobby.players.filter(player => player.socketId === socket.id)[0];
       player.ready = true;
       if (confirmPlayerReady(lobby)) {
+        console.log("(Inside Advance Mission) About to advance");
         lobby.game.advance();
         if (lobby.game.getCurrentPhase() === GameState.PHASE_PROPOSE) {
           startProposal(lobby);
@@ -305,9 +313,20 @@ app.createServer = function() {
       sendStatusMessage("Conducting mission...", lobby.code);
     }
 
-    function sendMissionResult(lobby, receiver) {
-      const missionResult = lobby.game.getMissionResult();
+    function sendMissionResults(lobby, receiver) {
+      for (let i = 0; i < lobby.game.state.currentMissionId; i++) {
+        sendMissionResult(lobby, receiver, i);
+      }
+    }
+
+    function sendMissionResult(lobby, receiver, missionId) {
+      if (missionId === undefined) {
+        missionId = lobby.game.state.currentMissionId;
+      }
+      console.log(`Getting Mission Result For ${missionId}`);
+      const missionResult = lobby.game.getMissionResult(missionId);
       if (missionResult) {
+        console.log(`Sending Mission Result For ${missionId}`);
         io.sockets.to(receiver).emit('mission-result', {result: missionResult});
       }
     }
@@ -322,6 +341,7 @@ app.createServer = function() {
           sendConductAssassination(assassin.socketId);
           sendStatusMessage(`${assassin.name} is choosing who to assassinate...`, lobby.code);
         } else if (lobby.game.isGameOver()) {
+          console.log("Game is set to over");
           sendGameResult(lobby, lobby.code);
         }
       }
@@ -333,7 +353,9 @@ app.createServer = function() {
 
     function sendGameResult(lobby, receiver) {
       const gameResult = lobby.game.getGameResult();
-      io.sockets.to(receiver).emit('game-result', {winner: gameResult.winner, message: gameResult.message});
+      if (gameResult) {
+        io.sockets.to(receiver).emit('game-result', {winner: gameResult.winner, message: gameResult.message});
+      }
     }
 
     function handleAssassination(lobby, ids, role) {
@@ -343,8 +365,8 @@ app.createServer = function() {
 
     socket.on('join-lobby', ({name, code}) => {
       const lobby = lobbyCollection.lobbies.get(code);
-      //const connectingPlayerIndex = lobby.players.findIndex(player => player.sessionId === socket.request.session.id);
-      const connectingPlayerIndex = lobby.players.findIndex(player => player.socketId === socket.id);
+      const connectingPlayerIndex = lobby.players.findIndex(player => player.sessionId === socket.request.session.id);
+      //const connectingPlayerIndex = lobby.players.findIndex(player => player.socketId === socket.id);
       if (connectingPlayerIndex === -1) {
         createNewPlayer(lobby, name);
       } else {

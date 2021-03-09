@@ -41,6 +41,10 @@ class Mission {
         }
     }
 
+    hasConducted(playerId) {
+        return this.actionsPerformedByPlayerId.has(playerId);
+    }
+
     finalize() {
         let missionFailed = this.failActionCount >= this.requiredFails;
         if (this.reverseActionCount % 2 != 0)

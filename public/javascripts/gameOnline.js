@@ -1,6 +1,7 @@
 document.addEventListener('DOMContentLoaded', function () {
     //const socket = io.connect("https://extavalon.com");
-    const socket = io.connect("http://localhost:8080");
+    //const socket = io.connect("http://localhost:8080");
+    const socket = io.connect("http://192.168.1.107:25565");
 
     const {name, code} = Qs.parse(location.search, {
         ignoreQueryPrefix: true
@@ -304,6 +305,7 @@ document.addEventListener('DOMContentLoaded', function () {
     function setupProposal(count) {
         advanceButton.disabled = true;
         advanceButton.classList.add("future-disabled");
+        actionArea.innerHTML = "";
 
         for (let i = 0; i < count; i++) {
             const gunImage = document.createElement('img');
@@ -773,6 +775,8 @@ document.addEventListener('DOMContentLoaded', function () {
 
     function showGameResult(winner, message) {
         resultModal.style.display = "block";
+        rolesModal.style.display = "none";
+        intelModal.style.display = "none";
         resultArea.innerHTML = message;
         statusMessage.innerHTML = `${winner} wins!`;
         advanceButton.onclick = "";
@@ -797,7 +801,8 @@ document.addEventListener('DOMContentLoaded', function () {
 
     socket.on('close-lobby', () => {
         //location.replace("https://extavalon.com/");
-        location.replace("http://localhost:8080");
+        //location.replace("http://localhost:8080");
+        location.replace("http://192.168.1.107:25565");
     });
 
     socket.on('update-leader', ({previousLeaderId, leader}) => {
