@@ -228,7 +228,7 @@ class Game {
 
     getProposalResult() {
         const currentProposal = this.getCurrentProposal();
-        if (currentProposal && currentProposal.result) {
+        if (currentProposal && currentProposal.result !== null) {
             const approved = currentProposal.result;
             return {
                 votes: currentProposal.votesByPlayerId,
@@ -257,7 +257,7 @@ class Game {
         }
         const mission = this.state.missions[missionId];
 
-        if (mission && mission.result) {
+        if (mission && mission.result !== null) {
             return {
                 result: mission.result,
                 successCount: mission.actionCount - mission.failActionCount - mission.reverseActionCount,

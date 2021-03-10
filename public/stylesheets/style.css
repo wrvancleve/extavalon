@@ -360,9 +360,20 @@ select {
 }
 
 .close-modal-button {
-  float: right;
-  font-size: 28px;
+  font-size: 1.75em;
   font-weight: bold;
+  width: 3vw;
+  height: 3vh;
+  padding: 0px 0px;
+  margin: 0px 0px;
+  justify-content: center;
+  align-items: center;
+  display: flex;
+  background-color: transparent;
+  color: #9debfb;
+  border: none;
+  position: absolute;
+  right: 2vw;
 }
 
 .close-modal-button:hover,
@@ -433,6 +444,7 @@ select {
   border: 2px solid #029dbb;
   box-shadow: 0 0 4px rgba(2,157,187,0.65);
   font-family: 'Helvetica', sans-serif;
+  z-index: 6;
 }
 
 #roles-modal h1 {
@@ -441,14 +453,12 @@ select {
   font-size: 1.75em;
 }
 
-#results-area, #intel-modal-area {
-  text-align: center;
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  -ms-transform: translate(-50%, -50%);
-  transform: translate(-50%, -50%);
-  min-width: 25vw;
+#results-area, #intel-modal-area, #assassination-area {
+  align-items: center;
+  justify-content: center;
+  display: flex;
+  flex-direction: column;
+  margin: auto;
 }
 
 #intel-modal-area section {
@@ -463,7 +473,36 @@ select {
   margin: 0px;
 }
 
-#intel-modal, #result-modal {
+#assassination-area h3 {
+  margin-top: 1vh;
+  margin-bottom: 1vh;
+}
+
+#intel-modal {
+  color: #b6f0fc;
+  display: none;
+  background-color: black;
+  border: 2px solid #029dbb;
+  box-shadow: 0 0 4px rgba(2,157,187,0.65);
+  font-family: 'Helvetica', sans-serif;
+  min-width: 30vw;
+  min-height: 30vh;
+  z-index: 7;
+}
+
+#results-modal {
+  color: #b6f0fc;
+  display: none;
+  background-color: black;
+  border: 2px solid #029dbb;
+  box-shadow: 0 0 4px rgba(2,157,187,0.65);
+  font-family: 'Helvetica', sans-serif;
+  min-width: 30vw;
+  min-height: 30vh;
+  z-index: 8;
+}
+
+#assassination-modal {
   color: #b6f0fc;
   display: none;
   background-color: black;
@@ -589,20 +628,9 @@ img + img {
   margin-left: 0.5vw;
 }
 
-#assassination-area {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  margin-left: 2vw;
-}
-
-#assassination-area h3 {
-  margin-top: 1vh;
-  margin-bottom: 1vh;
-}
-
 #reset-assassination-button, #confirm-assassination-button {
   width: 20vw;
   height: 5vh;
   margin-top: 1vh;
+  font-size: 1.25em;
 }

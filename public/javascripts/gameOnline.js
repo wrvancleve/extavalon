@@ -33,21 +33,23 @@ document.addEventListener('DOMContentLoaded', function () {
 
     const actionArea = document.getElementById("action-area");
 
-    const resultModal = document.getElementById("result-modal");
-    const closeResultModalButton = document.getElementById("close-result-modal-button");
-    const resultArea = document.getElementById("result-area");
+    const resultsModal = document.getElementById("results-modal");
+    const closeResultsModalButton = document.getElementById("close-results-modal-button");
+    const assassinationModal = document.getElementById("assassination-modal");
+    const assassinationArea = document.getElementById("assassination-area");
+    const resultsArea = document.getElementById("results-area");
 
     // Setup Page
     document.getElementById("game-code").innerHTML = `Game Code: ${code}`;
 
     openIntelModalButton.onclick = function() {
-        if (intelModal.style.display == "block") {
+        if (intelModal.style.display === "flex") {
             intelModal.style.display = "none";
         } else {
-            if (rolesModal.style.display == 'block') {
+            if (rolesModal.style.display === 'flex') {
                 rolesModal.style.display = 'none';
             }
-            intelModal.style.display = "block";
+            intelModal.style.display = "flex";
         }
     }
     closeIntelModalButton.onclick = function() {
@@ -60,7 +62,7 @@ document.addEventListener('DOMContentLoaded', function () {
         if (rolesModal.style.display === "block") {
             rolesModal.style.display = "none";
         } else {
-            if (intelModal.style.display === "block") {
+            if (intelModal.style.display === "flex") {
                 intelModal.style.display = "none"
             }
             rolesModal.style.display = "block";
@@ -71,8 +73,8 @@ document.addEventListener('DOMContentLoaded', function () {
         rolesModal.style.display = "none";
     }
 
-    closeResultModalButton.onclick = function() {
-        resultModal.style.display = "none";
+    closeResultsModalButton.onclick = function() {
+        resultsModal.style.display = "none";
     }
 
     if (startGameButton) {
@@ -193,7 +195,7 @@ document.addEventListener('DOMContentLoaded', function () {
         topPlayerArea.innerHTML = "";
         rightPlayerArea.innerHTML = "";
         lobby.style.display = "none";
-        resultModal.style.display = "none";
+        resultsModal.style.display = "none";
         openIntelModalButton.style.display = "block";
         game.style.display = "block";
         intelModalArea.innerHTML = gameHTML;
@@ -274,7 +276,7 @@ document.addEventListener('DOMContentLoaded', function () {
             hideElement(closeGameButton);
         }
 
-        intelModal.style.display = "block";
+        intelModal.style.display = "flex";
     }
 
     function updateLeader(previousLeaderId, leaderId) {
@@ -547,7 +549,7 @@ document.addEventListener('DOMContentLoaded', function () {
                         resultImage.style.top = "18.75vh";
                         break;
                     case 7:
-                        resultImage.style.left = "10.6vw";
+                        resultImage.style.left = "10.3vw";
                         resultImage.style.top = "20vh";
                         break;
                     case 8:
@@ -603,7 +605,7 @@ document.addEventListener('DOMContentLoaded', function () {
                         resultImage.style.top = "18.75vh";
                         break;
                     case 7:
-                        resultImage.style.left = "27.35vw";
+                        resultImage.style.left = "27.5vw";
                         resultImage.style.top = "20vh";
                         break;
                     case 8:
@@ -659,6 +661,18 @@ document.addEventListener('DOMContentLoaded', function () {
         confirmAssassinationButton.onclick = "";
     }
 
+    function correctPlayersSelected(option) {
+        switch (option) {
+            case "Lovers":
+                return playersSelected.length === 2;
+            case "Merlin":
+            case "Arthur":
+                return playersSelected.length === 1;
+            default:
+                return playersSelected.length === 1 || playersSelected.length === 2;
+        }
+    }
+
     function handleAssassinationClick(id) {
         const index = playersSelected.indexOf(id);
         if (index !== -1) {
@@ -683,12 +697,12 @@ document.addEventListener('DOMContentLoaded', function () {
 
             const assassinationRolesSelect = document.getElementById("assassination-roles-select");
             assassinationRolesSelect.onchange = function() {
-                if (assassinationRolesSelect.value) {
+                if (assassinationRolesSelect.value && correctPlayersSelected(assassinationRolesSelect.value)) {
                     confirmAssassinationButton.disabled = false;
                     confirmAssassinationButton.classList.remove("future-disabled");
                     confirmAssassinationButton.onclick = function () {
                         socket.emit('conduct-assassination', {ids: playersSelected, role: assassinationRolesSelect.value});
-                        actionArea.innerHTML = "";
+                        assassinationModal.style.display = "none";
                     };
                 } else {
                     disableAssassinationConfirm();
@@ -713,20 +727,19 @@ document.addEventListener('DOMContentLoaded', function () {
 
     function setupAssassination() {
         playersSelected = [];
-        actionArea.innerHTML += `
-            <div id="assassination-area">
-                <h2 id="assassination-header">Select Player(s) To Assassinate</h2>
-                <select id="assassination-roles-select">
-                    <option value=""></option>
-                    <option value="Merlin">Merlin</option>
-                    <option value="Arthur">Arthur</option>
-                    <option value="Lovers">Lovers</option>
-                </select>
-                <button class="future-color future-secondary-font future-box" type="button"
-                    id="reset-assassination-button">Reset Assassination</button>
-                <button class="future-color future-secondary-font future-disabled future-box" type="button"
-                    id="confirm-assassination-button" disabled>Confirm Assassination</button>
-            </div>
+        assassinationModal.style.display = "flex";
+        assassinationArea.innerHTML = `
+            <h3 id="assassination-header">Select Player(s) To Assassinate</h3>
+            <select id="assassination-roles-select">
+                <option value=""></option>
+                <option value="Merlin">Merlin</option>
+                <option value="Arthur">Arthur</option>
+                <option value="Lovers">Lovers</option>
+            </select>
+            <button class="future-color future-secondary-font future-box" type="button"
+                id="reset-assassination-button">Reset Assassination</button>
+            <button class="future-color future-secondary-font future-disabled future-box" type="button"
+                id="confirm-assassination-button" disabled>Confirm Assassination</button>
         `;
 
         for (let i = 0; i < gamePlayers.length; i++) {
@@ -753,10 +766,10 @@ document.addEventListener('DOMContentLoaded', function () {
     }
 
     function showGameResult(winner, message) {
-        resultModal.style.display = "block";
+        resultsModal.style.display = "flex";
         rolesModal.style.display = "none";
         intelModal.style.display = "none";
-        resultArea.innerHTML = message;
+        resultsArea.innerHTML = message;
         statusMessage.innerHTML = `${winner} wins!`;
         if (startGameButton) {
             startGameButton.disable = false;
