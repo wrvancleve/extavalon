@@ -32,7 +32,7 @@ class GameState {
     }
 
     static get PHASE_DONE() {
-        return 5;
+        return 6;
     }
 
     static get NUM_WINS() {

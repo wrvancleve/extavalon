@@ -160,7 +160,6 @@ class Game {
                                     Spies win!
                                 </p>
                             `;
-                            console.log("Set to done inside proposal failed");
                             this.state.phase = GameState.PHASE_DONE;
                         } else {
                             this.state.phase = GameState.PHASE_CONDUCT_REACT;
@@ -190,7 +189,6 @@ class Game {
                                 Spies win!
                             </p>
                         `;
-                        console.log("Set to done after round failed");
                         this.state.phase = GameState.PHASE_DONE;
                     } else {
                         this.state.phase = GameState.PHASE_ASSASSINATION;
@@ -205,7 +203,6 @@ class Game {
                 this.state.phase = GameState.PHASE_PROPOSE;
                 break;
             case GameState.PHASE_ASSASSINATION:
-                console.log("Set to done after advance");
                 this.state.phase = GameState.PHASE_DONE;
                 break;
         }
@@ -315,7 +312,6 @@ class Game {
             }
         }
 
-        console.log("(End of handle assassination) About to advance");
         this.advance();
     }
 

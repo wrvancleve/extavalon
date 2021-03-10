@@ -1,7 +1,6 @@
 document.addEventListener('DOMContentLoaded', function () {
     //const socket = io.connect("https://extavalon.com");
-    //const socket = io.connect("http://localhost:8080");
-    const socket = io.connect("http://192.168.1.107:25565");
+    const socket = io.connect("http://localhost:8080");
 
     const {name, code} = Qs.parse(location.search, {
         ignoreQueryPrefix: true
@@ -139,27 +138,27 @@ document.addEventListener('DOMContentLoaded', function () {
         }
     }
 
-    function getGunSlotSrcs() {
-        const gunSlotSrcs = [];
+    function getGunSlots() {
+        const gunSlots = [];
         for (let i = 0; i < gamePlayers.length; i++) {
             const gunSlot = document.getElementById(gamePlayers[i].gunSlotId);
             if (gunSlot.style.visibility === "visible") {
-                gunSlotSrcs.push(gunSlot.alt);
+                gunSlots.push(gunSlot.alt);
             } else {
-                gunSlotSrcs.push("");
+                gunSlots.push("");
             }
         }
-        return gunSlotSrcs;
+        return gunSlots;
     }
 
-    function updateGunSlotSrcs(gunSlotSrcs) {
-        if (gunSlotSrcs) {
+    function updateGunSlots(gunSlots) {
+        if (gunSlots) {
             for (let i = 0; i < gamePlayers.length; i++) {
                 const gunSlot = document.getElementById(gamePlayers[i].gunSlotId);
                 gunSlot.style.visibility = "visible";
-                if (gunSlotSrcs[i]) {
-                    gunSlot.src = `/images/${gunSlotSrcs[i]}`;
-                    gunSlot.alt = gunSlotSrcs[i];
+                if (gunSlots[i]) {
+                    gunSlot.src = `/images/${gunSlots[i]}.png`;
+                    gunSlot.alt = gunSlots[i];
                 } else {
                     gunSlot.src = "";
                     gunSlot.alt = "Gun Slot";
@@ -278,7 +277,7 @@ document.addEventListener('DOMContentLoaded', function () {
         intelModal.style.display = "block";
     }
 
-    function updateLeader(previousLeaderId, leader) {
+    function updateLeader(previousLeaderId, leaderId) {
         for (let id = 0; id < gamePlayers.length; id++) {
             const player = gamePlayers[id];
             const playerVoteSlot = document.getElementById(player.voteSlotId);
@@ -292,32 +291,52 @@ document.addEventListener('DOMContentLoaded', function () {
 
             if (id === previousLeaderId) {
                 document.getElementById(player.nameId).classList.remove("current-leader");
-            } else if (id === leader.id) {
+            } else if (id === leaderId) {
                 document.getElementById(player.nameId).classList.add("current-leader");
             }
         }
 
         actionArea.innerHTML = "";
         gunSelected = null;
-        statusMessage.innerHTML = `${leader.name} is proposing team...`;
     }
 
-    function setupProposal(count) {
+    function showAdvance(onclick) {
+        advanceButton.disabled = false;
+        advanceButton.classList.remove("future-disabled");
+        advanceButton.onclick = onclick;
+    }
+
+    function hideAdvance() {
         advanceButton.disabled = true;
         advanceButton.classList.add("future-disabled");
+        advanceButton.onclick = "";
+    }
+
+    function reactAdvance() {
+        statusMessage.innerHTML = "Waiting for players to advance...";
+        socket.emit('advance-mission');
+        hideAdvance();
+    }
+
+    function setupProposal(gunSlots) {
         actionArea.innerHTML = "";
 
-        for (let i = 0; i < count; i++) {
-            const gunImage = document.createElement('img');
-            gunImage.classList.add("gun-image");
-            gunImage.classList.add("clickable");
-            gunImage.alt = `gun-${i + 1}.png`;
-            gunImage.src = `/images/gun-${i + 1}.png`;
-            gunImage.onclick = function () {
-                gunSelected = gunImage;
-                attachNameClicks();
-            };
-            actionArea.appendChild(gunImage);
+        if (gunSlots.length) {
+            for (let i = 0; i < gunSlots.length; i++) {
+                const gunSlot = gunSlots[i];
+                const gunImage = document.createElement('img');
+                gunImage.classList.add("gun-image");
+                gunImage.classList.add("clickable");
+                gunImage.alt = gunSlot;
+                gunImage.src = `/images/${gunSlot}.png`;
+                gunImage.onclick = function () {
+                    gunSelected = gunImage;
+                    attachNameClicks();
+                };
+                actionArea.appendChild(gunImage);
+            }
+        } else {
+            showAdvance(submitProposal);
         }
     }
 
@@ -331,17 +350,11 @@ document.addEventListener('DOMContentLoaded', function () {
                 gunSelected = null;
                 removeNameClicks();
 
-                socket.emit('update-team', {gunSlotSrcs: getGunSlotSrcs()});
+                socket.emit('update-team', {gunSlots: getGunSlots()});
                 if (actionArea.childElementCount > 0) {
-                    advanceButton.disabled = true;
-                    advanceButton.classList.add("future-disabled");
-                    advanceButton.onclick = "";
+                    hideAdvance();
                 } else {
-                    advanceButton.disabled = false;
-                    advanceButton.classList.remove("future-disabled");
-                    advanceButton.onclick = function() {
-                        submitProposal();
-                    };
+                    showAdvance(submitProposal);
                 }
             };
         }
@@ -358,7 +371,7 @@ document.addEventListener('DOMContentLoaded', function () {
     function handleNameClick(i) {
         const gunSlot = document.getElementById(gamePlayers[i].gunSlotId);
         gunSlot.style.visibility = "visible";
-        gunSlot.src = `/images/${gunSelected.alt}`;
+        gunSlot.src = `/images/${gunSelected.alt}.png`;
         gunSlot.alt = gunSelected.alt;
         gunSlot.classList.add("clickable");
         gunSlot.onclick = function () {
@@ -388,10 +401,7 @@ document.addEventListener('DOMContentLoaded', function () {
             }
         }
 
-        advanceButton.onclick = "";
-        advanceButton.disabled = true;
-        advanceButton.classList.add("future-disabled");
-
+        hideAdvance();
         socket.emit('propose-team', {selectedIds});
     }
 
@@ -430,16 +440,6 @@ document.addEventListener('DOMContentLoaded', function () {
                 voteSlot.src = "/images/reject.png";
             }
         }
-
-        advanceButton.disabled = false;
-        advanceButton.classList.remove("future-disabled");
-        advanceButton.onclick = function() {
-            statusMessage.innerHTML = "Waiting for players to advance...";
-            socket.emit('advance-mission');
-            advanceButton.onclick = "";
-            advanceButton.disabled = true;
-            advanceButton.classList.add("future-disabled");
-        };
     }
 
     function setupMission(failAllowed, reverseAllowed) {
@@ -475,22 +475,24 @@ document.addEventListener('DOMContentLoaded', function () {
         }
     }
 
-    function showMissionResult(result) {
-        actionArea.innerHTML = "";
-        for (let i = 0; i < result.successCount; i++) {
-            actionArea.innerHTML += `
-                <img class="action-image" id="succeed-mission-image" alt="Succeed Mission" src='/images/success.png'></img>
-            `;
-        }
-        for (let i = 0; i < result.failCount; i++) {
-            actionArea.innerHTML += `
-                <img class="action-image" id="fail-mission-image" alt="Fail Mission" src='/images/fail.png'></img>
-            `;
-        }
-        for (let i = 0; i < result.reverseCount; i++) {
-            actionArea.innerHTML += `
-                <img class="action-image" id="reverse-mission-image" alt="Reverse Mission" src='/images/reverse.png'></img>
-            `;
+    function showMissionResult(result, showActions) {
+        if (showActions) {
+            actionArea.innerHTML = "";
+            for (let i = 0; i < result.successCount; i++) {
+                actionArea.innerHTML += `
+                    <img class="action-image" id="succeed-mission-image" alt="Succeed Mission" src='/images/success.png'></img>
+                `;
+            }
+            for (let i = 0; i < result.failCount; i++) {
+                actionArea.innerHTML += `
+                    <img class="action-image" id="fail-mission-image" alt="Fail Mission" src='/images/fail.png'></img>
+                `;
+            }
+            for (let i = 0; i < result.reverseCount; i++) {
+                actionArea.innerHTML += `
+                    <img class="action-image" id="reverse-mission-image" alt="Reverse Mission" src='/images/reverse.png'></img>
+                `;
+            }
         }
 
         const missionId = boardArea.children.length - 1;
@@ -648,29 +650,6 @@ document.addEventListener('DOMContentLoaded', function () {
                 break;
         }
         boardArea.appendChild(resultImage);
-
-        let resistanceWins = 0;
-        let spyWins = 0;
-        for (let i = 0; i < boardArea.children.length; i++) {
-            const child = boardArea.children[i];
-            if (child.alt === "Success") {
-                resistanceWins += 1;
-            } else {
-                spyWins += 1;
-            }
-        }
-
-        if (resistanceWins != 3 && spyWins != 3) {
-            advanceButton.disabled = false;
-            advanceButton.classList.remove("future-disabled");
-            advanceButton.onclick = function() {
-                statusMessage.innerHTML = "Waiting for players to advance...";
-                socket.emit('advance-mission');
-                advanceButton.onclick = "";
-                advanceButton.disabled = true;
-                advanceButton.classList.add("future-disabled");
-            }
-        }
     }
 
     function disableAssassinationConfirm() {
@@ -779,9 +758,6 @@ document.addEventListener('DOMContentLoaded', function () {
         intelModal.style.display = "none";
         resultArea.innerHTML = message;
         statusMessage.innerHTML = `${winner} wins!`;
-        advanceButton.onclick = "";
-        advanceButton.disabled = true;
-        advanceButton.classList.add("future-disabled");
         if (startGameButton) {
             startGameButton.disable = false;
             startGameButton.style.display = "block";
@@ -801,24 +777,27 @@ document.addEventListener('DOMContentLoaded', function () {
 
     socket.on('close-lobby', () => {
         //location.replace("https://extavalon.com/");
-        //location.replace("http://localhost:8080");
-        location.replace("http://192.168.1.107:25565");
+        location.replace("http://localhost:8080");
     });
 
-    socket.on('update-leader', ({previousLeaderId, leader}) => {
-        updateLeader(previousLeaderId, leader);
+    socket.on('update-leader', ({previousLeaderId, leaderId}) => {
+        updateLeader(previousLeaderId, leaderId);
     });
 
     socket.on('update-status', ({message}) => {
         statusMessage.innerHTML = message;
     });
+
+    socket.on('react', () => {
+        showAdvance(reactAdvance);
+    });
     
-    socket.on('propose-team', ({count}) => {
-        setupProposal(count);
+    socket.on('propose-team', ({gunSlots}) => {
+        setupProposal(gunSlots);
     });
 
-    socket.on('update-team', ({gunSlotSrcs}) => {
-        updateGunSlotSrcs(gunSlotSrcs);
+    socket.on('update-team', ({gunSlots}) => {
+        updateGunSlots(gunSlots);
     });
 
     socket.on('vote-team', () => {
@@ -833,8 +812,8 @@ document.addEventListener('DOMContentLoaded', function () {
         setupMission(failAllowed, reverseAllowed);
     });
 
-    socket.on('mission-result', ({result}) => {
-        showMissionResult(result);  
+    socket.on('mission-result', ({result, showActions}) => {
+        showMissionResult(result, showActions);  
     });
 
     socket.on('conduct-assassination', () => {
