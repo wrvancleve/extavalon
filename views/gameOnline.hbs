@@ -11,8 +11,6 @@
     </div>
     <div class="flex-column" id="game">
         <h3 id="status-message"></h2>
-        <button class="future-disabled future-color future-secondary-font future-box" type="button"
-                id="advance-button" disabled>Advance</button>
         <div class="vertical-player-area" id="top-player-area">
         </div>
         <div id="center-area">
@@ -22,7 +20,7 @@
             </div>
             <div class="horizontal-player-area" id="right-player-area"></div>
         </div>
-        <div id="action-area"></div>
+        <div class="flex-column" id="action-area"></div>
     </div>
     {{# if host }}
         <button class="future-color future-secondary-font future-disabled future-box" type="button"

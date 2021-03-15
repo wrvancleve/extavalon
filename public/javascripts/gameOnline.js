@@ -20,7 +20,6 @@ document.addEventListener('DOMContentLoaded', function () {
     const game = document.getElementById("game");
     
     const statusMessage = document.getElementById("status-message");
-    const advanceButton = document.getElementById("advance-button");
     const boardArea = document.getElementById("board-area");
     const gameBoard = document.getElementById("game-board");
 
@@ -32,6 +31,9 @@ document.addEventListener('DOMContentLoaded', function () {
     const rightPlayerArea = document.getElementById("right-player-area");
 
     const actionArea = document.getElementById("action-area");
+    const selectGunAreaId = "select-gun-area";
+    const selectActionAreaId = "select-action-area";
+    const actionResultsAreaId = "action-results-area";
 
     const resultsModal = document.getElementById("results-modal");
     const closeResultsModalButton = document.getElementById("close-results-modal-button");
@@ -197,7 +199,7 @@ document.addEventListener('DOMContentLoaded', function () {
         lobby.style.display = "none";
         resultsModal.style.display = "none";
         openIntelModalButton.style.display = "block";
-        game.style.display = "block";
+        game.style.display = "flex";
         intelModalArea.innerHTML = gameHTML;
 
         while (boardArea.children.length > 1) {
@@ -302,28 +304,37 @@ document.addEventListener('DOMContentLoaded', function () {
         gunSelected = null;
     }
 
-    function showAdvance(onclick) {
-        advanceButton.disabled = false;
-        advanceButton.classList.remove("future-disabled");
-        advanceButton.onclick = onclick;
+    function showConfirmProposal() {
+        actionArea.innerHTML = `
+            <button class="future-color future-secondary-font future-box" type="button"
+            id="confirm-proposal-button">Confirm Proposal</button>
+        `;
+
+        document.getElementById("confirm-proposal-button").onclick = function () {
+            actionArea.innerHTML = "";
+            submitProposal();
+        };
     }
 
-    function hideAdvance() {
-        advanceButton.disabled = true;
-        advanceButton.classList.add("future-disabled");
-        advanceButton.onclick = "";
-    }
+    function showAdvance() {
+        actionArea.innerHTML += `
+            <button class="future-color future-secondary-font future-box" type="button"
+            id="advance-button">Advance</button>
+        `;
 
-    function reactAdvance() {
-        statusMessage.innerHTML = "Waiting for players to advance...";
-        socket.emit('advance-mission');
-        hideAdvance();
+        document.getElementById("advance-button").onclick = function () {
+            actionArea.innerHTML = "";
+            socket.emit('advance-mission');
+        };
     }
 
     function setupProposal(gunSlots) {
         actionArea.innerHTML = "";
 
         if (gunSlots.length) {
+            const gunArea = document.createElement('div');
+            gunArea.id = selectGunAreaId;
+            actionArea.appendChild(gunArea);
             for (let i = 0; i < gunSlots.length; i++) {
                 const gunSlot = gunSlots[i];
                 const gunImage = document.createElement('img');
@@ -335,10 +346,10 @@ document.addEventListener('DOMContentLoaded', function () {
                     gunSelected = gunImage;
                     attachNameClicks();
                 };
-                actionArea.appendChild(gunImage);
+                gunArea.appendChild(gunImage);
             }
         } else {
-            showAdvance(submitProposal);
+            showConfirmProposal();
         }
     }
 
@@ -353,10 +364,9 @@ document.addEventListener('DOMContentLoaded', function () {
                 removeNameClicks();
 
                 socket.emit('update-team', {gunSlots: getGunSlots()});
-                if (actionArea.childElementCount > 0) {
-                    hideAdvance();
-                } else {
-                    showAdvance(submitProposal);
+                const selectGunArea = document.getElementById(selectGunAreaId);
+                if (selectGunArea && selectGunArea.childElementCount === 0) {
+                    showConfirmProposal();
                 }
             };
         }
@@ -372,23 +382,34 @@ document.addEventListener('DOMContentLoaded', function () {
 
     function handleNameClick(i) {
         const gunSlot = document.getElementById(gamePlayers[i].gunSlotId);
-        gunSlot.style.visibility = "visible";
-        gunSlot.src = `/images/${gunSelected.alt}.png`;
-        gunSlot.alt = gunSelected.alt;
-        gunSlot.classList.add("clickable");
-        gunSlot.onclick = function () {
-            gunSelected = gunSlot;
-            attachNameClicks();
-        };
-
-        if (gunSelected.parentNode.id === actionArea.id) {
-            gunSelected.remove();
-        } else {
-            gunSelected.src = "";
-            gunSelected.alt = "Gun Slot";
-            gunSelected.classList.remove("clickable");
-            gunSelected.onclick = "";
-            gunSelected.style.visibility = "hidden";
+        if (gunSlot.alt !== gunSelected.alt) {
+            if (gunSlot.alt === "Gun Slot") {
+                gunSlot.style.visibility = "visible";
+                gunSlot.src = `/images/${gunSelected.alt}.png`;
+                gunSlot.alt = gunSelected.alt;
+                gunSlot.classList.add("clickable");
+                gunSlot.onclick = function () {
+                    gunSelected = gunSlot;
+                    attachNameClicks();
+                };
+    
+                if (gunSelected.parentNode.id === selectGunAreaId) {
+                    gunSelected.remove();
+                } else {
+                    gunSelected.src = "";
+                    gunSelected.alt = "Gun Slot";
+                    gunSelected.classList.remove("clickable");
+                    gunSelected.onclick = "";
+                    gunSelected.style.visibility = "hidden";
+                }
+            } else {
+                const tempSrc = gunSlot.src;
+                const tempAlt = gunSlot.alt;
+                gunSlot.src = gunSelected.src;
+                gunSlot.alt = gunSelected.alt;
+                gunSelected.src = tempSrc;
+                gunSelected.alt = tempAlt;
+            }
         }
     }
 
@@ -403,7 +424,6 @@ document.addEventListener('DOMContentLoaded', function () {
             }
         }
 
-        hideAdvance();
         socket.emit('propose-team', {selectedIds});
     }
 
@@ -411,8 +431,10 @@ document.addEventListener('DOMContentLoaded', function () {
         statusMessage.innerHTML = "Voting on team...";
 
         actionArea.innerHTML = `
-            <img class="vote-image clickable" id="approve-team-image" alt="Approve Team" src='/images/approve.png'></img>
-            <img class="vote-image clickable" id="reject-team-image" alt="Reject Team" src='/images/reject.png'></img>
+            <div id="select-vote-area">
+                <img class="vote-image clickable" id="approve-team-image" alt="Approve Team" src='/images/approve.png'></img>
+                <img class="vote-image clickable" id="reject-team-image" alt="Reject Team" src='/images/reject.png'></img>
+            </div>
         `; 
 
         document.getElementById("approve-team-image").onclick = function() {
@@ -445,16 +467,19 @@ document.addEventListener('DOMContentLoaded', function () {
     }
 
     function setupMission(failAllowed, reverseAllowed) {
-        actionArea.innerHTML = `
+        const selectActionArea = document.createElement('div');
+        selectActionArea.id = selectActionAreaId;
+        actionArea.appendChild(selectActionArea);
+        selectActionArea.innerHTML = `
             <img class="action-image clickable" id="succeed-mission-image" alt="Succeed Mission" src='/images/success.png'></img>
         `; 
         if (failAllowed) {
-            actionArea.innerHTML += `
+            selectActionArea.innerHTML += `
                 <img class="action-image clickable" id="fail-mission-image" alt="Fail Mission" src='/images/fail.png'></img>
             `;
         }
         if (reverseAllowed) {
-            actionArea.innerHTML += `
+            selectActionArea.innerHTML += `
                 <img class="action-image clickable" id="reverse-mission-image" alt="Reverse Mission" src='/images/reverse.png'></img>
             `;
         }
@@ -480,18 +505,21 @@ document.addEventListener('DOMContentLoaded', function () {
     function showMissionResult(result, showActions) {
         if (showActions) {
             actionArea.innerHTML = "";
+            const actionResultArea = document.createElement('div');
+            actionResultArea.id = actionResultsAreaId;
+            actionArea.appendChild(actionResultArea);
             for (let i = 0; i < result.successCount; i++) {
-                actionArea.innerHTML += `
+                actionResultArea.innerHTML += `
                     <img class="action-image" id="succeed-mission-image" alt="Succeed Mission" src='/images/success.png'></img>
                 `;
             }
             for (let i = 0; i < result.failCount; i++) {
-                actionArea.innerHTML += `
+                actionResultArea.innerHTML += `
                     <img class="action-image" id="fail-mission-image" alt="Fail Mission" src='/images/fail.png'></img>
                 `;
             }
             for (let i = 0; i < result.reverseCount; i++) {
-                actionArea.innerHTML += `
+                actionResultArea.innerHTML += `
                     <img class="action-image" id="reverse-mission-image" alt="Reverse Mission" src='/images/reverse.png'></img>
                 `;
             }
@@ -514,139 +542,139 @@ document.addEventListener('DOMContentLoaded', function () {
                 switch (gamePlayers.length) {
                     case 5:
                         resultImage.style.left = "1.5vw";
-                        resultImage.style.top = "20.25vh";
+                        resultImage.style.top = "17.5vh";
                         break;
                     case 6:
                         resultImage.style.left = "2.75vw";
-                        resultImage.style.top = "18.75vh";
+                        resultImage.style.top = "16.5vh";
                         break;
                     case 7:
-                        resultImage.style.left = "1.5vw";
-                        resultImage.style.top = "20.25vh";
+                        resultImage.style.left = "2vw";
+                        resultImage.style.top = "17.6vh";
                         break;
                     case 8:
-                        resultImage.style.left = "1.5vw";
-                        resultImage.style.top = "20.25vh";
+                        resultImage.style.left = "1.75vw";
+                        resultImage.style.top = "17.75vh";
                         break;
                     case 9:
-                        resultImage.style.left = "1.5vw";
-                        resultImage.style.top = "20.75vh";
+                        resultImage.style.left = "1.65vw";
+                        resultImage.style.top = "17.85vh";
                         break;
                     case 10:
-                        resultImage.style.left = "1.5vw";
-                        resultImage.style.top = "19.35vh";
+                        resultImage.style.left = "1.65vw";
+                        resultImage.style.top = "17vh";
                         break;
                 }
                 break;
             case 1:
                 switch (gamePlayers.length) {
                     case 5:
-                        resultImage.style.left = "10.5vw";
-                        resultImage.style.top = "20vh";
+                        resultImage.style.left = "9.5vw";
+                        resultImage.style.top = "17.5vh";
                         break;
                     case 6:
-                        resultImage.style.left = "11vw";
-                        resultImage.style.top = "18.75vh";
+                        resultImage.style.left = "9.75vw";
+                        resultImage.style.top = "16.5vh";
                         break;
                     case 7:
-                        resultImage.style.left = "10.3vw";
-                        resultImage.style.top = "20vh";
+                        resultImage.style.left = "9.4vw";
+                        resultImage.style.top = "17.6vh";
                         break;
                     case 8:
-                        resultImage.style.left = "10.35vw";
-                        resultImage.style.top = "20vh";
+                        resultImage.style.left = "9.25vw";
+                        resultImage.style.top = "17.75vh";
                         break;
                     case 9:
-                        resultImage.style.left = "10.5vw";
-                        resultImage.style.top = "20.5vh";
+                        resultImage.style.left = "9.45vw";
+                        resultImage.style.top = "17.85vh";
                         break;
                     case 10:
-                        resultImage.style.left = "10.5vw";
-                        resultImage.style.top = "19.35vh";
+                        resultImage.style.left = "9.45vw";
+                        resultImage.style.top = "16.8vh";
                         break;
                 }
                 break;
             case 2:
                 switch (gamePlayers.length) {
                     case 5:
-                        resultImage.style.left = "19.75vw";
-                        resultImage.style.top = "19.75vh";
+                        resultImage.style.left = "17.25vw";
+                        resultImage.style.top = "17.25vh";
                         break;
                     case 6:
-                        resultImage.style.left = "19vw";
-                        resultImage.style.top = "18.75vh";
+                        resultImage.style.left = "16.6vw";
+                        resultImage.style.top = "16.5vh";
                         break;
                     case 7:
-                        resultImage.style.left = "19vw";
-                        resultImage.style.top = "20vh";
+                        resultImage.style.left = "16.65vw";
+                        resultImage.style.top = "17.6vh";
                         break;
                     case 8:
-                        resultImage.style.left = "18.75vw";
-                        resultImage.style.top = "20vh";
+                        resultImage.style.left = "16.35vw";
+                        resultImage.style.top = "17.25vh";
                         break;
                     case 9:
-                        resultImage.style.left = "19.45vw";
-                        resultImage.style.top = "20.5vh";
+                        resultImage.style.left = "17vw";
+                        resultImage.style.top = "17.85vh";
                         break;
                     case 10:
-                        resultImage.style.left = "19.5vw";
-                        resultImage.style.top = "19.35vh";
+                        resultImage.style.left = "17vw";
+                        resultImage.style.top = "16.8vh";
                         break;
                 }
                 break;
             case 3:
                 switch (gamePlayers.length) {
                     case 5:
-                        resultImage.style.left = "28.75vw";
-                        resultImage.style.top = "19.75vh";
+                        resultImage.style.left = "24.9vw";
+                        resultImage.style.top = "17.25vh";
                         break;
                     case 6:
-                        resultImage.style.left = "26.75vw";
-                        resultImage.style.top = "18.75vh";
+                        resultImage.style.left = "23.45vw";
+                        resultImage.style.top = "16.4vh";
                         break;
                     case 7:
-                        resultImage.style.left = "27.5vw";
-                        resultImage.style.top = "20vh";
+                        resultImage.style.left = "23.75vw";
+                        resultImage.style.top = "17.5vh";
                         break;
                     case 8:
-                        resultImage.style.left = "27.05vw";
-                        resultImage.style.top = "20vh";
+                        resultImage.style.left = "23.6vw";
+                        resultImage.style.top = "17.25vh";
                         break;
                     case 9:
-                        resultImage.style.left = "28.25vw";
-                        resultImage.style.top = "20.5vh";
+                        resultImage.style.left = "24.6vw";
+                        resultImage.style.top = "17.85vh";
                         break;
                     case 10:
-                        resultImage.style.left = "28.35vw";
-                        resultImage.style.top = "19.35vh";
+                        resultImage.style.left = "24.65vw";
+                        resultImage.style.top = "16.75vh";
                         break;
                 }
                 break;
             case 4:
                 switch (gamePlayers.length) {
                     case 5:
-                        resultImage.style.left = "38vw";
-                        resultImage.style.top = "19.5vh";
+                        resultImage.style.left = "32.75vw";
+                        resultImage.style.top = "17vh";
                         break;
                     case 6:
-                        resultImage.style.left = "34.8vw";
-                        resultImage.style.top = "18.75vh";
+                        resultImage.style.left = "30.35vw";
+                        resultImage.style.top = "16.4vh";
                         break;
                     case 7:
-                        resultImage.style.left = "36vw";
-                        resultImage.style.top = "20vh";
+                        resultImage.style.left = "31.1vw";
+                        resultImage.style.top = "17.6vh";
                         break;
                     case 8:
-                        resultImage.style.left = "35.75vw";
-                        resultImage.style.top = "19.75vh";
+                        resultImage.style.left = "30.8vw";
+                        resultImage.style.top = "17.25vh";
                         break;
                     case 9:
-                        resultImage.style.left = "37.25vw";
-                        resultImage.style.top = "20.5vh";
+                        resultImage.style.left = "32.25vw";
+                        resultImage.style.top = "17.85vh";
                         break;
                     case 10:
-                        resultImage.style.left = "37.35vw";
-                        resultImage.style.top = "19.35vh";
+                        resultImage.style.left = "32.35vw";
+                        resultImage.style.top = "16.75vh";
                         break;
                 }
                 break;
@@ -802,7 +830,7 @@ document.addEventListener('DOMContentLoaded', function () {
     });
 
     socket.on('react', () => {
-        showAdvance(reactAdvance);
+        showAdvance();
     });
     
     socket.on('propose-team', ({gunSlots}) => {

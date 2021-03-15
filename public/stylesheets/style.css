@@ -524,21 +524,10 @@ select {
   text-align: center;
 }
 
-#advance-button {
-  width: calc(3px + 4.5em);
-  height: 4vh;
-  position: absolute;
-  top: calc(10px + 1.5em + 2vh);
-  margin-top: 0px;
-  right: 10px;
-  font-size: 1em;
-}
-
 .vertical-player-area {
   display: flex;
-  align-items: center;
   justify-content: space-around;
-  width: 50vw;
+  width: 40vw;
   margin: auto;
   padding-top: 4vh;
 }
@@ -556,8 +545,8 @@ select {
 }
 
 #game-board {
-  width: 50vw;
-  height: 50vh;
+  width: 43vw;
+  height: 43vh;
   z-index: 0;
 }
 
@@ -568,12 +557,12 @@ select {
 .result-image {
   z-index: 1;
   position: absolute;
-  height: 11vh;
-  width: 9vw;
+  height: 9vh;
+  width: 7vw;
 }
 
 .horizontal-player-area {
-  height: 40vh;
+  height: 35vh;
   width: 25vw;
   display: flex;
   flex-direction: column;
@@ -583,12 +572,19 @@ select {
 
 .horizontal-player {
   display: flex;
-  justify-content: center;
   align-items: center;
 }
 
 .horizontal-player h3 {
   margin: 0.5vh 0.5vw;
+}
+
+#left-player-area .horizontal-player {
+  justify-content: flex-end;
+}
+
+#right-player-area .horizontal-player {
+  justify-content: flex-start;
 }
 
 .current-leader {
@@ -617,7 +613,6 @@ select {
 }
 
 #action-area {
-  display: flex;
   margin: auto;
   color: #9debfb;
   justify-content: center;
