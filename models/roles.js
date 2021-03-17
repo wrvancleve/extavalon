@@ -14,6 +14,14 @@ const Colgrevance = {
     name: "Colgrevance",
     team: "Spies"
 };
+const Lucius = {
+    name: "Lucius",
+    team: "Spies"
+};
+const Accolon = {
+    name: "Accolon",
+    team: "Spies"
+};
 
 const Merlin = {
     name: "Merlin",
@@ -55,12 +63,26 @@ const Jester = {
     name: "Jester",
     team: "Resistance"
 };
+const Galahad = {
+    name: "Galahad",
+    team: "Resistance"
+};
+const Leon = {
+    name: "Leon",
+    team: "Resistance"
+};
+const Titania = {
+    name: "Titania",
+    team: "Resistance"
+};
 
 module.exports = {
     Mordred,
     Morgana,
     Maelagant,
     Colgrevance,
+    Lucius,
+    Accolon,
     Merlin,
     Percival,
     Uther,
@@ -70,5 +92,8 @@ module.exports = {
     Lancelot,
     Guinevere,
     Puck,
-    Jester
+    Jester,
+    Galahad,
+    Leon,
+    Titania
 }

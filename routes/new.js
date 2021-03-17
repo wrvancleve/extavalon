@@ -37,7 +37,6 @@ router.post('/', [check('name', 'Invalid Name').trim().matches("^[ a-zA-z0-9]{2,
         req.session.errors = errors.array();
         res.redirect(`/new?type=${type}`);
     } else {
-        /*
         const settings = {
             guinevere: req.body.guinevere === 'on',
             puck: req.body.puck === 'on',
@@ -47,13 +46,6 @@ router.post('/', [check('name', 'Invalid Name').trim().matches("^[ a-zA-z0-9]{2,
             titania: req.body.titania === 'on',
             lucius: req.body.lucius === 'on',
             accolon: req.body.accolon === 'on'
-        };
-        */
-
-        const settings = {
-            guinevere: req.body.guinevere === 'on',
-            puck: req.body.puck === 'on',
-            jester: req.body.jester === 'on'
         };
 
         const type = req.query.type || 'local';

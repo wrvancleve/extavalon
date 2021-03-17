@@ -1,4 +1,4 @@
-class ResistanceRolePossibilities {
+class RolePossibilities {
     constructor(roleList) {
         this.roleList = roleList;
         this.roleMapping = new Map();
@@ -33,4 +33,4 @@ class ResistanceRolePossibilities {
     }
 }
 
-module.exports = ResistanceRolePossibilities;
+module.exports = RolePossibilities;

@@ -1,6 +1,6 @@
 document.addEventListener('DOMContentLoaded', function () {
-    const socket = io.connect("https://extavalon.com");
-    //const socket = io.connect("http://localhost:8080");
+    //const socket = io.connect("https://extavalon.com");
+    const socket = io.connect("http://localhost:8080");
 
     const {name, code} = Qs.parse(location.search, {
         ignoreQueryPrefix: true
@@ -105,8 +105,8 @@ document.addEventListener('DOMContentLoaded', function () {
     });
 
     socket.on('close-lobby', () => {
-        location.replace("https://extavalon.com/");
-        //location.replace("http://localhost:8080");
+        //location.replace("https://extavalon.com/");
+        location.replace("http://localhost:8080");
     });
 
     socket.emit('join-lobby', {name, code});

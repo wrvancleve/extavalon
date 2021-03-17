@@ -14,7 +14,9 @@ class ResistanceRoleSelections {
     }
 
     add(role) {
-        if (this.roleList.length === this.maxSize - 1 && role === Roles.Percival && !this.containsMorgana) {
+        if (this.roleList.length === this.maxSize - 1 && 
+                ((role === Roles.Percival && !this.containsMorgana)
+                || (role === Roles.Galahad && !this.roleMapping.has(Roles.Arthur)))) {
             return false;
         }
 
@@ -25,6 +27,13 @@ class ResistanceRoleSelections {
         {
             this.roleMapping.set(Roles.Merlin, this.roleList.length);
             this.roleList.push(Roles.Merlin);
+            this.containsAssassinableRole = true;
+        }
+
+        if (role === Roles.Galahad && !this.roleMapping.has(Roles.Arthur))
+        {
+            this.roleMapping.set(Roles.Arthur, this.roleList.length);
+            this.roleList.push(Roles.Arthur);
             this.containsAssassinableRole = true;
         }
 
@@ -40,7 +49,7 @@ class ResistanceRoleSelections {
         return this.roleList.length === this.maxSize;
     }
 
-    getRoles() {
+    getRoles(leonPossible) {
         if (!this.containsAssassinableRole) {
             return null;
         }
@@ -48,7 +57,12 @@ class ResistanceRoleSelections {
         const tristanIndex = this.getIndex(Roles.Tristan);
         const iseultIndex = this.getIndex(Roles.Iseult);
         if ((tristanIndex === -1 && iseultIndex !== -1) || (tristanIndex !== -1 && iseultIndex === -1)) {
-            this.roleList[tristanIndex === -1 ? iseultIndex : tristanIndex] = Roles.Uther;
+            const replacementIndex = tristanIndex === -1 ? iseultIndex : tristanIndex;
+            if (leonPossible) {
+                this.roleList[replacementIndex] = Roles.Leon;
+            } else {
+                this.roleList[replacementIndex] = Roles.Uther;
+            }
         }
 
         return this.roleList;

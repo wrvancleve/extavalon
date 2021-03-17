@@ -50,8 +50,8 @@ class GameState {
         this.resistance = [];
         this.spys = [];
         this.settings = settings;
-        this.players = this._createPlayers(playerInformation);
-        this.missions = this._createMissions();
+        this._createPlayers(playerInformation);
+        this._createMissions();
         this.phase = GameState.PHASE_PROPOSE;
         this.winner = null;
     }
@@ -62,20 +62,21 @@ class GameState {
         this.resistancePlayerCount = this.playerCount - this.spyPlayerCount;
 
         const playerRoles = getRoles(this.resistancePlayerCount, this.spyPlayerCount, this.settings);
-        const players = [];
+        this.players = [];
         let utherPlayer = null;
+        let titaniaPlayer = null;
+        let accolonPlayer = null;
+        let leonPlayer = null;
+        let luciusPlayer = null;
 
         for (let id = 0; id < this.playerCount; id++) {
             const playerRole = playerRoles.pop();
             const player = new Player(this, id, playerInformation[id].name, playerRole);
-            players.push(player);
+            this.players.push(player);
             this.playersByRole.set(playerRole, player);
             
             if (playerRole.team === "Resistance") {
                 this.resistance.push(player);
-                if (playerRole == Roles.Uther) {
-                    utherPlayer = player;
-                }
             } else {
                 if (playerRole === Roles.Maelagant) {
                     this.spys.unshift(player);
@@ -83,21 +84,32 @@ class GameState {
                     this.spys.push(player);
                 }
             }
+
+            switch (playerRole) {
+                case Roles.Uther:
+                    utherPlayer = player;
+                    break;
+                case Roles.Titania:
+                    titaniaPlayer = player;
+                    break;
+                case Roles.Accolon:
+                    accolonPlayer = player;
+                    break;
+                case Roles.Leon:
+                    leonPlayer = player;
+                    break;
+                case Roles.Lucius:
+                    luciusPlayer = player;
+                    break;
+            }
         }
 
-        // Set Uther Information Index
-        if (utherPlayer !== null) {
-            const shuffledResistance = shuffle(this.resistance);
-            for (let i = 0 ; i < shuffledResistance.length; i++) {
-                const resistance = shuffledResistance[i];
-                if (resistance.id !== utherPlayer.id) {
-                    this.utherSight = resistance;
-                    break;
-                }
-            }
-        } else {
-            this.utherSight = null;
-        }
+        // Set Additional Role Information
+        this._setUtherSight(utherPlayer);
+        this._setTitaniaSabotage(titaniaPlayer);
+        this._setAccolonSabotage(accolonPlayer);
+        this._setLeonSight(leonPlayer);
+        this._setLuciusSight(luciusPlayer);
 
         // Set First Leader
         this.currentLeaderId = Math.floor(Math.random() * this.playerCount);
@@ -106,8 +118,6 @@ class GameState {
         // Set Assassin
         this.assassinId = choice(this.spys).id;
         console.debug(`Assassin Id: ${this.assassinId}`);
-
-        return players;
     }
 
     _getSpyCount() {
@@ -122,15 +132,213 @@ class GameState {
         }
     }
 
+    _setUtherSight(utherPlayer) {
+        this.utherSight = null;
+        if (utherPlayer !== null) {
+            const shuffledResistance = shuffle(this.resistance);
+            for (let i = 0 ; i < shuffledResistance.length; i++) {
+                const resistance = shuffledResistance[i];
+                if (resistance.id !== utherPlayer.id) {
+                    this.utherSight = resistance;
+                    break;
+                }
+            }
+        }
+    }
+
+    _setLeonSight(leonPlayer) {
+        this.leonSight = {};
+        if (leonPlayer !== null) {
+            if (this.accolonSabotage.source && this.accolonSabotage.source.id === leonPlayer.id) {
+                const players = [];
+                players.push(this.selectPlayers({
+                    includedTeams: ["Spies"]
+                })[0]);
+                Array.prototype.push.apply(players, this.selectPlayers({
+                    excludedRoles: [Roles.Leon],
+                    includedTeams: ["Resistance"]
+                }).slice(0, 2));
+                this.leonSight = {players: shuffle(players), spyCount: 1};
+            } else {
+                this.leonSight = {players: [], spyCount: 0};
+                const players = shuffle(this.players);
+                for (var i = 0; i < this.playerCount; i++) {
+                    const player = players[i];
+                    if (player.id !== leonPlayer.id && this.leonSight.players.length < 2) {
+                        this.leonSight.players.push(player);
+                        if (player.isSpy) {
+                            this.leonSight.spyCount += 1;
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    _setLuciusSight(luciusPlayer) {
+        this.luciusSight = {};
+        if (luciusPlayer !== null) {
+            const seeRoles = [
+                Roles.Merlin, Roles.Percival, Roles.Tristan, Roles.Iseult,
+                Roles.Uther, Roles.Leon, Roles.Galahad];
+            const guinevereSees = this.selectPlayers({
+                includedRoles: [Roles.Lancelot, Roles.Maelagant],
+                includedTeams: []
+            });
+            if (guinevereSees.length > 0) {
+                seeRoles.push(Roles.Guinevere);
+            }
+
+            this.luciusSight.source = this.selectPlayers({
+                includedRoles: seeRoles,
+                includedTeams: []
+            })[0];
+            switch (this.luciusSight.source.role) {
+                case Roles.Merlin:
+                    this.luciusSight.destination = this.selectPlayers({
+                        includedRoles: [Roles.Puck],
+                        excludedRoles: [Roles.Mordred],
+                        includedTeams: ["Spies"]
+                    })[0];
+                    break;
+                case Roles.Percival:
+                    this.luciusSight.destination =
+                        this.selectPlayers({
+                            includedRoles: [Roles.Merlin, Roles.Morgana],
+                            includedTeams: []
+                        })[0];
+                    break;
+                case Roles.Tristan:
+                    this.luciusSight.destination = this.playersByRole.get(Roles.Iseult);
+                    break;
+                case Roles.Iseult:
+                    this.luciusSight.destination = this.playersByRole.get(Roles.Tristan);
+                    break;
+                case Roles.Uther:
+                    this.luciusSight.destination = this.utherSight;
+                    break;
+                case Roles.Leon:
+                    this.luciusSight.destination = choice(this.leonSight.players);
+                    break;
+                case Roles.Guinevere:
+                    this.luciusSight.destination = choice(guinevereSees);
+                    break;
+                case Roles.Galahad:
+                    this.luciusSight.destination = this.playersByRole.get(Roles.Arthur);
+                    break;
+            }
+        }
+    }
+
+    _setTitaniaSabotage(titaniaPlayer) {
+        this.titaniaSabotage = {};
+        if (titaniaPlayer !== null) {
+            let index = null;
+            if (this.playersByRole.has(Roles.Maelagant)) {
+                index = Math.floor(Math.random() * (this.playerCount - 1)) + 1;
+            } else {
+                index = Math.floor(Math.random() * this.playerCount);
+            }
+
+            const player = this.selectPlayers({
+                excludedRoles: [Roles.Colgrevance],
+                includedTeams: ["Spies"]
+            })[0]; 
+            this.titaniaSabotage.insertIndex = index;
+            this.titaniaSabotage.player = player;
+        }
+    }
+
+    _setAccolonSabotage(accolonPlayer) {
+        this.accolonSabotage = {};
+        if (accolonPlayer !== null) {
+            const informationRoles = [
+                Roles.Merlin, Roles.Percival, Roles.Tristan, Roles.Iseult,
+                Roles.Uther, Roles.Leon, Roles.Galahad
+            ];
+
+            let possibleArthurSabotage = [];
+            if (this.playersByRole.has(Roles.Arthur)) {
+                possibleArthurSabotage = this.selectPlayers({
+                    excludedRoles: [Roles.Arthur, Roles.Tristan, Roles.Iseult],
+                    includedTeams: ["Resistance"]
+                });
+                if (possibleArthurSabotage.length > 0) {
+                    informationRoles.push(Roles.Arthur);
+                }
+            }
+            if (this.playersByRole.has(Roles.Jester)) {
+                const assassinableRolesCount = this.selectPlayers({
+                    includedRoles: [Roles.Merlin, Roles.Tristan, Roles.Iseult],
+                    includedTeams: []
+                }).length;
+                if (assassinableRolesCount !== 3) {
+                    informationRoles.push(Roles.Jester);
+                }
+            }
+            if (this.playersByRole.has(Roles.Guinevere)) {
+                const guinevereListCount = this.selectPlayers({
+                    includedRoles: [Roles.Lancelot, Roles.Maelagant],
+                    includedTeams: []
+                }).length;
+                if (guinevereListCount > 0) {
+                    informationRoles.push(Roles.Guinevere);
+                }
+            }
+
+            this.accolonSabotage.source = this.selectPlayers({
+                includedRoles: informationRoles,
+                includedTeams: []
+            })[0];
+
+            switch (this.accolonSabotage.source.role) {
+                case Roles.Merlin:
+                    this.accolonSabotage.destination = this.selectPlayers({
+                        excludedRoles: [Roles.Merlin, Roles.Puck],
+                        includedTeams: ["Resistance"]
+                    })[0];
+                    break;
+                case Roles.Percival:
+                    this.accolonSabotage.destination =
+                        this.selectPlayers({excludedRoles: [Roles.Percival, Roles.Merlin, Roles.Morgana]})[0];
+                    break;
+                case Roles.Tristan:
+                    this.accolonSabotage.destination =
+                        this.selectPlayers({excludedRoles: [Roles.Tristan, Roles.Iseult]})[0];
+                    break;
+                case Roles.Iseult:
+                    this.accolonSabotage.destination =
+                        this.selectPlayers({excludedRoles: [Roles.Tristan, Roles.Iseult]})[0];
+                    break;
+                case Roles.Uther:
+                    this.accolonSabotage.destination =
+                        this.selectPlayers({
+                            excludedRoles: [Roles.Uther, this.utherSight.role]
+                        })[0];
+                    break;
+                case Roles.Guinevere:
+                    this.accolonSabotage.destination =
+                        this.selectPlayers({excludedRoles: [Roles.Guinevere, Roles.Lancelot, Roles.Maelagant]})[0];
+                    break;
+                case Roles.Galahad:
+                    this.accolonSabotage.destination =
+                        this.selectPlayers({excludedRoles: [Roles.Arthur, Roles.Galahad]})[0];
+                    break;
+                case Roles.Arthur:
+                    this.accolonSabotage.destination = possibleArthurSabotage[0];
+                    break;
+            }
+        }
+    }
+
     _createMissions() {
         const teamSizes = this._getMissionTeamSizes();
         const requiredFails = this._getMissionRequiredFails();
-        const missions = [];
+        this.missions = [];
         for (let id = 0; id < 5; id++) {
-            missions.push(new Mission(id, teamSizes[id], requiredFails[id]));
+            this.missions.push(new Mission(id, teamSizes[id], requiredFails[id]));
         }
         this.currentMissionId = 0;
-        return missions;
     }
 
     _getMissionTeamSizes() {
@@ -184,6 +392,14 @@ class GameState {
         }
 
         return shuffled ? shuffle(players) : players;
+    }
+
+    getAccolonSabotage(id) {
+        if ('source' in this.accolonSabotage) {
+            return this.accolonSabotage.source.id === id ? this.accolonSabotage : null;
+        } else {
+            return null;
+        }
     }
 }
 
