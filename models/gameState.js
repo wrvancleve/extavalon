@@ -63,11 +63,7 @@ class GameState {
 
         const playerRoles = getRoles(this.resistancePlayerCount, this.spyPlayerCount, this.settings);
         this.players = [];
-        let utherPlayer = null;
         let titaniaPlayer = null;
-        let accolonPlayer = null;
-        let leonPlayer = null;
-        let luciusPlayer = null;
 
         for (let id = 0; id < this.playerCount; id++) {
             const playerRole = playerRoles.pop();
@@ -86,30 +82,14 @@ class GameState {
             }
 
             switch (playerRole) {
-                case Roles.Uther:
-                    utherPlayer = player;
-                    break;
                 case Roles.Titania:
                     titaniaPlayer = player;
-                    break;
-                case Roles.Accolon:
-                    accolonPlayer = player;
-                    break;
-                case Roles.Leon:
-                    leonPlayer = player;
-                    break;
-                case Roles.Lucius:
-                    luciusPlayer = player;
                     break;
             }
         }
 
         // Set Additional Role Information
-        this._setUtherSight(utherPlayer);
         this._setTitaniaSabotage(titaniaPlayer);
-        this._setAccolonSabotage(accolonPlayer);
-        this._setLeonSight(leonPlayer);
-        this._setLuciusSight(luciusPlayer);
 
         // Set First Leader
         this.currentLeaderId = Math.floor(Math.random() * this.playerCount);
@@ -118,6 +98,13 @@ class GameState {
         // Set Assassin
         this.assassinId = choice(this.spys).id;
         console.debug(`Assassin Id: ${this.assassinId}`);
+
+        this._addResistanceRoleIntel();
+        if (this.playersByRole.has(Roles.Accolon)) {
+            this._performAccolonSabotage();
+        }
+        this._addSpyRoleIntel();
+        this._addSpyTeamIntel();
     }
 
     _getSpyCount() {
@@ -129,104 +116,6 @@ class GameState {
         }
         else {
             return 4;
-        }
-    }
-
-    _setUtherSight(utherPlayer) {
-        this.utherSight = null;
-        if (utherPlayer !== null) {
-            const shuffledResistance = shuffle(this.resistance);
-            for (let i = 0 ; i < shuffledResistance.length; i++) {
-                const resistance = shuffledResistance[i];
-                if (resistance.id !== utherPlayer.id) {
-                    this.utherSight = resistance;
-                    break;
-                }
-            }
-        }
-    }
-
-    _setLeonSight(leonPlayer) {
-        this.leonSight = {};
-        if (leonPlayer !== null) {
-            if (this.accolonSabotage.source && this.accolonSabotage.source.id === leonPlayer.id) {
-                const players = [];
-                players.push(this.selectPlayers({
-                    includedTeams: ["Spies"]
-                })[0]);
-                Array.prototype.push.apply(players, this.selectPlayers({
-                    excludedRoles: [Roles.Leon],
-                    includedTeams: ["Resistance"]
-                }).slice(0, 2));
-                this.leonSight = {players: shuffle(players), spyCount: 1};
-            } else {
-                this.leonSight = {players: [], spyCount: 0};
-                const players = shuffle(this.players);
-                for (var i = 0; i < this.playerCount; i++) {
-                    const player = players[i];
-                    if (player.id !== leonPlayer.id && this.leonSight.players.length < 2) {
-                        this.leonSight.players.push(player);
-                        if (player.isSpy) {
-                            this.leonSight.spyCount += 1;
-                        }
-                    }
-                }
-            }
-        }
-    }
-
-    _setLuciusSight(luciusPlayer) {
-        this.luciusSight = {};
-        if (luciusPlayer !== null) {
-            const seeRoles = [
-                Roles.Merlin, Roles.Percival, Roles.Tristan, Roles.Iseult,
-                Roles.Uther, Roles.Leon, Roles.Galahad];
-            const guinevereSees = this.selectPlayers({
-                includedRoles: [Roles.Lancelot, Roles.Maelagant],
-                includedTeams: []
-            });
-            if (guinevereSees.length > 0) {
-                seeRoles.push(Roles.Guinevere);
-            }
-
-            this.luciusSight.source = this.selectPlayers({
-                includedRoles: seeRoles,
-                includedTeams: []
-            })[0];
-            switch (this.luciusSight.source.role) {
-                case Roles.Merlin:
-                    this.luciusSight.destination = this.selectPlayers({
-                        includedRoles: [Roles.Puck],
-                        excludedRoles: [Roles.Mordred],
-                        includedTeams: ["Spies"]
-                    })[0];
-                    break;
-                case Roles.Percival:
-                    this.luciusSight.destination =
-                        this.selectPlayers({
-                            includedRoles: [Roles.Merlin, Roles.Morgana],
-                            includedTeams: []
-                        })[0];
-                    break;
-                case Roles.Tristan:
-                    this.luciusSight.destination = this.playersByRole.get(Roles.Iseult);
-                    break;
-                case Roles.Iseult:
-                    this.luciusSight.destination = this.playersByRole.get(Roles.Tristan);
-                    break;
-                case Roles.Uther:
-                    this.luciusSight.destination = this.utherSight;
-                    break;
-                case Roles.Leon:
-                    this.luciusSight.destination = choice(this.leonSight.players);
-                    break;
-                case Roles.Guinevere:
-                    this.luciusSight.destination = choice(guinevereSees);
-                    break;
-                case Roles.Galahad:
-                    this.luciusSight.destination = this.playersByRole.get(Roles.Arthur);
-                    break;
-            }
         }
     }
 
@@ -249,86 +138,342 @@ class GameState {
         }
     }
 
-    _setAccolonSabotage(accolonPlayer) {
-        this.accolonSabotage = {};
-        if (accolonPlayer !== null) {
-            const informationRoles = [
-                Roles.Merlin, Roles.Percival, Roles.Tristan, Roles.Iseult,
-                Roles.Uther, Roles.Leon, Roles.Galahad
-            ];
+    _performAccolonSabotage() {
+        const possibleTargets = [];
+        for (let i = 0; i < this.resistance.length; i++) {
+            const resistancePlayer = this.resistance[i];
+            if (resistancePlayer.intel.length > 0) {
+                if (resistancePlayer.role === Roles.Guinevere) {
+                    if (resistancePlayer.intel[0].length === 0) {
+                        continue;
+                    }
+                } else if (resistancePlayer.role === Roles.Leon) {
+                    if (resistancePlayer.intel[0].spyCount === 2) {
+                        continue;
+                    }
+                }
 
-            let possibleArthurSabotage = [];
-            if (this.playersByRole.has(Roles.Arthur)) {
-                possibleArthurSabotage = this.selectPlayers({
-                    excludedRoles: [Roles.Arthur, Roles.Tristan, Roles.Iseult],
+                possibleTargets.push(resistancePlayer);
+            }
+        }
+
+        const target = choice(possibleTargets);
+        let intel = target.intel[0];
+        if (target.role === Roles.Arthur) {
+            const randomIndex = Math.floor(Math.random() * intel.length);
+            intel[randomIndex] = null;
+            target.performSabotage(intel);
+        } else if (target.role === Roles.Jester) {
+            target.performSabotage(intel.length);
+        } else if (target.role === Roles.Leon) {
+            let insertPlayer = null;
+            if (intel.spyCount === 0) {
+                insertPlayer = this.selectPlayers({
+                    excludedIds: [intel.players[0].id, intel.players[1].id],
+                    includedTeams: ["Spies"]
+                })[0];
+                intel.spyCount += 1;
+            } else {
+                insertPlayer = this.selectPlayers({
+                    excludedIds: [intel.players[0].id, intel.players[1].id],
                     includedTeams: ["Resistance"]
-                });
-                if (possibleArthurSabotage.length > 0) {
-                    informationRoles.push(Roles.Arthur);
-                }
-            }
-            if (this.playersByRole.has(Roles.Jester)) {
-                const assassinableRolesCount = this.selectPlayers({
-                    includedRoles: [Roles.Merlin, Roles.Tristan, Roles.Iseult],
-                    includedTeams: []
-                }).length;
-                if (assassinableRolesCount !== 3) {
-                    informationRoles.push(Roles.Jester);
-                }
-            }
-            if (this.playersByRole.has(Roles.Guinevere)) {
-                const guinevereListCount = this.selectPlayers({
-                    includedRoles: [Roles.Lancelot, Roles.Maelagant],
-                    includedTeams: []
-                }).length;
-                if (guinevereListCount > 0) {
-                    informationRoles.push(Roles.Guinevere);
-                }
+                })[0];
             }
 
-            this.accolonSabotage.source = this.selectPlayers({
-                includedRoles: informationRoles,
-                includedTeams: []
-            })[0];
-
-            switch (this.accolonSabotage.source.role) {
+            intel.players.push({id: insertPlayer.id, name: insertPlayer.name});
+            intel.players = shuffle(intel.players);
+            target.performSabotage(intel);
+        } else {
+            let insertPlayer = null;
+            switch (target.role) {
                 case Roles.Merlin:
-                    this.accolonSabotage.destination = this.selectPlayers({
+                    insertPlayer = this.selectPlayers({
                         excludedRoles: [Roles.Merlin, Roles.Puck],
                         includedTeams: ["Resistance"]
                     })[0];
                     break;
-                case Roles.Percival:
-                    this.accolonSabotage.destination =
-                        this.selectPlayers({excludedRoles: [Roles.Percival, Roles.Merlin, Roles.Morgana]})[0];
-                    break;
                 case Roles.Tristan:
-                    this.accolonSabotage.destination =
-                        this.selectPlayers({excludedRoles: [Roles.Tristan, Roles.Iseult]})[0];
-                    break;
                 case Roles.Iseult:
-                    this.accolonSabotage.destination =
-                        this.selectPlayers({excludedRoles: [Roles.Tristan, Roles.Iseult]})[0];
+                    insertPlayer = this.selectPlayers({
+                        excludedRoles: [Roles.Tristan, Roles.Iseult]
+                    })[0];
                     break;
                 case Roles.Uther:
-                    this.accolonSabotage.destination =
-                        this.selectPlayers({
-                            excludedRoles: [Roles.Uther, this.utherSight.role]
-                        })[0];
+                    insertPlayer = this.selectPlayers({
+                        excludedRoles: [Roles.Uther],
+                        excludedIds: [intel[0].id]
+                    })[0];
                     break;
                 case Roles.Guinevere:
-                    this.accolonSabotage.destination =
-                        this.selectPlayers({excludedRoles: [Roles.Guinevere, Roles.Lancelot, Roles.Maelagant]})[0];
+                    insertPlayer = this.selectPlayers({
+                        excludedRoles: [Roles.Guinevere, Roles.Lancelot, Roles.Maelagant]
+                    })[0];
                     break;
                 case Roles.Galahad:
-                    this.accolonSabotage.destination =
-                        this.selectPlayers({excludedRoles: [Roles.Arthur, Roles.Galahad]})[0];
+                    insertPlayer = this.selectPlayers({
+                        excludedRoles: [Roles.Arthur, Roles.Galahad]
+                    })[0];
+                    break;
+            }
+            intel.push({id: insertPlayer.id, name: insertPlayer.name});
+            intel = shuffle(intel);
+            target.performSabotage(intel);
+        }
+    }
+
+    _addResistanceRoleIntel() {
+        for (let i = 0; i < this.resistance.length; i++) {
+            const resistancePlayer = this.resistance[i];
+            switch (resistancePlayer.role) {
+                case Roles.Merlin:
+                    resistancePlayer.addIntel(this._getMerlinIntel());
+                    break;
+                case Roles.Percival:
+                    resistancePlayer.addIntel(this._getPercivalIntel());
+                    break;
+                case Roles.Tristan:
+                    resistancePlayer.addIntel(this._getTristanIntel());
+                    break;
+                case Roles.Iseult:
+                    resistancePlayer.addIntel(this._getIseultIntel());
+                    break;
+                case Roles.Galahad:
+                    resistancePlayer.addIntel(this._getGalahadIntel());
+                    break;
+                case Roles.Uther:
+                    resistancePlayer.addIntel(this._getUtherIntel());
+                    break;
+                case Roles.Leon:
+                    resistancePlayer.addIntel(this._getLeonIntel());
                     break;
                 case Roles.Arthur:
-                    this.accolonSabotage.destination = possibleArthurSabotage[0];
+                    resistancePlayer.addIntel(this._getArthurIntel());
+                    break;
+                case Roles.Jester:
+                    resistancePlayer.addIntel(this._getJesterIntel());
+                    break;
+                case Roles.Guinevere:
+                    resistancePlayer.addIntel(this._getGuinevereIntel());
                     break;
             }
         }
+    }
+
+    _addSpyRoleIntel() {
+        for (let i = 0; i < this.spys.length; i++) {
+            const spyPlayer = this.spys[i];
+            switch (spyPlayer.role) {
+                case Roles.Lucius:
+                    spyPlayer.addIntel(this._getLuciusIntel());
+                    break;
+            }
+        }
+    }
+
+    _addSpyTeamIntel() {
+        for (let i = 0; i < this.spys.length; i++) {
+            const spyPlayer = this.spys[i];
+            const spyIntel = this._getSpyIntel(spyPlayer);
+            spyPlayer.addIntel(spyIntel.intel);
+            if (spyIntel.sabotaged) {
+                spyPlayer.intelSabotaged = true;
+            }
+        }
+    }
+
+    _getMerlinIntel() {
+        const seenPlayers = this.selectPlayers({
+            includedRoles: [Roles.Puck],
+            excludedRoles: [Roles.Mordred],
+            includedTeams: ["Spies"]
+        });
+
+        return seenPlayers.map(player => {
+            return {
+                id: player.id,
+                name: player.name
+            }
+        });
+    }
+
+    _getPercivalIntel() {
+        const seenPlayers = this.selectPlayers({
+            includedRoles: [Roles.Merlin, Roles.Morgana],
+            includedTeams: []
+        });
+
+        return seenPlayers.map(player => {
+            return {
+                id: player.id,
+                name: player.name
+            }
+        });
+    }
+
+    _getTristanIntel() {
+        const seenPlayers = [this.playersByRole.get(Roles.Iseult)];
+
+        return seenPlayers.map(player => {
+            return {
+                id: player.id,
+                name: player.name
+            }
+        });
+    }
+
+    _getIseultIntel() {
+        const seenPlayers = [this.playersByRole.get(Roles.Tristan)];
+
+        return seenPlayers.map(player => {
+            return {
+                id: player.id,
+                name: player.name
+            }
+        });
+    }
+
+    _getGalahadIntel() {
+        const seenPlayers = [this.playersByRole.get(Roles.Arthur)];
+
+        return seenPlayers.map(player => {
+            return {
+                id: player.id,
+                name: player.name
+            }
+        });
+    }
+
+    _getUtherIntel() {
+        const seenPlayers = [this.selectPlayers({
+            excludedRoles: [Roles.Uther],
+            includedTeams: ["Resistance"]
+        })[0]];
+
+        return seenPlayers.map(player => {
+            return {
+                id: player.id,
+                name: player.name
+            }
+        });
+    }
+
+    _getLeonIntel() {
+        const seenPlayers = this.selectPlayers({
+            excludedRoles: [Roles.Leon]
+        }).slice(0, 2);
+
+        const players = [];
+        let spyCount = 0;
+        for (let i = 0; i < seenPlayers.length; i++) {
+            const seenPlayer = seenPlayers[i];
+            if (seenPlayer.isSpy) {
+                spyCount += 1;
+            }
+
+            players.push({
+                id: seenPlayer.id,
+                name: seenPlayer.name
+            });
+        }
+
+        return  {
+            players: players,
+            spyCount: spyCount
+        };
+    }
+
+    _getArthurIntel() {
+        const seenPlayers = this.selectPlayers({
+            excludedRoles: [Roles.Arthur],
+            includedTeams: ["Resistance"]
+        });
+
+        return seenPlayers.map(player => {
+            return player.role.name;
+        });
+    }
+
+    _getJesterIntel() {
+        const seenPlayers = this.selectPlayers({
+            includedRoles: [Roles.Tristan, Roles.Iseult, Roles.Merlin],
+            includedTeams: []
+        });
+
+        return seenPlayers.map(player => {
+            return player.role.name;
+        });
+    }
+
+    _getGuinevereIntel() {
+        const seenPlayers = this.selectPlayers({
+            includedRoles: [Roles.Lancelot, Roles.Maelagant],
+            includedTeams: []
+        });
+
+        return seenPlayers.map(player => {
+            return {
+                id: player.id,
+                name: player.name
+            }
+        });
+    }
+
+    _getLuciusIntel() {
+        const seeRoles = [
+            Roles.Merlin, Roles.Percival, Roles.Tristan, Roles.Iseult,
+            Roles.Uther, Roles.Leon, Roles.Galahad];
+        const guinevereSees = this.selectPlayers({
+            includedRoles: [Roles.Lancelot, Roles.Maelagant],
+            includedTeams: []
+        });
+        if (guinevereSees.length > 0) {
+            seeRoles.push(Roles.Guinevere);
+        }
+
+        const sourcePlayer = this.selectPlayers({
+            includedRoles: seeRoles,
+            includedTeams: []
+        })[0];
+        const destinationPlayer = sourcePlayer.role === Roles.Leon
+            ? sourcePlayer.intel[0].players[0]
+            : sourcePlayer.intel[0][0];
+
+        return {
+            source: {id: sourcePlayer.id, name: sourcePlayer.name},
+            destination: destinationPlayer
+        }
+    }
+
+    _getSpyIntel(currentPlayer) {
+        let spyPlayers = this.spys.slice(0);
+
+        if (currentPlayer.role === Roles.Colgrevance) {
+            return {
+                intel: spyPlayers.map(player => {
+                    return {
+                        id: player.id,
+                        name: player.name,
+                        role: player.role.name
+                    }
+                }),
+                sabotaged: false
+            };
+        }
+
+        const sabotaged = this.titaniaSabotage.player && this.titaniaSabotage.player.id === currentPlayer.id;
+        if (sabotaged) {
+            spyPlayers.splice(this.titaniaSabotage.insertIndex, 0, this.playersByRole.get(Roles.Titania));
+        }
+
+        return {
+            intel: spyPlayers.map(player => {
+                return {
+                    id: player.id,
+                    name: player.name
+                }
+            }),
+            sabotaged: sabotaged
+        };
     }
 
     _createMissions() {
@@ -379,6 +524,7 @@ class GameState {
     selectPlayers(searchSettings, shuffled=true) {
         const includedRoles = 'includedRoles' in searchSettings ? searchSettings.includedRoles : [];
         const excludedRoles = 'excludedRoles' in searchSettings ? searchSettings.excludedRoles : [];
+        const excludedIds = 'excludedIds' in searchSettings ? searchSettings.excludedIds : [];
         const includedTeams = 'includedTeams' in searchSettings ? searchSettings.includedTeams : ["Resistance", "Spies"];
 
         const players = [];
@@ -386,20 +532,13 @@ class GameState {
             const player = this.players[i];
             const role = player.role;
             const team = role.team;
-            if ((includedRoles.includes(role) || includedTeams.includes(team)) && !excludedRoles.includes(role)) {
+            if ((includedRoles.includes(role) || includedTeams.includes(team))
+                && !excludedRoles.includes(role) && !excludedIds.includes(i)) {
                 players.push(player);
             }
         }
 
         return shuffled ? shuffle(players) : players;
-    }
-
-    getAccolonSabotage(id) {
-        if ('source' in this.accolonSabotage) {
-            return this.accolonSabotage.source.id === id ? this.accolonSabotage : null;
-        } else {
-            return null;
-        }
     }
 }
 
