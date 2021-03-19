@@ -18,7 +18,7 @@ class Player {
     }
 
     performSabotage(newIntel) {
-        this.intel.splice(this.intel.length - 1, 1, newIntel);
+        this.intel.splice(0, 1, newIntel);
         this.intelSabotaged = true;
     }
 
@@ -29,6 +29,33 @@ class Player {
             role: this.role.name,
             team: this.role.team
         };
+    }
+
+    getStatus(otherPlayer) {
+        if (this.isSpy) {
+            const consideredSpy = this.intel[0].filter(spy => spy.id === otherPlayer.id).length > 0;
+            return consideredSpy ? "spy" : "resistance";
+        } else {
+            let status = "unknown";
+            let isInIntel = false;
+            switch (this.role) {
+                case Roles.Merlin:
+                case Roles.Percival:
+                case Roles.Guinevere:
+                    isInIntel = this.intel[0].filter(player => player.id === otherPlayer.id).length > 0;
+                    return isInIntel ? "suspicious" : "unknown";
+                case Roles.Tristan:
+                case Roles.Iseult:
+                case Roles.Uther:
+                case Roles.Galahad:
+                    isInIntel = this.intel[0].filter(player => player.id === otherPlayer.id).length > 0;
+                    return (isInIntel && !this.intelSabotaged) ? "resistance" : "unknown";
+                case Roles.Leon:
+                    isInIntel = this.intel[0].players.filter(player => player.id === otherPlayer.id).length > 0;
+                    return isInIntel ? "suspicious" : "unknown";
+            }
+            return status;
+        }
     }
 
     getPlayerHTML() {
@@ -72,6 +99,12 @@ class Player {
                 break;
             case Roles.Titania:
                 playerHTML = this._getTitaniaHTML();
+                break;
+            case Roles.Gawain:
+                playerHTML = this._getGawainHTML();
+                break;
+            case Roles.Ector:
+                playerHTML = this._getEctorHTML();
                 break;
             case Roles.Mordred:
                 playerHTML = this._getMordredHTML();
@@ -215,18 +248,28 @@ class Player {
         }
         arthurHTML += `</section>`;
 
+        if (this.intel.length > 1) {
+            arthurHTML += this._getResistanceEctorHTML();
+        }
+
         return arthurHTML;
     }
 
     _getLancelotHTML() {
-        return `
+        let lancelotHTML = `
             <h2 class="resistance">Lancelot</h2>
             <section><p>You may play reserve cards while on missions.</p></section>
         `;
+
+        if (this.intel.length > 1) {
+            lancelotHTML += this._getResistanceEctorHTML();
+        }
+
+        return lancelotHTML;
     }
 
     _getPuckHTML() {
-        return `
+        let puckHTML = `
             <h2 class="resistance">Puck</h2>
             <section>
                 <p>You only win if the <span class="resistance">Resistance</span> wins on mission 5.</p>
@@ -237,6 +280,12 @@ class Player {
                 </p>
             </section>
         `;
+
+        if (this.intel.length > 1) {
+            puckHTML += this._getResistanceEctorHTML();
+        }
+
+        return puckHTML;
     }
 
     _getJesterHTML() {
@@ -266,6 +315,10 @@ class Player {
         }
         jesterHTML += `</section>`;
 
+        if (this.intel.length > 1) {
+            jesterHTML += this._getResistanceEctorHTML();
+        }
+
         return jesterHTML;
     }
 
@@ -294,6 +347,10 @@ class Player {
             `;
         }
         guinevereHTML += `</section>`;
+
+        if (this.intel.length > 1) {
+            guinevereHTML += this._getResistanceEctorHTML();
+        }
 
         return guinevereHTML;
     }
@@ -354,11 +411,60 @@ class Player {
     }
 
     _getTitaniaHTML() {
-        return `
+        let titaniaHTML = `
             <h2 class="resistance">Titania</h2>
             <section>
                 <p>You sabotaged a member of the <span class="spy">spies</span>.</p>
                 <p>That member sees you as a possible <span class="spy">spy</span>.</p>
+            </section>
+        `;
+
+        if (this.intel.length > 1) {
+            titaniaHTML += this._getResistanceEctorHTML();
+        }
+
+        return titaniaHTML;
+    }
+
+    _getGawainHTML() {
+        let gawainHTML = `
+            <h2 class="resistance">Gawain</h2>
+            <section>
+                <p>Before the assassination:</p>
+            </section>
+            <section>
+                <p>If you haven't been on a failing mission, you may either</p>
+                <p>correctly guess the assassin to prevent assassination or</p>
+                <p>protect a resistance player from assassination.</p>
+            </section>
+            <section>
+                <p>If you have been on a failing mission, you may</p>
+                <p>protect a resistance player from assassination.</p>
+            </section>
+        `;
+
+        if (this.intel.length > 1) {
+            gawainHTML += this._getResistanceEctorHTML();
+        }
+
+        return gawainHTML;
+    }
+
+    _getEctorHTML() {
+        return `
+            <h2 class="resistance">Ector</h2>
+            <section>
+                <p>All resistance members see you as good.</p>
+                <p>However, you don't know who they are.</p>
+            </section>
+        `;
+    }
+
+    _getResistanceEctorHTML() {
+        return `
+            <section>
+                <p>You and fellow resistance members have been blessed by the presense of <span class="resistance">Ector</span>.</p>
+                <p>${this.intel[1].name} is <span class="resistance">Ector</span>.</p>
             </section>
         `;
     }
@@ -400,7 +506,7 @@ class Player {
     }
 
     _getLuciusHTML() {
-        const luciusSight = this.intel[0];
+        const luciusSight = this.intel[1];
 
         let luciusHTML = `
             <h2 class="spy">Lucius</h2>
@@ -440,7 +546,7 @@ class Player {
             spyHTML += `<section><p>You see:</p></section><section>`;
         }
 
-        const seenSpies = this.role === Roles.Lucius ? this.intel[1] : this.intel[0];
+        const seenSpies = this.intel[0];
         for (let i = 0; i < seenSpies.length; i++) {
             const seenSpy = seenSpies[i];
             if ('role' in seenSpy) {

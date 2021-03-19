@@ -41,7 +41,7 @@ function getSpyRoles(spyCount, playerCount, settings) {
     return shuffle(spyRoles);
 }
 
-function getResistanceRoles(resistanceCount, playerCount, containsMorgana, settings) {
+function getResistanceRoles(resistanceCount, playerCount, containsMorgana, allowEctor, settings) {
     let resistanceRoles = null;
     const possibleResistanceRolesArray = [
         Roles.Merlin, Roles.Percival, Roles.Tristan, 
@@ -62,6 +62,12 @@ function getResistanceRoles(resistanceCount, playerCount, containsMorgana, setti
     if (settings.titania && playerCount > 7) {
         possibleResistanceRolesArray.push(Roles.Titania);
     }
+    if (settings.ector && allowEctor && playerCount > 7) {
+        possibleResistanceRolesArray.push(Roles.Ector);
+    }
+    if (settings.gawain && playerCount > 7) {
+        possibleResistanceRolesArray.push(Roles.Gawain);
+    }
     
     do {
         const usedResistanceRoles = new ResistanceRoleSelections(resistanceCount, containsMorgana);
@@ -73,11 +79,15 @@ function getResistanceRoles(resistanceCount, playerCount, containsMorgana, setti
             if (usedResistanceRoles.add(currentRole)) {
                 // eslint-disable-next-line default-case
                 switch (currentRole) {
+                    case Roles.Merlin:
+                        possibleResistanceRoles.remove(Roles.Ector);
+                        break;
                     case Roles.Percival:
                         if (!containsMorgana) {
                             possibleResistanceRoles.remove(Roles.Merlin);
                         }
                         leonPossible = false;
+                        possibleResistanceRoles.remove(Roles.Ector);
                         break;
                     case Roles.Guinevere:
                         leonPossible = false;
@@ -99,17 +109,22 @@ function getResistanceRoles(resistanceCount, playerCount, containsMorgana, setti
                         possibleResistanceRoles.remove(Roles.Jester);
                         possibleResistanceRoles.remove(Roles.Tristan);
                         possibleResistanceRoles.remove(Roles.Iseult);
+                        possibleResistanceRoles.remove(Roles.Ector);
                         break;
                     case Roles.Tristan:
                     case Roles.Iseult:
                         possibleResistanceRoles.remove(Roles.Galahad);
-                        break;
-                    case Roles.Leon:
-                        possibleResistanceRoles.remove(Roles.Percival);
-                        possibleResistanceRoles.remove(Roles.Guinevere);
+                        possibleResistanceRoles.remove(Roles.Ector);
                         break;
                     case Roles.Arthur:
                         possibleResistanceRoles.remove(Roles.Jester);
+                        break;
+                    case Roles.Ector:
+                        possibleResistanceRoles.remove(Roles.Merlin);
+                        possibleResistanceRoles.remove(Roles.Percival);
+                        possibleResistanceRoles.remove(Roles.Tristan);
+                        possibleResistanceRoles.remove(Roles.Iseult);
+                        possibleResistanceRoles.remove(Roles.Galahad);
                         break;
                 }
             }
@@ -126,7 +141,8 @@ module.exports.getRoles = (resistanceCount, spyCount, settings) => {
     const playerCount = resistanceCount + spyCount;
     const spyRoles = getSpyRoles(spyCount, playerCount, settings);
     Array.prototype.push.apply(roles, spyRoles);
-    const resistanceRoles = getResistanceRoles(resistanceCount, playerCount, spyRoles.includes(Roles.Morgana), settings);
+    const resistanceRoles = getResistanceRoles(resistanceCount, playerCount, spyRoles.includes(Roles.Morgana),
+        !spyRoles.includes(Roles.Accolon) && !spyRoles.includes(Roles.Lucius), settings);
     Array.prototype.push.apply(roles, resistanceRoles);
     return shuffle(roles);
 }

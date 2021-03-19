@@ -75,6 +75,14 @@ const Titania = {
     name: "Titania",
     team: "Resistance"
 };
+const Gawain = {
+    name: "Gawain",
+    team: "Resistance"
+};
+const Ector = {
+    name: "Ector",
+    team: "Resistance"
+};
 
 module.exports = {
     Mordred,
@@ -95,5 +103,7 @@ module.exports = {
     Jester,
     Galahad,
     Leon,
-    Titania
+    Titania,
+    Gawain,
+    Ector
 }

@@ -343,8 +343,8 @@ app.createServer = function() {
 
     socket.on('join-lobby', ({name, code}) => {
       const lobby = lobbyCollection.lobbies.get(code);
-      //const connectingPlayerIndex = lobby.players.findIndex(player => player.sessionId === socket.request.session.id);
-      const connectingPlayerIndex = lobby.players.findIndex(player => player.socketId === socket.id);
+      const connectingPlayerIndex = lobby.players.findIndex(player => player.sessionId === socket.request.session.id);
+      //const connectingPlayerIndex = lobby.players.findIndex(player => player.socketId === socket.id);
       if (connectingPlayerIndex === -1) {
         createNewPlayer(lobby, name);
       } else {

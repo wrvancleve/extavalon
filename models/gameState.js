@@ -63,7 +63,6 @@ class GameState {
 
         const playerRoles = getRoles(this.resistancePlayerCount, this.spyPlayerCount, this.settings);
         this.players = [];
-        let titaniaPlayer = null;
 
         for (let id = 0; id < this.playerCount; id++) {
             const playerRole = playerRoles.pop();
@@ -80,16 +79,7 @@ class GameState {
                     this.spys.push(player);
                 }
             }
-
-            switch (playerRole) {
-                case Roles.Titania:
-                    titaniaPlayer = player;
-                    break;
-            }
         }
-
-        // Set Additional Role Information
-        this._setTitaniaSabotage(titaniaPlayer);
 
         // Set First Leader
         this.currentLeaderId = Math.floor(Math.random() * this.playerCount);
@@ -103,8 +93,11 @@ class GameState {
         if (this.playersByRole.has(Roles.Accolon)) {
             this._performAccolonSabotage();
         }
-        this._addSpyRoleIntel();
         this._addSpyTeamIntel();
+        this._addSpyRoleIntel();
+        if (this.playersByRole.has(Roles.Titania)) {
+            this._performTitaniaSabotage();
+        }
     }
 
     _getSpyCount() {
@@ -119,46 +112,24 @@ class GameState {
         }
     }
 
-    _setTitaniaSabotage(titaniaPlayer) {
-        this.titaniaSabotage = {};
-        if (titaniaPlayer !== null) {
-            let index = null;
-            if (this.playersByRole.has(Roles.Maelagant)) {
-                index = Math.floor(Math.random() * (this.playerCount - 1)) + 1;
-            } else {
-                index = Math.floor(Math.random() * this.playerCount);
-            }
-
-            const player = this.selectPlayers({
-                excludedRoles: [Roles.Colgrevance],
-                includedTeams: ["Spies"]
-            })[0]; 
-            this.titaniaSabotage.insertIndex = index;
-            this.titaniaSabotage.player = player;
-        }
-    }
-
     _performAccolonSabotage() {
-        const possibleTargets = [];
-        for (let i = 0; i < this.resistance.length; i++) {
-            const resistancePlayer = this.resistance[i];
-            if (resistancePlayer.intel.length > 0) {
-                if (resistancePlayer.role === Roles.Guinevere) {
-                    if (resistancePlayer.intel[0].length === 0) {
-                        continue;
-                    }
-                } else if (resistancePlayer.role === Roles.Leon) {
-                    if (resistancePlayer.intel[0].spyCount === 2) {
-                        continue;
-                    }
-                }
-
-                possibleTargets.push(resistancePlayer);
-            }
+        let possibleTargetRoles = [
+            Roles.Merlin, Roles.Percival, Roles.Tristan, Roles.Iseult,
+            Roles.Arthur, Roles.Jester, Roles.Uther, Roles.Galahad 
+        ];
+        if (this.playersByRole.has(Roles.Guinevere) && this.playersByRole.get(Roles.Guinevere).intel[0].length > 0) {
+            possibleTargetRoles.push(Roles.Guinevere);
+        }
+        if (this.playersByRole.has(Roles.Leon) && this.playersByRole.get(Roles.Leon).intel[0].spyCount < 2) {
+            possibleTargetRoles.push(Roles.Leon);
         }
 
-        const target = choice(possibleTargets);
+        const target = this.selectPlayers({
+            includedRoles: possibleTargetRoles,
+            includedTeams: []
+        })[0];
         let intel = target.intel[0];
+
         if (target.role === Roles.Arthur) {
             const randomIndex = Math.floor(Math.random() * intel.length);
             intel[randomIndex] = null;
@@ -209,6 +180,11 @@ class GameState {
                         excludedRoles: [Roles.Guinevere, Roles.Lancelot, Roles.Maelagant]
                     })[0];
                     break;
+                case Roles.Percival:
+                    insertPlayer = this.selectPlayers({
+                        excludedRoles: [Roles.Percival, Roles.Merlin, Roles.Morgana]
+                    })[0];
+                    break;
                 case Roles.Galahad:
                     insertPlayer = this.selectPlayers({
                         excludedRoles: [Roles.Arthur, Roles.Galahad]
@@ -221,7 +197,27 @@ class GameState {
         }
     }
 
+    _performTitaniaSabotage() {
+        let index = null;
+        if (this.playersByRole.has(Roles.Maelagant)) {
+            index = Math.floor(Math.random() * (this.spyCount - 1)) + 1;
+        } else {
+            index = Math.floor(Math.random() * this.spyCount);
+        }
+
+        const target = this.selectPlayers({
+            excludedRoles: [Roles.Colgrevance],
+            includedTeams: ["Spies"]
+        })[0];
+        let intel = target.intel[0];
+
+        const titaniaPlayer = this.playersByRole.get(Roles.Titania);
+        intel.splice(index, 0, {id: titaniaPlayer.id, name: titaniaPlayer.name});
+        target.performSabotage(intel);
+    }
+
     _addResistanceRoleIntel() {
+        const ector = this.playersByRole.get(Roles.Ector);
         for (let i = 0; i < this.resistance.length; i++) {
             const resistancePlayer = this.resistance[i];
             switch (resistancePlayer.role) {
@@ -255,7 +251,21 @@ class GameState {
                 case Roles.Guinevere:
                     resistancePlayer.addIntel(this._getGuinevereIntel());
                     break;
+                default:
+                    resistancePlayer.addIntel(null);
+                    break;
             }
+
+            if (ector && resistancePlayer.Role !== Roles.Ector) {
+                resistancePlayer.addIntel({id: ector.id, name: ector.name});
+            }
+        }
+    }
+
+    _addSpyTeamIntel() {
+        for (let i = 0; i < this.spys.length; i++) {
+            const spyPlayer = this.spys[i];
+            spyPlayer.addIntel(this._getSpyIntel(spyPlayer));
         }
     }
 
@@ -266,17 +276,6 @@ class GameState {
                 case Roles.Lucius:
                     spyPlayer.addIntel(this._getLuciusIntel());
                     break;
-            }
-        }
-    }
-
-    _addSpyTeamIntel() {
-        for (let i = 0; i < this.spys.length; i++) {
-            const spyPlayer = this.spys[i];
-            const spyIntel = this._getSpyIntel(spyPlayer);
-            spyPlayer.addIntel(spyIntel.intel);
-            if (spyIntel.sabotaged) {
-                spyPlayer.intelSabotaged = true;
             }
         }
     }
@@ -395,7 +394,7 @@ class GameState {
 
     _getJesterIntel() {
         const seenPlayers = this.selectPlayers({
-            includedRoles: [Roles.Tristan, Roles.Iseult, Roles.Merlin],
+            includedRoles: [Roles.Tristan, Roles.Iseult, Roles.Merlin, Roles.Ector],
             includedTeams: []
         });
 
@@ -419,14 +418,11 @@ class GameState {
     }
 
     _getLuciusIntel() {
-        const seeRoles = [
+        let seeRoles = [
             Roles.Merlin, Roles.Percival, Roles.Tristan, Roles.Iseult,
-            Roles.Uther, Roles.Leon, Roles.Galahad];
-        const guinevereSees = this.selectPlayers({
-            includedRoles: [Roles.Lancelot, Roles.Maelagant],
-            includedTeams: []
-        });
-        if (guinevereSees.length > 0) {
+            Roles.Uther, Roles.Leon, Roles.Galahad
+        ];
+        if (this.playersByRole.has(Roles.Guinevere) && this.playersByRole.get(Roles.Guinevere).intel[0].length > 0) {
             seeRoles.push(Roles.Guinevere);
         }
 
@@ -446,34 +442,22 @@ class GameState {
 
     _getSpyIntel(currentPlayer) {
         let spyPlayers = this.spys.slice(0);
-
         if (currentPlayer.role === Roles.Colgrevance) {
-            return {
-                intel: spyPlayers.map(player => {
-                    return {
-                        id: player.id,
-                        name: player.name,
-                        role: player.role.name
-                    }
-                }),
-                sabotaged: false
-            };
-        }
-
-        const sabotaged = this.titaniaSabotage.player && this.titaniaSabotage.player.id === currentPlayer.id;
-        if (sabotaged) {
-            spyPlayers.splice(this.titaniaSabotage.insertIndex, 0, this.playersByRole.get(Roles.Titania));
-        }
-
-        return {
-            intel: spyPlayers.map(player => {
+            return spyPlayers.map(player => {
+                return {
+                    id: player.id,
+                    name: player.name,
+                    role: player.role.name
+                };
+            });
+        } else {
+            return spyPlayers.map(player => {
                 return {
                     id: player.id,
                     name: player.name
-                }
-            }),
-            sabotaged: sabotaged
-        };
+                };
+            });
+        }
     }
 
     _createMissions() {

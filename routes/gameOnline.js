@@ -17,10 +17,9 @@ router.get('/', [check('name', 'Invalid Name').trim().matches("^[ a-zA-z0-9]{2,1
             const code = req.query.code;
             if (lobbyCollection.lobbies.has(code)) {
                 const lobby = lobbyCollection.lobbies.get(code);
-                //const playerIndex = lobby.players.findIndex(player => player.sessionId === req.session.id)
+                const playerIndex = lobby.players.findIndex(player => player.sessionId === req.session.id)
                 const lobbyFull = lobby.players.filter(player => player.active).length === 10;
-                //const host = lobby.players.length === 0 || playerIndex === 0;
-                const host = lobby.players.length === 0;
+                const host = lobby.players.length === 0 || playerIndex === 0;
 
                 if (lobbyFull) {
                     req.session.errors = [{msg: "Game full!"}]

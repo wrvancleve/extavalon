@@ -87,6 +87,16 @@
                     <span class="resistance">Galahad</span>: Sees <span class="resistance">Arthur</span>
                 </li>
             {{/if}}
+            {{# if settings.gawain }}
+                <li>
+                    <span class="resistance">Gawain</span>: Has a chance at preventing assassinations
+                </li>
+            {{/if}}
+            {{# if settings.ector }}
+                <li>
+                    <span class="resistance">Ector</span>: Seen by all <span class="resistance">resistance</span> members as good; Can be assassinated
+                </li>
+            {{/if}}
         </ul>
         <h1>Spy Roles</h1>
         <ul>
@@ -174,10 +184,32 @@
                     <li>If <span class="resistance">Leon</span> is present, <span class="resistance">Percival</span> is not
                 {{/if}}
             {{/if}}
+            {{# if settings.ector }}
+                <li>If <span class="resistance">Ector</span> is present, the following cannot be present:
+                    <ul>
+                        <li><span class="resistance">Merlin</span></li>
+                        <li><span class="resistance">Percival</span></li>
+                        <li><span class="resistance">Tristan</span></li>
+                        <li><span class="resistance">Iseult</span></li>
+                        <li><span class="resistance">Uther</span></li>
+                        {{# if settings.leon }}
+                        <li><span class="resistance">Leon</span></li>
+                        {{/if}}
+                        {{# if settings.galahad }}
+                        <li><span class="resistance">Galahad</span></li>
+                        {{/if}}
+                    </ul>
+                </li>
+            {{/if}}
             {{# if settings.lucius }}
                 {{# if settings.accolon }}
                     <li>If <span class="spy">Lucius</span> is present, <span class="spy">Accolon</span> is not</li>
                     <li>If <span class="spy">Accolon</span> is present, <span class="spy">Lucius</span> is not</li>
+                {{/if}}
+            {{/if}}
+            {{# if settings.accolon }}
+                {{# if settings.ector }}
+                    <li>If <span class="spy">Accolon</span> is present, <span class="resistance">Ector</span> is not</li>
                 {{/if}}
             {{/if}}
         </ul>

@@ -38,7 +38,7 @@ class ResistanceRoleSelections {
         }
 
         if (!this.containsAssassinableRole && (role === Roles.Merlin || role === Roles.Arthur ||
-            (this.roleMapping.has(Roles.Tristan) && this.roleMapping.has(Roles.Iseult)))) {
+            role === Roles.Ector || (this.roleMapping.has(Roles.Tristan) && this.roleMapping.has(Roles.Iseult)))) {
             this.containsAssassinableRole = true;
         }
 

@@ -44,6 +44,8 @@ router.post('/', [check('name', 'Invalid Name').trim().matches("^[ a-zA-z0-9]{2,
             leon: req.body.leon === 'on',
             galahad: req.body.galahad === 'on',
             titania: req.body.titania === 'on',
+            gawain: req.body.gawain === 'on',
+            ector: req.body.ector === 'on',
             lucius: req.body.lucius === 'on',
             accolon: req.body.accolon === 'on'
         };
