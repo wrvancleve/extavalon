@@ -1,6 +1,4 @@
 const Roles = require('./roles');
-const { shuffle } = require('../utils/random');
-const e = require('express');
 
 class Player {
     constructor(gameState, id, name, role) {
@@ -258,7 +256,7 @@ class Player {
     _getLancelotHTML() {
         let lancelotHTML = `
             <h2 class="resistance">Lancelot</h2>
-            <section><p>You may play reserve cards while on missions.</p></section>
+            <section><p>You may play reverse cards while on missions.</p></section>
         `;
 
         if (this.intel.length > 1) {
@@ -492,7 +490,7 @@ class Player {
     _getMaelagantHTML() {
         let maelagantHTML = `
             <h2 class="spy">Maelagant</h2>
-            <section><p>You may play reserve cards while on missions.</p></section>
+            <section><p>You may play reverse cards while on missions.</p></section>
         `;
 
         maelagantHTML += this._getSpyHTML();
