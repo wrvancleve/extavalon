@@ -1,10 +1,12 @@
 document.addEventListener('DOMContentLoaded', function () {
-    //const socket = io.connect("https://extavalon.com");
-    const socket = io.connect("http://localhost:8080");
-
+    
     const {name, code} = Qs.parse(location.search, {
         ignoreQueryPrefix: true
     });
+
+    const socket = io.connect(`https://extavalon.com?code=${code}&name=${name}`);
+    //const socket = io.connect(`http://localhost:8080?code=${code}&name=${name}`);
+    //const socket = io.connect(`http://192.168.1.107:25565?code=${code}&name=${name}`);
 
     // Get elements
     const lobby = document.getElementById("lobby")
@@ -105,9 +107,8 @@ document.addEventListener('DOMContentLoaded', function () {
     });
 
     socket.on('close-lobby', () => {
-        //location.replace("https://extavalon.com/");
-        location.replace("http://localhost:8080");
+        location.replace("https://extavalon.com/");
+        //location.replace("http://localhost:8080");
+        //location.replace("http://192.168.1.107:25565");
     });
-
-    socket.emit('join-lobby', {name, code});
 });

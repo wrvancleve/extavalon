@@ -50,14 +50,14 @@ function getResistanceRoles(resistanceCount, playerCount, containsMorgana, allow
     if (settings.guinevere) {
         possibleResistanceRolesArray.push(Roles.Guinevere);
     }
-    if (settings.puck) {
-        possibleResistanceRolesArray.push(Roles.Puck);
-    }
     if (settings.jester) {
         possibleResistanceRolesArray.push(Roles.Jester);
     }
     if (settings.galahad) {
         possibleResistanceRolesArray.push(Roles.Galahad);
+    }
+    if (settings.puck && playerCount > 6) {
+        possibleResistanceRolesArray.push(Roles.Puck);
     }
     if (settings.titania && playerCount > 7) {
         possibleResistanceRolesArray.push(Roles.Titania);

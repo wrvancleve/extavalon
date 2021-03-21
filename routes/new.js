@@ -59,6 +59,7 @@ router.post('/', [check('name', 'Invalid Name').trim().matches("^[ a-zA-z0-9]{2,
             settings: settings,
             players: [],
             socketsByPlayerId: new Map(),
+            game: null,
             updateTime: Date.now()
         };
         lobbyCollection.lobbies.set(code, newLobby);

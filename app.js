@@ -21,7 +21,6 @@ const gameOnlineRouter = require('./routes/gameOnline');
 const lobbyCollection = require('./models/lobbyCollection');
 const Game = require('./models/game');
 const GameState = require('./models/gameState');
-const Roles = require('./models/roles');
 
 const app = express();
 
@@ -72,298 +71,323 @@ app.createServer = function() {
   setInterval(function() {
     var time = Date.now();
     for (let lobby of lobbyCollection.lobbies.values()) {
-      if (lobby.updateTime < (time - 10000)) {
+      if (lobby.updateTime < (time - 3600000)) {
         closeLobby(lobby);
       }
     }
-  }, 10000);
+  }, 600000);
 
-  io.on('connection', socket => {
-    function createNewPlayer(lobby, name) {
-      const newPlayer = {
-        sessionId: socket.request.session.id,
-        socketId: socket.id,
-        name: name,
-        active: true
-      };
-      lobby.players.push(newPlayer);
-    }
-    
-    function updatePlayer(lobby, currentPlayer, name) {
-      currentPlayer.socketId = socket.id;
-      currentPlayer.name = name;
-      currentPlayer.active = true;
-    
-      if ('game' in lobby) {
-        lobby.socketsByPlayerId.set(currentPlayer.id, currentPlayer.socketId);
-        if (lobby.type === 'online') {
-          sendStartOnlineGame(lobby.game, currentPlayer);
-          const leader = sendUpdateLeader(lobby.game, currentPlayer.socketId);
-          sendMissionResults(lobby, currentPlayer.socketId);
-          sendUpdateTeam(lobby.lastGunSlots, currentPlayer.socketId);
+  function createNewPlayer(lobby, socket, name) {
+    const newPlayer = {
+      sessionId: socket.request.session.id,
+      socketId: socket.id,
+      name: name,
+      active: true
+    };
+    lobby.players.push(newPlayer);
+  }
+  
+  function updatePlayer(lobby, socketId, currentPlayer, name) {
+    currentPlayer.socketId = socketId;
+    currentPlayer.name = name;
+    currentPlayer.active = true;
+  
+    if (lobby.game) {
+      lobby.socketsByPlayerId.set(currentPlayer.id, socketId);
+      if (lobby.type === 'online') {
+        sendStartOnlineGame(lobby.game, currentPlayer);
+        const leader = sendUpdateLeader(lobby.game, socketId);
+        sendMissionResults(lobby, socketId);
+        sendUpdateTeam(lobby.lastGunSlots, socketId);
 
-          if (lobby.game.state.phase >= GameState.PHASE_VOTE_REACT) {
-            sendVoteResult(lobby, currentPlayer.socketId);
-          }
-
-          if (lobby.game.state.phase >= GameState.PHASE_CONDUCT_REACT) {
-            sendMissionResult(lobby, currentPlayer.socketId, true);
-          }
-
-          switch (lobby.game.state.phase) {
-            case GameState.PHASE_PROPOSE:
-              sendStatusMessage(`${leader.name} is proposing team...`, currentPlayer.socketId);
-              if (lobby.game.getCurrentLeader().id === currentPlayer.id) {
-                sendProposeTeam(lobby, currentPlayer.socketId);
-              }
-              break;
-            case GameState.PHASE_VOTE:
-              const currentProposal = lobby.game.getCurrentProposal();
-              if (!currentProposal.hasVoted(currentPlayer.id)) {
-                sendVoteTeam(currentPlayer.socketId);
-              } else {
-                sendStatusMessage("Voting on team...", currentPlayer.socketId);
-              }
-              break;
-            case GameState.PHASE_CONDUCT:
-              const currentMission = lobby.game.getCurrentMission();
-              if (currentMission.getMissionTeam().includes(currentPlayer.id) && !currentMission.hasConducted(currentPlayer.id)) {
-                sendConductMission(lobby.game, currentPlayer);
-              }
-              sendStatusMessage("Conducting mission...", currentPlayer.socketId);
-              break;
-            case GameState.PHASE_ASSASSINATION:
-              const assassin = lobby.players.filter(player => player.id === lobby.game.state.assassinId)[0];
-              if (currentPlayer.id === assassin.id) {
-                sendConductAssassination(currentPlayer.socketId);
-              }
-              sendStatusMessage(`${assassin.name} is choosing who to assassinate...`, currentPlayer.socketId);
-              break;
-            case GameState.PHASE_DONE:
-              sendGameResult(lobby, currentPlayer.socketId);
-              break;
-          }
-        } else {
-          sendStartLocalGame(lobby.game, currentPlayer);
+        if (lobby.game.state.phase >= GameState.PHASE_VOTE_REACT) {
+          sendVoteResult(lobby, socketId);
         }
-      }
-    }
 
-    function handleDisconnect(lobby) {
-      const disconnectingPlayerIndex = lobby.players.findIndex(player => player.socketId === socket.id);
-      lobby.players[disconnectingPlayerIndex].active = false;
-      io.sockets.to(lobby.code).emit('update-players',
-        lobby.players.map(({ name, active }) => ({name, active})));
-    }
+        if (lobby.game.state.phase >= GameState.PHASE_CONDUCT_REACT) {
+          sendMissionResult(lobby, socketId, true);
+        }
 
-    function startLocalGame(lobby) {
-      const activePlayers = lobby.players.filter(player => player.active);
-      const game = new Game(activePlayers.map(({name}) => ({name})), lobby.settings);
-      lobby.game = game;
-      for (var i = 0; i < activePlayers.length; i++) {
-        const currentPlayer = activePlayers[i];
-        currentPlayer.id = i;
-        lobby.socketsByPlayerId.set(i, currentPlayer.socketId);
+        switch (lobby.game.state.phase) {
+          case GameState.PHASE_PROPOSE:
+            sendStatusMessage(`${leader.name} is proposing team...`, socketId);
+            if (lobby.game.getCurrentLeader().id === currentPlayer.id) {
+              sendProposeTeam(lobby, socketId);
+            }
+            break;
+          case GameState.PHASE_VOTE:
+            const currentProposal = lobby.game.getCurrentProposal();
+            if (!currentProposal.hasVoted(currentPlayer.id)) {
+              sendVoteTeam(socketId);
+            } else {
+              sendStatusMessage("Voting on team...", socketId);
+            }
+            break;
+          case GameState.PHASE_VOTE_REACT:
+            if (currentPlayer.id === 0) {
+              sendReact(socketId);
+            }
+            break;
+          case GameState.PHASE_CONDUCT:
+            const currentMission = lobby.game.getCurrentMission();
+            if (currentMission.getMissionTeam().includes(currentPlayer.id) && !currentMission.hasConducted(currentPlayer.id)) {
+              sendConductMission(lobby.game, currentPlayer);
+            }
+            sendStatusMessage("Conducting mission...", socketId);
+            break;
+          case GameState.PHASE_CONDUCT_REACT:
+            if (currentPlayer.id === 0) {
+              sendReact(socketId);
+            }
+            break;
+          case GameState.PHASE_ASSASSINATION:
+            const assassin = lobby.players.filter(player => player.id === lobby.game.state.assassinId)[0];
+            if (currentPlayer.id === assassin.id) {
+              sendConductAssassination(socketId);
+            }
+            sendStatusMessage(`${assassin.name} is choosing who to assassinate...`, socketId);
+            break;
+          case GameState.PHASE_DONE:
+            sendGameResult(lobby, socketId);
+            break;
+        }
+      } else {
         sendStartLocalGame(lobby.game, currentPlayer);
       }
     }
+  }
 
-    function startOnlineGame(lobby) {
-      const activePlayers = lobby.players.filter(player => player.active);
-      const game = new Game(activePlayers.map(({name}) => ({name})), lobby.settings);
-      lobby.game = game;
-      lobby.lastGunSlots = null;
-      for (var i = 0; i < activePlayers.length; i++) {
-        const currentPlayer = activePlayers[i];
-        currentPlayer.id = i;
-        lobby.socketsByPlayerId.set(i, currentPlayer.socketId);
-        sendStartOnlineGame(lobby.game, currentPlayer);
-      }
-      startProposal(lobby);
+  function getPlayerOfSocketId(lobby, socketId) {
+    const playerIndex = lobby.players.findIndex(player => player.socketId === socketId);
+    if (playerIndex !== -1) {
+      return lobby.players[playerIndex];
+    } else {
+      return null;
     }
+  }
 
-    function sendStartLocalGame(game, receiver) {
-      io.sockets.to(receiver.socketId).emit('start-game', {
-        gameHTML: game.getPlayerHTML(receiver.id),
-        amFirstPlayer: game.isCurrentLeader(receiver.id)
-      });
+  function sendUpdatePlayers(lobby, receiver) {
+    io.sockets.to(receiver).emit('update-players',
+      lobby.players.map(({ name, active }) => ({name, active})));
+  }
+
+  function handleDisconnect(lobby, socketId) {
+    const disconnectingPlayer = getPlayerOfSocketId(lobby, socketId);
+    disconnectingPlayer.active = false;
+    sendUpdatePlayers(lobby, lobby.code);
+  }
+
+  function startLocalGame(lobby) {
+    const activePlayers = lobby.players.filter(player => player.active);
+    const game = new Game(activePlayers.map(({name}) => ({name})), lobby.settings);
+    lobby.game = game;
+    for (var i = 0; i < activePlayers.length; i++) {
+      const currentPlayer = activePlayers[i];
+      currentPlayer.id = i;
+      lobby.socketsByPlayerId.set(i, currentPlayer.socketId);
+      sendStartLocalGame(lobby.game, currentPlayer);
     }
+  }
 
-    function sendStartOnlineGame(game, receiver) {
-      io.sockets.to(receiver.socketId).emit('start-game', {
-        gameHTML: game.getPlayerHTML(receiver.id),
-        players: game.getPlayerInformation(receiver.id)
-      });
+  function startOnlineGame(lobby) {
+    const activePlayers = lobby.players.filter(player => player.active);
+    const game = new Game(activePlayers.map(({name}) => ({name})), lobby.settings);
+    lobby.game = game;
+    lobby.lastGunSlots = null;
+    for (var i = 0; i < activePlayers.length; i++) {
+      const currentPlayer = activePlayers[i];
+      currentPlayer.id = i;
+      lobby.socketsByPlayerId.set(i, currentPlayer.socketId);
+      sendStartOnlineGame(lobby.game, currentPlayer);
     }
+    startProposal(lobby);
+  }
 
-    function sendUpdateLeader(game, receiver) {
-      const leader = game.getCurrentLeader().getPlayerObject();
-      const previousLeaderId = game.getPreviousLeader().id;
-      io.sockets.to(receiver).emit('update-leader', {previousLeaderId: previousLeaderId, leaderId: leader.id});
-      return leader;
-    }
+  function sendStartLocalGame(game, receiver) {
+    io.sockets.to(receiver.socketId).emit('start-game', {
+      gameHTML: game.getPlayerHTML(receiver.id),
+      amFirstPlayer: game.isCurrentLeader(receiver.id)
+    });
+  }
 
-    function sendProposeTeam(lobby, receiver) {
-      const currentMission = lobby.game.getCurrentMission();
-      const gunSlots = [];
-      for (let i = 0; i < currentMission.teamSize; i++) {
-        const gunSlot = `gun-${i + 1}`;
-        if (!lobby.lastGunSlots || !lobby.lastGunSlots.includes(gunSlot)) {
-          gunSlots.push(gunSlot);
-        }
-      }
-      io.sockets.to(receiver).emit('propose-team', {gunSlots: gunSlots});
-    }
+  function sendStartOnlineGame(game, receiver) {
+    io.sockets.to(receiver.socketId).emit('start-game', {
+      gameHTML: game.getPlayerHTML(receiver.id),
+      players: game.getPlayerInformation(receiver.id)
+    });
+  }
 
-    function startProposal(lobby) {
-      const leader = sendUpdateLeader(lobby.game, lobby.code);
-      sendStatusMessage(`${leader.name} is proposing team...`, lobby.code);
-      lobby.lastGunSlots = null;
-      sendProposeTeam(lobby, lobby.socketsByPlayerId.get(leader.id))
-    }
+  function sendUpdateLeader(game, receiver) {
+    const leader = game.getCurrentLeader().getPlayerObject();
+    const previousLeaderId = game.getPreviousLeader().id;
+    io.sockets.to(receiver).emit('update-leader', {previousLeaderId: previousLeaderId, leaderId: leader.id});
+    return leader;
+  }
 
-    function sendUpdateTeam(gunSlots, receiver) {
-      if (gunSlots) {
-        io.sockets.to(receiver).emit('update-team', {gunSlots: gunSlots});
-      }
-    }
-
-    function updateTeam(lobby, gunSlots) {
-      lobby.lastGunSlots = gunSlots;
-      sendUpdateTeam(gunSlots, lobby.code)
-    }
-
-    function sendVoteTeam(receiver) {
-      io.sockets.to(receiver).emit('vote-team');
-    }
-
-    function proposeTeam(lobby, selectedIds) {
-      lobby.game.createProposal(selectedIds);
-      sendVoteTeam(lobby.code);
-    }
-
-    function sendVoteResult(lobby, receiver) {
-      const voteResult = lobby.game.getProposalResult();
-      if (voteResult) {
-        io.sockets.to(receiver).emit('vote-result', {votes: Object.fromEntries(voteResult.votes), approved: voteResult.approved});
+  function sendProposeTeam(lobby, receiver) {
+    const currentMission = lobby.game.getCurrentMission();
+    const gunSlots = [];
+    for (let i = 0; i < currentMission.teamSize; i++) {
+      const gunSlot = `gun-${i + 1}`;
+      if (!lobby.lastGunSlots || !lobby.lastGunSlots.includes(gunSlot)) {
+        gunSlots.push(gunSlot);
       }
     }
+    io.sockets.to(receiver).emit('propose-team', {gunSlots: gunSlots});
+  }
 
-    function sendReact(receiver) {
-      io.sockets.to(receiver).emit('react');
+  function startProposal(lobby) {
+    const leader = sendUpdateLeader(lobby.game, lobby.code);
+    sendStatusMessage(`${leader.name} is proposing team...`, lobby.code);
+    lobby.lastGunSlots = null;
+    sendProposeTeam(lobby, lobby.socketsByPlayerId.get(leader.id))
+  }
+
+  function sendUpdateTeam(gunSlots, receiver) {
+    if (gunSlots) {
+      io.sockets.to(receiver).emit('update-team', {gunSlots: gunSlots});
     }
+  }
 
-    function processVoteTeam(lobby, vote) {
-      const playerId = lobby.players.filter(player => player.socketId === socket.id)[0].id;
-      if (lobby.game.addProposalVote(playerId, vote)) {
-        sendVoteResult(lobby, lobby.code);
-        if (lobby.game.getCurrentPhase() !== GameState.PHASE_VOTE_REACT) {
-          sendMissionResult(lobby, lobby.code, false);
-          if (lobby.game.isGameOver()) {
-            sendGameResult(lobby, lobby.code);
-          } else {
-            sendReact(lobby.socketsByPlayerId.get(0));
-          }
-        } else {
-          sendReact(lobby.socketsByPlayerId.get(0));
-        }
-      }
+  function updateTeam(lobby, gunSlots) {
+    lobby.lastGunSlots = gunSlots;
+    sendUpdateTeam(gunSlots, lobby.code)
+  }
+
+  function sendVoteTeam(receiver) {
+    io.sockets.to(receiver).emit('vote-team');
+  }
+
+  function proposeTeam(lobby, selectedIds) {
+    lobby.game.createProposal(selectedIds);
+    sendVoteTeam(lobby.code);
+  }
+
+  function sendVoteResult(lobby, receiver) {
+    const voteResult = lobby.game.getProposalResult();
+    if (voteResult) {
+      io.sockets.to(receiver).emit('vote-result', {votes: Object.fromEntries(voteResult.votes), approved: voteResult.approved});
     }
+  }
 
-    function advanceMission(lobby) {
-      lobby.game.advance();
-      if (lobby.game.getCurrentPhase() === GameState.PHASE_PROPOSE) {
-        startProposal(lobby);
-      } else {
-        conductMission(lobby);
-      }
-    }
+  function sendReact(receiver) {
+    io.sockets.to(receiver).emit('react');
+  }
 
-    function sendConductMission(game, receiver) {
-      const receiverPlayer = game.getPlayer(receiver.id);
-      const playerRole = receiverPlayer.role;
-      const playerTeam = receiverPlayer.team;
-      const failAllowed = playerTeam === "Spies" || playerRole === "Puck";
-      const reverseAllowed = playerRole === "Lancelot" || playerRole === "Maelagant";
-      io.sockets.to(receiver.socketId).emit('conduct-mission', {failAllowed: failAllowed, reverseAllowed: reverseAllowed});
-    }
-
-    function sendStatusMessage(message, receiver) {
-      io.sockets.to(receiver).emit('update-status', {message: message});
-    }
-
-    function conductMission(lobby) {
-      const missionTeam = lobby.game.getCurrentProposal().team;
-      for (let i = 0; i < missionTeam.length; i++) {
-        const id = missionTeam[i];
-        const player = lobby.players.filter(player => player.id === id)[0];
-        sendConductMission(lobby.game, player);
-      }
-      sendStatusMessage("Conducting mission...", lobby.code);
-    }
-
-    function sendMissionResults(lobby, receiver) {
-      for (let i = 0; i < lobby.game.state.currentMissionId; i++) {
-        sendMissionResult(lobby, receiver, false, i);
-      }
-    }
-
-    function sendMissionResult(lobby, receiver, showActions, missionId) {
-      if (missionId === undefined) {
-        missionId = lobby.game.state.currentMissionId;
-      }
-      const missionResult = lobby.game.getMissionResult(missionId);
-      if (missionResult) {
-        io.sockets.to(receiver).emit('mission-result', {result: missionResult, showActions: showActions});
-      }
-    }
-
-    function processMissionAction(lobby, action) {
-      const playerId = lobby.players.filter(player => player.socketId === socket.id)[0].id;
-      if (lobby.game.addMissionAction(playerId, action)) {
-        sendMissionResult(lobby, lobby.code, true);
-        if (lobby.game.getCurrentPhase() === GameState.PHASE_ASSASSINATION) {
-          const assassin = lobby.players.filter(player => player.id === lobby.game.state.assassinId)[0];
-          sendConductAssassination(assassin.socketId);
-          sendStatusMessage(`${assassin.name} is choosing who to assassinate...`, lobby.code);
-        } else if (lobby.game.isGameOver()) {
+  function processVoteTeam(lobby, socketId, vote) {
+    const playerId = getPlayerOfSocketId(lobby, socketId).id;
+    if (lobby.game.addProposalVote(playerId, vote)) {
+      sendVoteResult(lobby, lobby.code);
+      if (lobby.game.getCurrentPhase() !== GameState.PHASE_VOTE_REACT) {
+        sendMissionResult(lobby, lobby.code, false);
+        if (lobby.game.isGameOver()) {
           sendGameResult(lobby, lobby.code);
         } else {
           sendReact(lobby.socketsByPlayerId.get(0));
         }
+      } else {
+        sendReact(lobby.socketsByPlayerId.get(0));
       }
     }
+  }
 
-    function sendConductAssassination(receiver) {
-      io.sockets.to(receiver).emit('conduct-assassination');
+  function advanceMission(lobby) {
+    lobby.game.advance();
+    if (lobby.game.getCurrentPhase() === GameState.PHASE_PROPOSE) {
+      startProposal(lobby);
+    } else {
+      conductMission(lobby);
     }
+  }
 
-    function sendGameResult(lobby, receiver) {
-      const gameResult = lobby.game.getGameResult();
-      if (gameResult) {
-        io.sockets.to(receiver).emit('game-result', {winner: gameResult.winner, message: gameResult.message});
+  function sendConductMission(game, receiver) {
+    const receiverPlayer = game.getPlayer(receiver.id);
+    const playerRole = receiverPlayer.role;
+    const playerTeam = receiverPlayer.team;
+    const failAllowed = playerTeam === "Spies" || playerRole === "Puck";
+    const reverseAllowed = playerRole === "Lancelot" || playerRole === "Maelagant";
+    io.sockets.to(receiver.socketId).emit('conduct-mission', {failAllowed: failAllowed, reverseAllowed: reverseAllowed});
+  }
+
+  function sendStatusMessage(message, receiver) {
+    io.sockets.to(receiver).emit('update-status', {message: message});
+  }
+
+  function conductMission(lobby) {
+    const missionTeam = lobby.game.getCurrentProposal().team;
+    for (let i = 0; i < missionTeam.length; i++) {
+      const id = missionTeam[i];
+      const player = lobby.players.filter(player => player.id === id)[0];
+      sendConductMission(lobby.game, player);
+    }
+    sendStatusMessage("Conducting mission...", lobby.code);
+  }
+
+  function sendMissionResults(lobby, receiver) {
+    for (let i = 0; i < lobby.game.state.currentMissionId; i++) {
+      sendMissionResult(lobby, receiver, false, i);
+    }
+  }
+
+  function sendMissionResult(lobby, receiver, showActions, missionId) {
+    if (missionId === undefined) {
+      missionId = lobby.game.state.currentMissionId;
+    }
+    const missionResult = lobby.game.getMissionResult(missionId);
+    if (missionResult) {
+      io.sockets.to(receiver).emit('mission-result', {result: missionResult, showActions: showActions});
+    }
+  }
+
+  function processMissionAction(lobby, socketId, action) {
+    const playerId = getPlayerOfSocketId(lobby, socketId).id;
+    if (lobby.game.addMissionAction(playerId, action)) {
+      sendMissionResult(lobby, lobby.code, true);
+      if (lobby.game.getCurrentPhase() === GameState.PHASE_ASSASSINATION) {
+        const assassin = lobby.players.filter(player => player.id === lobby.game.state.assassinId)[0];
+        sendConductAssassination(assassin.socketId);
+        sendStatusMessage(`${assassin.name} is choosing who to assassinate...`, lobby.code);
+      } else if (lobby.game.isGameOver()) {
+        sendGameResult(lobby, lobby.code);
+      } else {
+        sendReact(lobby.socketsByPlayerId.get(0));
       }
     }
+  }
 
-    function handleAssassination(lobby, ids, role) {
-      lobby.game.processAssassinationAttempt(ids, role);
-      sendGameResult(lobby, lobby.code);
+  function sendConductAssassination(receiver) {
+    io.sockets.to(receiver).emit('conduct-assassination');
+  }
+
+  function sendGameResult(lobby, receiver) {
+    const gameResult = lobby.game.getGameResult();
+    if (gameResult) {
+      io.sockets.to(receiver).emit('game-result', {winner: gameResult.winner, message: gameResult.message});
     }
+  }
 
-    socket.on('join-lobby', ({name, code}) => {
-      const lobby = lobbyCollection.lobbies.get(code);
+  function handleAssassination(lobby, ids, role) {
+    lobby.game.processAssassinationAttempt(ids, role);
+    sendGameResult(lobby, lobby.code);
+  }
+
+  io.on('connection', socket => {
+    const code = socket.handshake.query.code;
+    const name = socket.handshake.query.name;
+
+    const lobby = lobbyCollection.lobbies.get(code);
+    if (lobby) {
       lobby.updateTime = Date.now();
       const connectingPlayerIndex = lobby.players.findIndex(player => player.sessionId === socket.request.session.id);
       //const connectingPlayerIndex = lobby.players.findIndex(player => player.socketId === socket.id);
       if (connectingPlayerIndex === -1) {
-        createNewPlayer(lobby, name);
+        createNewPlayer(lobby, socket, name);
       } else {
-        updatePlayer(lobby, lobby.players[connectingPlayerIndex], name);
+        updatePlayer(lobby, socket.id, lobby.players[connectingPlayerIndex], name);
       }
       socket.join(code);
 
-      io.sockets.to(code).emit('update-players',
-        lobby.players.map(({ name, active }) => ({name, active})));
+      sendUpdatePlayers(lobby, lobby.code);
 
       socket.on('start-game-local', () => {
         lobby.updateTime = Date.now();
@@ -387,12 +411,12 @@ app.createServer = function() {
 
       socket.on('vote-team', ({vote}) => {
         lobby.updateTime = Date.now();
-        processVoteTeam(lobby, vote);
+        processVoteTeam(lobby, socket.id, vote);
       });
 
       socket.on('conduct-mission', ({action}) => {
         lobby.updateTime = Date.now();
-        processMissionAction(lobby, action);
+        processMissionAction(lobby, socket.id, action);
       });
 
       socket.on('advance-mission', () => {
@@ -411,9 +435,9 @@ app.createServer = function() {
 
       socket.on('disconnect', () => {
         lobby.updateTime = Date.now();
-        handleDisconnect(lobby);
+        handleDisconnect(lobby, socket.id);
       });
-    });
+    }
   });
   return server;
 };
