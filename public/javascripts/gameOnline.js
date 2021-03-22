@@ -3,12 +3,13 @@ document.addEventListener('DOMContentLoaded', function () {
         ignoreQueryPrefix: true
     });
 
-    const socket = io.connect(`https://extavalon.com?code=${code}&name=${name}`);
-    //const socket = io.connect(`http://localhost:8080?code=${code}&name=${name}`);
+    //const socket = io.connect(`https://extavalon.com?code=${code}&name=${name}`);
+    const socket = io.connect(`http://localhost:25565?code=${code}&name=${name}`);
     //const socket = io.connect(`http://192.168.1.107:25565?code=${code}&name=${name}`);
 
     // Get Elements
-    const lobby = document.getElementById("lobby");
+    const lobbyInformation = document.getElementById("lobby-information");
+    const toggleHostInformationButton = document.getElementById("toggle-host-information-button");
     const rolesModal = document.getElementById("roles-modal");
     const openRolesModalButton = document.getElementById("open-roles-modal-button");
     const closeRolesModalButton = document.getElementById("close-roles-modal-button");
@@ -43,8 +44,6 @@ document.addEventListener('DOMContentLoaded', function () {
     const resultsArea = document.getElementById("results-area");
 
     // Setup Page
-    document.getElementById("game-code").innerHTML = `Game Code: ${code}`;
-
     openIntelModalButton.onclick = function() {
         if (intelModal.style.display === "flex") {
             intelModal.style.display = "none";
@@ -58,6 +57,7 @@ document.addEventListener('DOMContentLoaded', function () {
     closeIntelModalButton.onclick = function() {
         intelModal.style.display = "none";
     }
+    toggleHostInformationButton.style.display = "none";
     openIntelModalButton.style.display = "none";
     game.style.display = "none";
 
@@ -86,6 +86,20 @@ document.addEventListener('DOMContentLoaded', function () {
         };
         closeGameButton.onclick = function () {
             socket.emit('close-lobby');
+        };
+    }
+
+    if (toggleHostInformationButton) {
+        toggleHostInformationButton.onclick = function() {
+            if (lobbyInformation.style.display === "none") {
+                lobbyInformation.style.display = "flex";
+                startGameButton.style.display = "block";
+                closeGameButton.style.display = "block";
+            } else {
+                lobbyInformation.style.display = "none";
+                startGameButton.style.display = "none";
+                closeGameButton.style.display = "none";
+            }
         };
     }
 
@@ -197,8 +211,13 @@ document.addEventListener('DOMContentLoaded', function () {
         leftPlayerArea.innerHTML = "";
         topPlayerArea.innerHTML = "";
         rightPlayerArea.innerHTML = "";
-        lobby.style.display = "none";
+        lobbyInformation.style.display = "none";
+        if (startGameButton) {
+            startGameButton.style.display = "none";
+            closeGameButton.style.display = "none";
+        }
         resultsModal.style.display = "none";
+        toggleHostInformationButton.style.display = "block";
         openIntelModalButton.style.display = "block";
         game.style.display = "flex";
         intelModalArea.innerHTML = gameHTML;
@@ -801,9 +820,7 @@ document.addEventListener('DOMContentLoaded', function () {
         resultsArea.innerHTML = message;
         statusMessage.innerHTML = `${winner} wins!`;
         if (startGameButton) {
-            startGameButton.disable = false;
             startGameButton.style.display = "block";
-            closeGameButton.disabled = false;
             closeGameButton.style.display = "block";
         }
     }
@@ -818,8 +835,8 @@ document.addEventListener('DOMContentLoaded', function () {
     });
 
     socket.on('close-lobby', () => {
-        location.replace("https://extavalon.com/");
-        //location.replace("http://localhost:8080");
+        //location.replace("https://extavalon.com/");
+        location.replace("http://localhost:25565");
         //location.replace("http://192.168.1.107:25565");
     });
 

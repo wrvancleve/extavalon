@@ -1,14 +1,4 @@
 <div class="flex-column" id="root">
-    <div class="flex-column" id="lobby">
-        <h2 id="name">{{title}}</h2>
-        <div class="future-color" id="lobby-information">
-            <h2 id="game-code">Game Code: </h2>
-            <div id="lobby-players">
-                <h2 id="lobby-player-count">Players [0]</h2>
-                <ul id="lobby-player-list"></ul>
-            </div>
-        </div>
-    </div>
     <div class="flex-column" id="game">
         <h3 id="status-message"></h2>
         <div class="vertical-player-area" id="top-player-area">
@@ -22,13 +12,25 @@
         </div>
         <div class="flex-column" id="action-area"></div>
     </div>
-    {{# if host }}
+    <div class="flex-column" id="lobby">
+        <div class="flex-column future-color" id="lobby-information">
+            <h2 id="game-code">Game Code: {{code}}</h2>
+            <div id="lobby-players">
+                <h2 id="lobby-player-count">Players [0]</h2>
+                <ul id="lobby-player-list"></ul>
+            </div>
+        </div>
+        {{# if host }}
         <button class="future-color future-secondary-font future-disabled future-box" type="button"
                 id="start-game-button">Start Game</button>
         <button class="future-color future-secondary-font future-box" type="button" id="close-game-button">Close Game</button>
-    {{/if}}
+        {{/if}}
+    </div>
     <button class="open-modal-button" id="open-roles-modal-button" title="Open Role Information"> ? </button>
     <button class="open-modal-button" id="open-intel-modal-button" title="Open Game Information"> # </button>
+    {{# if host }}
+    <button class="open-modal-button" id="toggle-host-information-button" title="Open Host Information"> $ </button>
+    {{/if}}
     <div class="online-modal" id="intel-modal">
         <button class="close-modal-button" id="close-intel-modal-button" title="Close Game Information">&times;</button>
         <div id="intel-modal-area">

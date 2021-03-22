@@ -113,14 +113,10 @@ class Game {
                         currentMission.result = 'Fail';
                         if (this._processMissionResult(currentMission.result)) {
                             this.state.winner = "Spies";
-                            this.resultHTML = `
-                                <p>
-                                    Resistance failed to propose a mission!
-                                </p>
-                                <p>
-                                    Spies win!
-                                </p>
-                            `;
+                            this.resultHTML = this._createResultHTML(`
+                                <h2><span class="spy">Spies</span> win!</h2>
+                                <section><p><span class="resistance">Resistance</span> failed to propose a mission!</p></section>
+                            `);
                             this.state.phase = GameState.PHASE_DONE;
                         } else {
                             this.state.phase = GameState.PHASE_CONDUCT_REACT;
@@ -145,11 +141,7 @@ class Game {
                 if (roundsWinner) {
                     if (roundsWinner === "Spies") {
                         this.state.winner = "Spies";
-                        this.resultHTML = `
-                            <p>
-                                Spies win!
-                            </p>
-                        `;
+                        this.resultHTML = this._createResultHTML(`<h2><span class="spy">Spies</span> win!</h2>`);
                         this.state.phase = GameState.PHASE_DONE;
                     } else {
                         this.state.phase = GameState.PHASE_ASSASSINATION;
@@ -236,38 +228,38 @@ class Game {
 
         if (targetOne.role === "Jester") {
             this.state.winner = targetOne.name;
-            this.resultHTML = this._createJesterWinMessage(ids, role, targetOne.name);
+            this.resultHTML = this._createResultHTML(this._createJesterWinMessage(ids, role, targetOne.name));
         } else if (targetTwo && targetTwo.role === "Jester") {
             this.state.winner = targetTwo.name;
-            this.resultHTML = this._createJesterWinMessage(ids, role, targetTwo.name);
+            this.resultHTML = this._createResultHTML(this._createJesterWinMessage(ids, role, targetTwo.name));
         } else {
             switch (role) {
                 case "Merlin":
                     if (targetOne.role === "Merlin") {
                         this.state.winner = "Spies";
-                        this.resultHTML = this._createCorrectAssassinationMessage(ids, role);
+                        this.resultHTML = this._createResultHTML(this._createCorrectAssassinationMessage(ids, role));
                     } else {
                         this.state.winner = "Resistance";
-                        this.resultHTML = this._createIncorrectAssassinationMessage(ids, role);
+                        this.resultHTML = this._createResultHTML(this._createIncorrectAssassinationMessage(ids, role));
                     }
                     break;
                 case "Arthur":
                     if (targetOne.role === "Arthur") {
                         this.state.winner = "Spies";
-                        this.resultHTML = this._createCorrectAssassinationMessage(ids, role);
+                        this.resultHTML = this._createResultHTML(this._createCorrectAssassinationMessage(ids, role));
                     } else {
                         this.state.winner = "Resistance";
-                        this.resultHTML = this._createIncorrectAssassinationMessage(ids, role);
+                        this.resultHTML = this._createResultHTML(this._createIncorrectAssassinationMessage(ids, role));
                     }
                     break;
                 case "Lovers":
                     if ((targetOne.role === "Tristan" || targetOne.role === "Iseult")
                         && (targetTwo.role === "Tristan" || targetTwo.role === "Iseult")) {
                         this.state.winner = "Spies";
-                        this.resultHTML = this._createCorrectAssassinationMessage(ids, role);
+                        this.resultHTML = this._createResultHTML(this._createCorrectAssassinationMessage(ids, role));
                     } else {
                         this.state.winner = "Resistance";
-                        this.resultHTML = this._createIncorrectAssassinationMessage(ids, role);
+                        this.resultHTML = this._createResultHTML(this._createIncorrectAssassinationMessage(ids, role));
                     }
                     break;
             }
@@ -278,66 +270,79 @@ class Game {
 
     _createJesterWinMessage(ids, role, winner) {
         return `
-          <p>
-          ${this.getPlayer(this.state.assassinId).name} attempted to assassinate
-          ${ids.map(id => this.getPlayer(id).name).join(' and ')} as ${role}.
+          <h2>${winner} wins!</h2>
+          <section><p>
+          <span class="spy">${this.getPlayer(this.state.assassinId).name}</span> attempted to assassinate
+          ${ids.map(id => `<span class="resistance">${this.getPlayer(id).name}</span>`).join(' and ')} as <span class="resistance">${role}</span>.
           </p>
-          <p>
-          However, ${winner} was the Jester. ${winner} wins!
-          </p>
+          <p>However, <span class="resistance">${winner}</span> was the <span class="resistance">Jester</span>.</p></section>
         `;
     }
   
     _createCorrectAssassinationMessage(ids, role) {
         return `
-            <p>
-            ${this.getPlayer(this.state.assassinId).name} correctly assassinated
-            ${ids.map(id => this.getPlayer(id).name).join(' and ')} as ${role}.
-            </p>
-            <p>
-            Spies win!
-            </p>
+            <h2><span class="spy">Spies</span> win!</h2>
+            <section><p>
+            <span class="spy">${this.getPlayer(this.state.assassinId).name}</span> correctly assassinated
+            ${ids.map(id => `<span class="resistance">${this.getPlayer(id).name}</span>`).join(' and ')} as <span class="resistance">${role}</span>.
+            </p></section>
         `;
     }
 
     _createIncorrectAssassinationMessage(ids, role) {
-        let winnerDescriptor = "Resistance";
+        let winnerDescriptor = `<span class="resistance">Resistance</span>`;
         let loserDescriptor = "";
 
         if (this.state.playersByRole.has(Roles.Puck)) {
             const puckName = this.state.playersByRole.get(Roles.Puck).name;
             if (this.state.currentMissionId === 4) {
-                winnerDescriptor = `Resistance (including ${puckName} as Puck)`;
+                winnerDescriptor = `<span class="resistance">Resistance</span> (including ${puckName} as <span class="resistance">Puck</span>)`;
             } else {
                 loserDescriptor = `
-                    ${puckName} failed to extend the game to 5 rounds and has lost as Puck!
+                    <span class="resistance">${puckName}</span> failed to extend the game to 5 rounds and has lost as <span class="resistance">Puck</span>!
                 `;
             }
         } else if (this.state.playersByRole.has(Roles.Jester)) {
             loserDescriptor = `
-                ${this.state.playersByRole.get(Roles.Jester).name} failed to get assassinated and has lost as Jester!
+                <span class="resistance">${this.state.playersByRole.get(Roles.Jester).name}</span>
+                failed to get assassinated and has lost as <span class="resistance">Jester</span>!
             `;
         }
 
         let message = `
-            <p>
-            ${this.getPlayer(this.state.assassinId).name} incorrectly assassinated
-            ${ids.map(id => this.getPlayer(id).name).join(' and ')} as ${role}.
-            </p>
-            <p>
-            ${winnerDescriptor} wins!
+            <h2>${winnerDescriptor} wins!</h2>
+            <section><p>
+            <span class="spy">${this.getPlayer(this.state.assassinId).name}</span> incorrectly assassinated
+            ${ids.map(id => `<span class="resistance">${this.getPlayer(id).name}</span>`).join(' and ')} as <span class="resistance">${role}</span>.
             </p>
         `;
 
         if (loserDescriptor) {
-            message += `
-                <p>
-                ${loserDescriptor}
-                </p>
-            `;
+            message += `<p>${loserDescriptor}</p>`;
         }
 
+        message += "</section>";
         return message;
+    }
+
+    _createResultHTML(resultHTML) {
+        resultHTML += `<section><p><span class="resistance">Resistance</span>:</p>`;
+        resultHTML += `
+            ${this.state.resistance.map(player => {
+                return `<p>(<span class="resistance">${player.role.name}</span>) ${player.name}</p>`;
+            }).join('')}
+        `;
+        resultHTML += "</section>";
+
+        resultHTML += `<section><p><span class="spy">Spies</span>:</p>`;
+        resultHTML += `
+            ${this.state.spys.map(player => {
+                return `<p>(<span class="spy">${player.role.name}</span>) ${player.name}</p>`;
+            }).join('')}
+        `;
+        resultHTML += "</section>";
+
+        return resultHTML;
     }
 
     getGameResult() {

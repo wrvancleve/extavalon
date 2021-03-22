@@ -437,6 +437,23 @@ select {
   border: 2px solid #029dbb;
 }
 
+#toggle-host-information-button {
+  border-radius: 50%;
+  -webkit-border-radius: 50%;
+  width: 1.5em;
+  height: 1.5em;
+  font-size: 1.5em;
+  top: 10px;
+  right: calc(16px + 3em);
+  margin-top: 0px;
+  position: absolute;
+  z-index: 5;
+  cursor: pointer;
+  color: #9debfb;
+  background: transparent;
+  border: 2px solid #029dbb;
+}
+
 #roles-modal {
   display: none;
   color: #b6f0fc;
@@ -459,6 +476,15 @@ select {
   display: flex;
   flex-direction: column;
   margin: auto;
+  text-align: center;
+}
+
+#results-area p {
+  margin: 0px;
+}
+
+#results-area section {
+  margin: 0.67em 0em;
 }
 
 #intel-modal-area section {

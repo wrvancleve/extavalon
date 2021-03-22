@@ -378,8 +378,8 @@ app.createServer = function() {
     const lobby = lobbyCollection.lobbies.get(code);
     if (lobby) {
       lobby.updateTime = Date.now();
-      const connectingPlayerIndex = lobby.players.findIndex(player => player.sessionId === socket.request.session.id);
-      //const connectingPlayerIndex = lobby.players.findIndex(player => player.socketId === socket.id);
+      //const connectingPlayerIndex = lobby.players.findIndex(player => player.sessionId === socket.request.session.id);
+      const connectingPlayerIndex = lobby.players.findIndex(player => player.socketId === socket.id);
       if (connectingPlayerIndex === -1) {
         createNewPlayer(lobby, socket, name);
       } else {

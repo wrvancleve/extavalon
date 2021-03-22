@@ -25,7 +25,7 @@ router.get('/', [check('name', 'Invalid Name').trim().matches("^[ a-zA-z0-9]{2,1
                     req.session.errors = [{msg: "Game full!"}]
                     res.redirect(redirectURL);
                 } else {
-                    res.render('gameOnline', { title: req.query.name, host: host, settings: lobby.settings });
+                    res.render('gameOnline', { title: req.query.name, code: code, host: host, settings: lobby.settings });
                 }
             } else {
                 req.session.errors = [{msg: "Game not found!"}]
