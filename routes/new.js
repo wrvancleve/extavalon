@@ -2,6 +2,7 @@ const express = require('express');
 const router = express.Router();
 const { check, validationResult } = require('express-validator');
 const lobbyCollection = require('../models/lobbyCollection');
+const PlayerCollection = require('../models/playerCollection');
 
 const code_length = 4;
 
@@ -46,8 +47,12 @@ router.post('/', [check('name', 'Invalid Name').trim().matches("^[ a-zA-z0-9]{2,
             titania: req.body.titania === 'on',
             gawain: req.body.gawain === 'on',
             ector: req.body.ector === 'on',
+            bedivere: req.body.bedivere === 'on',
+            lamorak: req.body.lamorak === 'on',
             lucius: req.body.lucius === 'on',
-            accolon: req.body.accolon === 'on'
+            agravain: req.body.agravain === 'on',
+            accolon: req.body.accolon === 'on',
+            claudas: req.body.claudas === 'on'
         };
 
         const type = req.query.type || 'local';
@@ -55,10 +60,10 @@ router.post('/', [check('name', 'Invalid Name').trim().matches("^[ a-zA-z0-9]{2,
         const code = generate_code();
         const newLobby = {
             code: code,
+            host: req.sessionID,
             type: type,
             settings: settings,
-            players: [],
-            socketsByPlayerId: new Map(),
+            playerCollection: new PlayerCollection(),
             game: null,
             updateTime: Date.now()
         };

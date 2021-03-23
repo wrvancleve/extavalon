@@ -2,7 +2,6 @@ const GameState = require('./gameState');
 const Roles = require('./roles');
 const Mission = require('./mission');
 
-const { shuffle, choice } = require('../utils/random');
 const Proposal = require('./proposal');
 
 class Game {

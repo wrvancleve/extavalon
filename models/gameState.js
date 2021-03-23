@@ -114,12 +114,9 @@ class GameState {
 
     _performAccolonSabotage() {
         let possibleTargetRoles = [
-            Roles.Merlin, Roles.Percival, Roles.Tristan, Roles.Iseult,
-            Roles.Arthur, Roles.Jester, Roles.Uther, Roles.Galahad 
+            Roles.Merlin, Roles.Percival, Roles.Tristan, Roles.Iseult, Roles.Arthur,
+            Roles.Jester, Roles.Uther, Roles.Galahad, Roles.Guinevere, Roles.Bedivere
         ];
-        if (this.playersByRole.has(Roles.Guinevere) && this.playersByRole.get(Roles.Guinevere).intel[0].length > 0) {
-            possibleTargetRoles.push(Roles.Guinevere);
-        }
         if (this.playersByRole.has(Roles.Leon) && this.playersByRole.get(Roles.Leon).intel[0].spyCount < 2) {
             possibleTargetRoles.push(Roles.Leon);
         }
@@ -130,7 +127,7 @@ class GameState {
         })[0];
         let intel = target.intel[0];
 
-        if (target.role === Roles.Arthur) {
+        if (target.role === Roles.Arthur || target.role === Roles.Bedivere) {
             const randomIndex = Math.floor(Math.random() * intel.length);
             intel[randomIndex] = null;
             target.performSabotage(intel);
@@ -251,6 +248,9 @@ class GameState {
                 case Roles.Guinevere:
                     resistancePlayer.addIntel(this._getGuinevereIntel());
                     break;
+                case Roles.Bedivere:
+                    resistancePlayer.addIntel(this._getBedivereIntel());
+                    break;
                 default:
                     resistancePlayer.addIntel(null);
                     break;
@@ -275,6 +275,9 @@ class GameState {
             switch (spyPlayer.role) {
                 case Roles.Lucius:
                     spyPlayer.addIntel(this._getLuciusIntel());
+                    break;
+                case Roles.Agravain:
+                    spyPlayer.addIntel(this._getAgravainIntel());
                     break;
             }
         }
@@ -394,7 +397,7 @@ class GameState {
 
     _getJesterIntel() {
         const seenPlayers = this.selectPlayers({
-            includedRoles: [Roles.Tristan, Roles.Iseult, Roles.Merlin, Roles.Ector],
+            includedRoles: [Roles.Tristan, Roles.Iseult, Roles.Merlin, Roles.Arthur, Roles.Ector],
             includedTeams: []
         });
 
@@ -417,14 +420,21 @@ class GameState {
         });
     }
 
+    _getBedivereIntel() {
+        const seenPlayers = this.selectPlayers({
+            includedTeams: ["Spies"]
+        });
+
+        return seenPlayers.map(player => {
+            return player.role.name;
+        });
+    }
+
     _getLuciusIntel() {
-        let seeRoles = [
+        const seeRoles = [
             Roles.Merlin, Roles.Percival, Roles.Tristan, Roles.Iseult,
-            Roles.Uther, Roles.Leon, Roles.Galahad
+            Roles.Uther, Roles.Leon, Roles.Galahad, Roles.Guinevere
         ];
-        if (this.playersByRole.has(Roles.Guinevere) && this.playersByRole.get(Roles.Guinevere).intel[0].length > 0) {
-            seeRoles.push(Roles.Guinevere);
-        }
 
         const sourcePlayer = this.selectPlayers({
             includedRoles: seeRoles,
@@ -438,6 +448,17 @@ class GameState {
             source: {id: sourcePlayer.id, name: sourcePlayer.name},
             destination: destinationPlayer
         }
+    }
+
+    _getAgravainIntel() {
+        const seenPlayers = this.selectPlayers({
+            excludedRoles: [Roles.Arthur, Roles.Tristan, Roles.Iseult, Roles.Merlin, Roles.Ector],
+            includedTeams: ["Resistance"]
+        });
+
+        return seenPlayers.map(player => {
+            return player.role.name;
+        });
     }
 
     _getSpyIntel(currentPlayer) {

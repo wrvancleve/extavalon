@@ -89,6 +89,9 @@ class Player {
             case Roles.Guinevere:
                 playerHTML = this._getGuinevereHTML();
                 break;
+            case Roles.Bedivere:
+                playerHTML = this._getBedivereHTML();
+                break;
             case Roles.Jester:
                 playerHTML = this._getJesterHTML();
                 break;
@@ -103,6 +106,9 @@ class Player {
                 break;
             case Roles.Ector:
                 playerHTML = this._getEctorHTML();
+                break;
+            case Roles.Lamorak:
+                playerHTML = this._getLamorakHTML();
                 break;
             case Roles.Mordred:
                 playerHTML = this._getMordredHTML();
@@ -121,6 +127,12 @@ class Player {
                 break;
             case Roles.Accolon:
                 playerHTML = this._getAccolonHTML();
+                break;
+            case Roles.Agravain:
+                playerHTML = this._getAgravainHTML();
+                break;
+            case Roles.Claudas:
+                playerHTML = this._getClaudasHTML();
                 break;
         }
         return playerHTML;
@@ -330,18 +342,11 @@ class Player {
         guinevereHTML += `<p>You see:</p></section><section>`;
 
         const seenPlayers = this.intel[0];
-        if (seenPlayers.length > 0) {
-            for (let i = 0; i < seenPlayers.length; i++) {
-                const seenPlayer = seenPlayers[i];
-                guinevereHTML += `
-                    <p>${seenPlayer.name} is <span class="resistance">Lancelot</span> or
-                    <span class="spy">Maelagant</span></p>
-                `;
-            }
-        } else {
+        for (let i = 0; i < seenPlayers.length; i++) {
+            const seenPlayer = seenPlayers[i];
             guinevereHTML += `
-                <p><span class="resistance">Lancelot</span> is not in the game</p>
-                <p><span class="spy">Maelagant</span> is not in the game</p>
+                <p>${seenPlayer.name} is <span class="resistance">Lancelot</span> or
+                <span class="spy">Maelagant</span></p>
             `;
         }
         guinevereHTML += `</section>`;
@@ -351,6 +356,35 @@ class Player {
         }
 
         return guinevereHTML;
+    }
+
+    _getBedivereHTML() {
+        let bedivereHTML = `
+            <h2 class="resistance">Bedivere</h2><section>
+        `;
+        if (this.intelSabotaged) {
+            bedivereHTML += `
+                <p>Your vision has been sabotaged by <span class="spy">Accolon</span></p>
+            `;
+        }
+        bedivereHTML += `<p>You see:</p></section><section>`;
+
+        const seenRoles = this.intel[0];
+        for (let i = 0; i < seenRoles.length; i++) {
+            const seenRole = seenRoles[i];
+            if (seenRole) {
+                bedivereHTML += `<p><span class="spy">${seenRole}</span> is in the game</p>`;
+            } else {
+                bedivereHTML += `<p>??? is in the game</p>`;
+            }
+        }
+        bedivereHTML += `</section>`;
+
+        if (this.intel.length > 1) {
+            bedivereHTML += this._getResistanceEctorHTML();
+        }
+
+        return bedivereHTML;
     }
 
     _getLeonHTML() {
@@ -458,6 +492,21 @@ class Player {
         `;
     }
 
+    _getLamorakHTML() {
+        let lamorakHTML = `
+            <h2 class="resistance">Lamorak</h2>
+            <section>
+                <p>You may inspect past mission results.</p>
+            </section>
+        `;
+
+        if (this.intel.length > 1) {
+            lamorakHTML += this._getResistanceEctorHTML();
+        }
+
+        return lamorakHTML;
+    }
+
     _getResistanceEctorHTML() {
         return `
             <section>
@@ -527,6 +576,36 @@ class Player {
         `;
         accolonHTML += this._getSpyHTML();
         return accolonHTML;
+    }
+
+    _getAgravainHTML() {
+        let agravainHTML = `
+            <h2 class="spy">Agravain</h2>
+            <section>
+                <p>You hijacked the <span class="resistance">resistance</span> roles:</p>
+            </section><section>
+        `;
+
+        const seenRoles = this.intel[1];
+        for (let i = 0; i < seenRoles.length; i++) {
+            const seenRole = seenRoles[i];
+            agravainHTML += `<p><span class="resistance">${seenRole}</span> is in the game</p>`;
+        }
+        agravainHTML += `</section>`;
+
+        agravainHTML += this._getSpyHTML();
+        return agravainHTML;
+    }
+
+    _getClaudasHTML() {
+        let claudasHTML = `
+            <h2 class="spy">Claudas</h2>
+            <section>
+                <p>You may inspect past mission results.</p>
+            </section>
+        `;
+        claudasHTML += this._getSpyHTML();
+        return claudasHTML;
     }
 
     _getSpyHTML() {

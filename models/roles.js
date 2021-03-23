@@ -22,6 +22,14 @@ const Accolon = {
     name: "Accolon",
     team: "Spies"
 };
+const Agravain = {
+    name: "Agravain",
+    team: "Spies"
+};
+const Claudas = {
+    name: "Claudas",
+    team: "Spies"
+};
 
 const Merlin = {
     name: "Merlin",
@@ -83,6 +91,14 @@ const Ector = {
     name: "Ector",
     team: "Resistance"
 };
+const Bedivere = {
+    name: "Bedivere",
+    team: "Resistance"
+};
+const Lamorak = {
+    name: "Lamorak",
+    team: "Resistance"
+};
 
 module.exports = {
     Mordred,
@@ -91,6 +107,8 @@ module.exports = {
     Colgrevance,
     Lucius,
     Accolon,
+    Claudas,
+    Agravain,
     Merlin,
     Percival,
     Uther,
@@ -105,5 +123,7 @@ module.exports = {
     Leon,
     Titania,
     Gawain,
-    Ector
+    Ector,
+    Bedivere,
+    Lamorak
 }

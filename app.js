@@ -76,24 +76,14 @@ app.createServer = function() {
       }
     }
   }, 600000);
-
-  function createNewPlayer(lobby, socket, name) {
-    const newPlayer = {
-      sessionId: socket.request.session.id,
-      socketId: socket.id,
-      name: name,
-      active: true
-    };
-    lobby.players.push(newPlayer);
-  }
   
-  function updatePlayer(lobby, socketId, currentPlayer, name) {
-    currentPlayer.socketId = socketId;
-    currentPlayer.name = name;
-    currentPlayer.active = true;
+  function updatePlayer(lobby, socket, name) {
+    const sessionId = socket.request.session.id;
+    const socketId = socket.id;
+    lobby.playerCollection.updatePlayer(sessionId, socketId, name, true);
   
     if (lobby.game) {
-      lobby.socketsByPlayerId.set(currentPlayer.id, socketId);
+      const currentPlayer = lobby.playerCollection.getPlayerOfSessionId(sessionId);
       if (lobby.type === 'online') {
         sendStartOnlineGame(lobby.game, currentPlayer);
         const leader = sendUpdateLeader(lobby.game, socketId);
@@ -141,7 +131,7 @@ app.createServer = function() {
             }
             break;
           case GameState.PHASE_ASSASSINATION:
-            const assassin = lobby.players.filter(player => player.id === lobby.game.state.assassinId)[0];
+            const assassin = lobby.playerCollection.getPlayerOfPlayerId(lobby.game.state.assassinId);
             if (currentPlayer.id === assassin.id) {
               sendConductAssassination(socketId);
             }
@@ -157,47 +147,35 @@ app.createServer = function() {
     }
   }
 
-  function getPlayerOfSocketId(lobby, socketId) {
-    const playerIndex = lobby.players.findIndex(player => player.socketId === socketId);
-    if (playerIndex !== -1) {
-      return lobby.players[playerIndex];
-    } else {
-      return null;
-    }
-  }
-
   function sendUpdatePlayers(lobby, receiver) {
-    io.sockets.to(receiver).emit('update-players',
-      lobby.players.map(({ name, active }) => ({name, active})));
+    io.sockets.to(receiver).emit('update-players', lobby.playerCollection.getLobbyPlayers());
   }
 
-  function handleDisconnect(lobby, socketId) {
-    const disconnectingPlayer = getPlayerOfSocketId(lobby, socketId);
-    disconnectingPlayer.active = false;
+  function handleDisconnect(lobby, sessionId) {
+    lobby.playerCollection.deactivatePlayer(sessionId);
     sendUpdatePlayers(lobby, lobby.code);
   }
 
   function startLocalGame(lobby) {
-    const activePlayers = lobby.players.filter(player => player.active);
+    const activePlayers = lobby.playerCollection.getActivePlayers();
     const game = new Game(activePlayers.map(({name}) => ({name})), lobby.settings);
     lobby.game = game;
     for (var i = 0; i < activePlayers.length; i++) {
       const currentPlayer = activePlayers[i];
-      currentPlayer.id = i;
-      lobby.socketsByPlayerId.set(i, currentPlayer.socketId);
+      //lobby.playerCollection.updatePlayerIdBySessionId(currentPlayer.sessionId, i);
+      lobby.playerCollection.updatePlayerIdBySocketId(currentPlayer.socketId, i);
       sendStartLocalGame(lobby.game, currentPlayer);
     }
   }
 
   function startOnlineGame(lobby) {
-    const activePlayers = lobby.players.filter(player => player.active);
+    const activePlayers = lobby.playerCollection.getActivePlayers();
     const game = new Game(activePlayers.map(({name}) => ({name})), lobby.settings);
     lobby.game = game;
     lobby.lastGunSlots = null;
     for (var i = 0; i < activePlayers.length; i++) {
       const currentPlayer = activePlayers[i];
-      currentPlayer.id = i;
-      lobby.socketsByPlayerId.set(i, currentPlayer.socketId);
+      lobby.playerCollection.updatePlayerId(currentPlayer.sessionId, i);
       sendStartOnlineGame(lobby.game, currentPlayer);
     }
     startProposal(lobby);
@@ -240,7 +218,7 @@ app.createServer = function() {
     const leader = sendUpdateLeader(lobby.game, lobby.code);
     sendStatusMessage(`${leader.name} is proposing team...`, lobby.code);
     lobby.lastGunSlots = null;
-    sendProposeTeam(lobby, lobby.socketsByPlayerId.get(leader.id))
+    sendProposeTeam(lobby, lobby.playerCollection.getSocketIdOfPlayerId(leader.id));
   }
 
   function sendUpdateTeam(gunSlots, receiver) {
@@ -274,8 +252,8 @@ app.createServer = function() {
     io.sockets.to(receiver).emit('react');
   }
 
-  function processVoteTeam(lobby, socketId, vote) {
-    const playerId = getPlayerOfSocketId(lobby, socketId).id;
+  function processVoteTeam(lobby, sessionId, vote) {
+    const playerId = lobby.playerCollection.getPlayerIdOfSessionId(sessionId);
     if (lobby.game.addProposalVote(playerId, vote)) {
       sendVoteResult(lobby, lobby.code);
       if (lobby.game.getCurrentPhase() !== GameState.PHASE_VOTE_REACT) {
@@ -283,10 +261,10 @@ app.createServer = function() {
         if (lobby.game.isGameOver()) {
           sendGameResult(lobby, lobby.code);
         } else {
-          sendReact(lobby.socketsByPlayerId.get(0));
+          sendReact(lobby.playerCollection.getSocketIdOfPlayerId(0));
         }
       } else {
-        sendReact(lobby.socketsByPlayerId.get(0));
+        sendReact(lobby.playerCollection.getSocketIdOfPlayerId(0));
       }
     }
   }
@@ -317,8 +295,7 @@ app.createServer = function() {
     const missionTeam = lobby.game.getCurrentProposal().team;
     for (let i = 0; i < missionTeam.length; i++) {
       const id = missionTeam[i];
-      const player = lobby.players.filter(player => player.id === id)[0];
-      sendConductMission(lobby.game, player);
+      sendConductMission(lobby.game, lobby.playerCollection.getPlayerOfPlayerId(id));
     }
     sendStatusMessage("Conducting mission...", lobby.code);
   }
@@ -339,18 +316,18 @@ app.createServer = function() {
     }
   }
 
-  function processMissionAction(lobby, socketId, action) {
-    const playerId = getPlayerOfSocketId(lobby, socketId).id;
+  function processMissionAction(lobby, sessionId, action) {
+    const playerId = lobby.playerCollection.getPlayerIdOfSessionId(sessionId);
     if (lobby.game.addMissionAction(playerId, action)) {
       sendMissionResult(lobby, lobby.code, true);
       if (lobby.game.getCurrentPhase() === GameState.PHASE_ASSASSINATION) {
-        const assassin = lobby.players.filter(player => player.id === lobby.game.state.assassinId)[0];
+        const assassin = lobby.playerCollection.getPlayerOfPlayerId(lobby.game.state.assassinId);
         sendConductAssassination(assassin.socketId);
         sendStatusMessage(`${assassin.name} is choosing who to assassinate...`, lobby.code);
       } else if (lobby.game.isGameOver()) {
         sendGameResult(lobby, lobby.code);
       } else {
-        sendReact(lobby.socketsByPlayerId.get(0));
+        sendReact(lobby.playerCollection.getSocketIdOfPlayerId(0));
       }
     }
   }
@@ -374,16 +351,16 @@ app.createServer = function() {
   io.on('connection', socket => {
     const code = socket.handshake.query.code;
     const name = socket.handshake.query.name;
+    const sessionId = socket.request.session.id;
 
     const lobby = lobbyCollection.lobbies.get(code);
     if (lobby) {
       lobby.updateTime = Date.now();
-      //const connectingPlayerIndex = lobby.players.findIndex(player => player.sessionId === socket.request.session.id);
-      const connectingPlayerIndex = lobby.players.findIndex(player => player.socketId === socket.id);
-      if (connectingPlayerIndex === -1) {
-        createNewPlayer(lobby, socket, name);
+      //if (!lobby.playerCollection.doesSessionIdExist(socket.request.session.id)) {
+      if (!lobby.playerCollection.doesSocketIdExist(socket.id)) {
+        lobby.playerCollection.addPlayer(socket, name);
       } else {
-        updatePlayer(lobby, socket.id, lobby.players[connectingPlayerIndex], name);
+        updatePlayer(lobby, socket, name);
       }
       socket.join(code);
 
@@ -411,12 +388,12 @@ app.createServer = function() {
 
       socket.on('vote-team', ({vote}) => {
         lobby.updateTime = Date.now();
-        processVoteTeam(lobby, socket.id, vote);
+        processVoteTeam(lobby, sessionId, vote);
       });
 
       socket.on('conduct-mission', ({action}) => {
         lobby.updateTime = Date.now();
-        processMissionAction(lobby, socket.id, action);
+        processMissionAction(lobby, sessionId, action);
       });
 
       socket.on('advance-mission', () => {
@@ -435,7 +412,7 @@ app.createServer = function() {
 
       socket.on('disconnect', () => {
         lobby.updateTime = Date.now();
-        handleDisconnect(lobby, socket.id);
+        handleDisconnect(lobby, sessionId);
       });
     }
   });
