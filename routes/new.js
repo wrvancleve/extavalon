@@ -50,13 +50,13 @@ router.post('/', [check('name', 'Invalid Name').trim().matches("^[ a-zA-z0-9]{2,
             bedivere: req.body.bedivere === 'on',
             gaheris: req.body.gaheris === 'on',
             gareth: req.body.gareth === 'on',
-            bors: req.body.bors === 'on',
             kay: req.body.kay === 'on',
-            lamorak: req.body.lamorak === 'on',
             lucius: req.body.lucius === 'on',
-            accolon: req.body.accolon === 'on',
-            claudas: req.body.claudas === 'on'
+            accolon: req.body.accolon === 'on'
         };
+        //lamorak: req.body.lamorak === 'on',
+        //claudas: req.body.claudas === 'on'
+        //bors: req.body.bors === 'on',
 
         const type = req.query.type || 'local';
         const name = req.body.name

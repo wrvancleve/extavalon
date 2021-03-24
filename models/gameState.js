@@ -3,7 +3,6 @@ const Player = require('./player');
 const Mission = require('./mission');
 const Proposal = require('./proposal');
 
-const Roles = require('./roles');
 const { shuffle, choice } = require('../utils/random');
 
 class GameState {
@@ -115,7 +114,8 @@ class GameState {
     _performAccolonSabotage() {
         let possibleTargetRoles = [
             Roles.Merlin, Roles.Percival, Roles.Tristan, Roles.Iseult, Roles.Arthur,
-            Roles.Jester, Roles.Uther, Roles.Galahad, Roles.Guinevere, Roles.Bedivere
+            Roles.Jester, Roles.Uther, Roles.Galahad, Roles.Guinevere, Roles.Bedivere,
+            Roles.Gareth, Roles.Gaheris, Roles.Kay
         ];
         if (this.playersByRole.has(Roles.Leon) && this.playersByRole.get(Roles.Leon).intel[0].spyCount < 2) {
             possibleTargetRoles.push(Roles.Leon);
@@ -133,6 +133,8 @@ class GameState {
             target.performSabotage(intel);
         } else if (target.role === Roles.Jester) {
             target.performSabotage(intel.length);
+        } else if (target.role === Roles.Gareth || target.role === Roles.Gaheris || target.role === Roles.Kay) {
+            target.performSabotage(null);
         } else if (target.role === Roles.Leon) {
             let insertPlayer = null;
             if (intel.spyCount === 0) {
@@ -250,6 +252,15 @@ class GameState {
                     break;
                 case Roles.Bedivere:
                     resistancePlayer.addIntel(this._getBedivereIntel());
+                    break;
+                case Roles.Gareth:
+                    resistancePlayer.addIntel(this._getGarethIntel());
+                    break;
+                case Roles.Gaheris:
+                    resistancePlayer.addIntel(this._getGaherisIntel());
+                    break;
+                case Roles.Kay:
+                    resistancePlayer.addIntel(this._getKayIntel());
                     break;
                 default:
                     resistancePlayer.addIntel(null);
@@ -427,11 +438,39 @@ class GameState {
         });
     }
 
+    _getGaherisIntel() {
+        const seenPlayer = this.selectPlayers({
+            excludedRoles: ["Gaheris"],
+            includedTeams: ["Resistance"]
+        })[0];
+
+        return seenPlayer.role.name;
+    }
+
+    _getGarethIntel() {
+        const seenPlayer = this.selectPlayers({
+            includedTeams: ["Spies"]
+        })[0];
+
+        return seenPlayer.role.name;
+    }
+
+    _getKayIntel() {
+        const seenPlayer = this.selectPlayers({
+            includedTeams: ["Spies"]
+        })[0];
+
+        return {
+            id: seenPlayer.id,
+            name: seenPlayer.name
+        };
+    }
+
     _getLuciusIntel() {
         const seenPlayers = this.selectPlayers({
             excludedRoles: [
                 Roles.Arthur, Roles.Tristan, Roles.Iseult, Roles.Merlin, Roles.Ector,
-                Roles.Percival, Roles.Galahad, Roles.Uther, Roles.Leon
+                Roles.Percival, Roles.Galahad, Roles.Uther, Roles.Leon, Roles.Gaheris
             ],
             includedTeams: ["Resistance"]
         });
