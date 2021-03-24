@@ -3,7 +3,7 @@ const Player = require('./player');
 const Mission = require('./mission');
 const Proposal = require('./proposal');
 
-const { getRoles } = require('../utils/playerRoles');
+const Roles = require('./roles');
 const { shuffle, choice } = require('../utils/random');
 
 class GameState {
@@ -61,7 +61,7 @@ class GameState {
         this.spyPlayerCount = this._getSpyCount();
         this.resistancePlayerCount = this.playerCount - this.spyPlayerCount;
 
-        const playerRoles = getRoles(this.resistancePlayerCount, this.spyPlayerCount, this.settings);
+        const playerRoles = Roles.generateRoles(this.resistancePlayerCount, this.spyPlayerCount, this.settings);
         this.players = [];
 
         for (let id = 0; id < this.playerCount; id++) {
@@ -276,9 +276,6 @@ class GameState {
                 case Roles.Lucius:
                     spyPlayer.addIntel(this._getLuciusIntel());
                     break;
-                case Roles.Agravain:
-                    spyPlayer.addIntel(this._getAgravainIntel());
-                    break;
             }
         }
     }
@@ -431,28 +428,11 @@ class GameState {
     }
 
     _getLuciusIntel() {
-        const seeRoles = [
-            Roles.Merlin, Roles.Percival, Roles.Tristan, Roles.Iseult,
-            Roles.Uther, Roles.Leon, Roles.Galahad, Roles.Guinevere
-        ];
-
-        const sourcePlayer = this.selectPlayers({
-            includedRoles: seeRoles,
-            includedTeams: []
-        })[0];
-        const destinationPlayer = sourcePlayer.role === Roles.Leon
-            ? sourcePlayer.intel[0].players[0]
-            : sourcePlayer.intel[0][0];
-
-        return {
-            source: {id: sourcePlayer.id, name: sourcePlayer.name},
-            destination: destinationPlayer
-        }
-    }
-
-    _getAgravainIntel() {
         const seenPlayers = this.selectPlayers({
-            excludedRoles: [Roles.Arthur, Roles.Tristan, Roles.Iseult, Roles.Merlin, Roles.Ector],
+            excludedRoles: [
+                Roles.Arthur, Roles.Tristan, Roles.Iseult, Roles.Merlin, Roles.Ector,
+                Roles.Percival, Roles.Galahad, Roles.Uther, Roles.Leon
+            ],
             includedTeams: ["Resistance"]
         });
 

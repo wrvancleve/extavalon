@@ -57,85 +57,60 @@ class Player {
     }
 
     getPlayerHTML() {
-        let playerHTML = null;
         switch (this.role) {
             case Roles.Merlin:
-                playerHTML = this._getMerlinHTML();
-                break;
+                return this._getMerlinHTML();
             case Roles.Percival:
-                playerHTML = this._getPercivalHTML();
-                break;
+                return this._getPercivalHTML();
             case Roles.Uther:
-                playerHTML = this._getUtherHTML();
-                break;
+                return this._getUtherHTML();
             case Roles.Lancelot:
-                playerHTML = this._getLancelotHTML();
-                break;
+                return this._getLancelotHTML();
             case Roles.Tristan:
-                playerHTML = this._getTristanHTML();
-                break;
+                return this._getTristanHTML();
             case Roles.Iseult:
-                playerHTML = this._getIseultHTML();
-                break;
+                return this._getIseultHTML();
             case Roles.Leon:
-                playerHTML = this._getLeonHTML();
-                break;
+                return this._getLeonHTML();
             case Roles.Puck:
-                playerHTML = this._getPuckHTML();
-                break;
+                return this._getPuckHTML();
             case Roles.Arthur:
-                playerHTML = this._getArthurHTML();
-                break;
+                return this._getArthurHTML();
             case Roles.Guinevere:
-                playerHTML = this._getGuinevereHTML();
-                break;
+                return this._getGuinevereHTML();
             case Roles.Bedivere:
-                playerHTML = this._getBedivereHTML();
-                break;
+                return this._getBedivereHTML();
             case Roles.Jester:
-                playerHTML = this._getJesterHTML();
-                break;
+                return this._getJesterHTML();
             case Roles.Galahad:
-                playerHTML = this._getGalahadHTML();
-                break;
+                return this._getGalahadHTML();
             case Roles.Titania:
-                playerHTML = this._getTitaniaHTML();
-                break;
+                return this._getTitaniaHTML();
             case Roles.Gawain:
-                playerHTML = this._getGawainHTML();
-                break;
+                return this._getGawainHTML();
             case Roles.Ector:
-                playerHTML = this._getEctorHTML();
-                break;
+                return this._getEctorHTML();
+            case Roles.Bors:
+                return this._getBorsHTML();
             case Roles.Lamorak:
-                playerHTML = this._getLamorakHTML();
-                break;
+                return this._getLamorakHTML();
             case Roles.Mordred:
-                playerHTML = this._getMordredHTML();
-                break;
+                return this._getMordredHTML();
             case Roles.Morgana:
-                playerHTML = this._getMorganaHTML();
-                break;
+                return this._getMorganaHTML();
             case Roles.Maelagant:
-                playerHTML = this._getMaelagantHTML();
-                break;
+                return this._getMaelagantHTML();
             case Roles.Colgrevance:
-                playerHTML = this._getColgrevanceHTML();
-                break;
+                return this._getColgrevanceHTML();
             case Roles.Lucius:
-                playerHTML = this._getLuciusHTML();
-                break;
+                return this._getLuciusHTML();
             case Roles.Accolon:
-                playerHTML = this._getAccolonHTML();
-                break;
-            case Roles.Agravain:
-                playerHTML = this._getAgravainHTML();
-                break;
+                return this._getAccolonHTML();
             case Roles.Claudas:
-                playerHTML = this._getClaudasHTML();
-                break;
+                return this._getClaudasHTML();
+            default:
+                return null;
         }
-        return playerHTML;
     }
 
     _getMerlinHTML() {
@@ -492,6 +467,22 @@ class Player {
         `;
     }
 
+    _getBorsHTML() {
+        let borsHTML = `
+            <h2 class="resistance">Bors</h2>
+            <section>
+                <p>During a mission proposal, you may publicly declare</p>
+                <p>as <span class="resistance">Bors</span> to force an approval.</p>
+            </section>
+        `;
+
+        if (this.intel.length > 1) {
+            borsHTML += this._getResistanceEctorHTML();
+        }
+
+        return borsHTML;
+    }
+
     _getLamorakHTML() {
         let lamorakHTML = `
             <h2 class="resistance">Lamorak</h2>
@@ -552,21 +543,6 @@ class Player {
         return colgrevanceHTML;
     }
 
-    _getLuciusHTML() {
-        const luciusSight = this.intel[1];
-
-        let luciusHTML = `
-            <h2 class="spy">Lucius</h2>
-            <section>
-                <p>You hijacked ${luciusSight.source.name}.</p>
-                <p>${luciusSight.source.name} sees ${luciusSight.destination.name}.</p>
-            </section>
-        `;
-
-        luciusHTML += this._getSpyHTML();
-        return luciusHTML;
-    }
-
     _getAccolonHTML() {
         let accolonHTML = `
             <h2 class="spy">Accolon</h2>
@@ -578,9 +554,9 @@ class Player {
         return accolonHTML;
     }
 
-    _getAgravainHTML() {
-        let agravainHTML = `
-            <h2 class="spy">Agravain</h2>
+    _getLuciusHTML() {
+        let luciusHTML = `
+            <h2 class="spy">Lucius</h2>
             <section>
                 <p>You hijacked the <span class="resistance">resistance</span> roles:</p>
             </section><section>
@@ -589,12 +565,12 @@ class Player {
         const seenRoles = this.intel[1];
         for (let i = 0; i < seenRoles.length; i++) {
             const seenRole = seenRoles[i];
-            agravainHTML += `<p><span class="resistance">${seenRole}</span> is in the game</p>`;
+            luciusHTML += `<p><span class="resistance">${seenRole}</span> is in the game</p>`;
         }
-        agravainHTML += `</section>`;
+        luciusHTML += `</section>`;
 
-        agravainHTML += this._getSpyHTML();
-        return agravainHTML;
+        luciusHTML += this._getSpyHTML();
+        return luciusHTML;
     }
 
     _getClaudasHTML() {
