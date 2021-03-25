@@ -57,7 +57,9 @@ document.addEventListener('DOMContentLoaded', function () {
     closeIntelModalButton.onclick = function() {
         intelModal.style.display = "none";
     }
-    toggleHostInformationButton.style.display = "none";
+    if (toggleHostInformationButton) {
+        toggleHostInformationButton.style.display = "none";
+    }
     openIntelModalButton.style.display = "none";
     game.style.display = "none";
 
@@ -217,7 +219,9 @@ document.addEventListener('DOMContentLoaded', function () {
             closeGameButton.style.display = "none";
         }
         resultsModal.style.display = "none";
-        toggleHostInformationButton.style.display = "block";
+        if (toggleHostInformationButton) {
+            toggleHostInformationButton.style.display = "block";
+        }
         openIntelModalButton.style.display = "block";
         game.style.display = "flex";
         intelModalArea.innerHTML = gameHTML;
