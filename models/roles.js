@@ -1,5 +1,10 @@
 const { choice, shuffle } = require('../utils/random');
 
+const Mordred = {
+    name: "Mordred",
+    team: "Spies"
+};
+
 const Morgana = {
     name: "Morgana",
     team: "Spies"
@@ -135,116 +140,81 @@ const Gareth = {
     team: "Resistance"
 };
 
-class Roles {
-    static generateRoles(resistanceCount, spyCount, settings) {
-        const generatedRoles = new this(resistanceCount, spyCount, settings);
-        return generatedRoles.getRoles();
-    }
+function generateRoles(resistanceCount, spyCount, settings) {
+    generatedRoles = [];
+    playerCount = resistanceCount + spyCount;
+    let assassinatableRole = null;
+    let usedResistanceRoles = [];
+    let possibleResistanceRoles = [];
+    let usedSpyRoles = [];
+    let possibleSpyRoles = [];
 
-    constructor(resistanceCount, spyCount, settings) {
-        this.generatedRoles = [];
-        this.playerCount = resistanceCount + spyCount;
-        this.spyCount = spyCount;
-        this.resistanceCount = resistanceCount;
-        this.settings = settings;
-
-        const assassinatableRole = this._getAssassinatableRole();
-        this.usedResistanceRoles = [];
-        this.possibleResistanceRoles = this._getPossibleResistanceRoles(assassinatableRole);
-        this.usedSpyRoles = [];
-        this.possibleSpyRoles = this._getPossibleSpyRoles(assassinatableRole);
-        
-        this._addResistanceRole(assassinatableRole);
-        if (assassinatableRole === Tristan) {
-            this._addResistanceRole(Iseult);
-        }
-
-        do {
-            const resistanceRole = this.possibleResistanceRoles.pop();
-            this._addResistanceRole(resistanceRole);
-
-            if (this.usedSpylength < spyCount) {
-                const spyRole = this.possibleSpyRoles.pop();
-                this._addSpyRole(spyRole);
-            }
-        } while (this.usedResistancelength < resistanceCount);
-
-        this.generatedRoles = [];
-        Array.prototype.push.apply(this.generatedRoles, this.usedSpyRoles);
-        Array.prototype.push.apply(this.generatedRoles, this.usedResistanceRoles);
-        this.generatedRoles = shuffle(this.generatedRoles);
-    }
-
-    getRoles() {
-        return this.generatedRoles;
-    }
-
-    _getAssassinatableRole() {
+    function getAssassinatableRole() {
         const possibleAssassinatableRoles = [
             Merlin, Tristan, Arthur
         ];
-        if (this.settings.ector && this.playerCount > 7) {
+        if (settings.ector && playerCount > 7) {
             possibleAssassinatableRoles.push(Ector);
         }
     
         return choice(shuffle(possibleAssassinatableRoles));
     }
 
-    _getPossibleResistanceRoles(assassinatableRole) {
+    function getPossibleResistanceRoles(assassinatableRole) {
         const possibleResistanceRoles = [
             Lancelot
         ];
-        if (this.settings.bedivere) {
+        if (settings.bedivere) {
             possibleResistanceRoles.push(Bedivere);
         }
-        if (this.settings.gareth) {
+        if (settings.gareth) {
             possibleResistanceRoles.push(Gareth);
         }
-        if (this.settings.jester) {
+        if (settings.jester) {
             possibleResistanceRoles.push(Jester);
         }
-        if (this.settings.lamorak) {
+        if (settings.lamorak) {
             possibleResistanceRoles.push(Lamorak);
         }
-        if (this.settings.puck && this.playerCount > 6) {
+        if (settings.puck && playerCount > 6) {
             possibleResistanceRoles.push(Puck);
         }
-        if (this.settings.bors && this.playerCount > 7) {
+        if (settings.bors && playerCount > 7) {
             possibleResistanceRoles.push(Bors);
         }
-        if (this.settings.gawain && this.playerCount > 7) {
+        if (settings.gawain && playerCount > 7) {
             possibleResistanceRoles.push(Gawain);
         }
-        if (this.settings.titania && this.playerCount > 7) {
+        if (settings.titania && playerCount > 7) {
             possibleResistanceRoles.push(Titania);
         }
         
         if (assassinatableRole !== Ector) {
             possibleResistanceRoles.push(Percival);
-            if (this.settings.guinevere) {
+            if (settings.guinevere) {
                 possibleResistanceRoles.push(Guinevere);
             }
 
-            if (this.settings.galahad && assassinatableRole === Arthur) {
+            if (settings.galahad && assassinatableRole === Arthur) {
                 possibleResistanceRoles.push(Galahad);
             }
 
             if (assassinatableRole !== Tristan) {
                 possibleResistanceRoles.push(Uther);
-                if (this.settings.leon && this.playerCount > 7) {
+                if (settings.leon && playerCount > 7) {
                     possibleResistanceRoles.push(Leon);
                 }
             }
         }
 
         if (assassinatableRole !== Merlin) {
-            if (this.settings.kay && this.playerCount > 8) {
+            if (settings.kay && playerCount > 8) {
                 possibleResistanceRoles.push(Kay);
             }
         }
 
         if (assassinatableRole !== Arthur) {
-            if (this.settings.gaheris) {
+            if (settings.gaheris) {
                 possibleResistanceRoles.push(Gaheris);
             }
         }
@@ -252,19 +222,20 @@ class Roles {
         return shuffle(possibleResistanceRoles);
     }
     
-    _getPossibleSpyRoles(assassinatableRole) {
+    function getPossibleSpyRoles(assassinatableRole) {
         const possibleSpyRoles = [
-            Mordred, Morgana, Maelagant, Colgrevance
+            Mordred, Maelagant, Colgrevance
         ];
-        if (this.settings.claudas) {
+        if (settings.claudas) {
             possibleSpyRoles.push(Claudas);
         }
 
         if (assassinatableRole !== Ector) {
-            if (this.settings.lucius) {
+            possibleSpyRoles.push(Morgana);
+            if (settings.lucius && playerCount > 7) {
                 possibleSpyRoles.push(Lucius);
             }
-            if (this.settings.accolon && this.playerCount > 7) {
+            if (settings.accolon && playerCount > 7) {
                 possibleSpyRoles.push(Accolon);
             }
         }
@@ -272,139 +243,224 @@ class Roles {
         return shuffle(possibleSpyRoles);
     }
 
-    _addResistanceRole(role) {
+    function addResistanceRole(role) {
+        console.log(`Attempting to add ${role.name}...`);
         switch (role) {
             case Percival:
-                let containsMerlin = this.usedResistanceRoles.includes(Merlin);
-                let containsMorgana = this.usedSpyRoles.includes(Morgana);
+                const containsMerlin = usedResistanceRoles.includes(Merlin);
+                const containsMorgana = usedSpyRoles.includes(Morgana);
                 if (!containsMerlin && !containsMorgana) {
-                    if (this.usedSpylength < this.spyCount) {
-                        this._addSpyRole(Maelagant);
-                        containsMorgana = true;
+                    if (usedSpyRoles.length + 1 < spyCount && possibleSpyRoles.includes(Morgana)) {
+                        addRole(Morgana, usedSpyRoles);
+                        removePossibleRole(Morgana, possibleSpyRoles);
                     } else {
                         return false;
                     }
                 }
-
-                if (containsMerlin) {
-                    this._removePossibleRole(Gaheris, this.possibleResistanceRoles);
-                }
-                if (containsMorgana) {
-                    this._removePossibleRole(Bedivere, this.possibleResistanceRoles);
-                    this._removePossibleRole(Gareth, this.possibleResistanceRoles);
-                    this._removePossibleRole(Kay, this.possibleResistanceRoles);
-                }
-                if (containsMerlin && containsMorgana) {
-                    this._removePossibleRole(Guinevere, this.possibleResistanceRoles);
-                }
-                this._removePossibleRole(Leon, this.possibleResistanceRoles);
-                break;
-            case Leon:
-                this._removePossibleRole(Percival, this.possibleResistanceRoles);
-                this._removePossibleRole(Kay, this.possibleResistanceRoles);
-                this._removePossibleRole(Guinevere, this.possibleResistanceRoles);
-                this._removePossibleRole(Morgana, this.possibleSpyRoles);
-            case Uther:
-            case Galahad:
-                this._removePossibleRole(Uther, this.possibleResistanceRoles);
-                this._removePossibleRole(Galahad, this.possibleResistanceRoles);
-                this._removePossibleRole(Leon, this.possibleResistanceRoles);
-                break;
-            case Lancelot:
-            case Puck:
-                this._removePossibleRole(Lancelot, this.possibleResistanceRoles);
-                this._removePossibleRole(Puck, this.possibleResistanceRoles);
                 break;
             case Guinevere:
-                let containsLancelot = this.usedResistanceRoles.includes(Lancelot);
-                let containsMaelagant = this.usedSpyRoles.includes(Maelagant);
+                const containsLancelot = usedResistanceRoles.includes(Lancelot);
+                const containsMaelagant = usedSpyRoles.includes(Maelagant);
                 if (!containsLancelot && !containsMaelagant) {
-                    let maelagantPossible = this.usedSpylength < this.spyCount;
-                    let lancelotPossible = (this.usedResistancelength + 1) < this.resistanceCount
-                        && this.possibleResistanceRoles.includes(Lancelot);
+                    const maelagantPossible = usedSpyRoles.length + 1 <= spyCount;
+                    const lancelotPossible = (usedResistanceRoles.length + 1) <= resistanceCount
+                        && possibleResistanceRoles.includes(Lancelot);
                     if (!lancelotPossible && !maelagantPossible) {
                         return false;
                     } else if (lancelotPossible && maelagantPossible) {
                         if (Math.random() < 0.5) {
-                            this._addResistanceRole(Lancelot);
-                            containsLancelot = true;
+                            addRole(Lancelot, usedResistanceRoles);
+                            removePossibleRole(Lancelot, possibleResistanceRoles);
                         } else {
-                            this._addSpyRole(Maelagant);
-                            containsMaelagant = true;
+                            addRole(Maelagant, usedSpyRoles);
+                            removePossibleRole(Maelagant, possibleSpyRoles);
                         }
                     } else if (lancelotPossible) {
-                        this._addResistanceRole(Lancelot);
-                        containsLancelot = true;
+                        addRole(Lancelot, usedResistanceRoles);
+                        removePossibleRole(Lancelot, possibleResistanceRoles);
                     } else {
-                        this._addSpyRole(Maelagant);
-                        containsMaelagant = true;
+                        addRole(Maelagant, usedSpyRoles);
+                        removePossibleRole(Maelagant, possibleSpyRoles);
                     }
-                }
-
-                if (containsLancelot) {
-                    this._removePossibleRole(Gaheris, this.possibleResistanceRoles);
-                }
-                if (containsMaelagant) {
-                    this._removePossibleRole(Bedivere, this.possibleResistanceRoles);
-                    this._removePossibleRole(Gareth, this.possibleResistanceRoles);
-                    this._removePossibleRole(Kay, this.possibleResistanceRoles);
-                }
-                if (containsLancelot && containsMaelagant) {
-                    this._removePossibleRole(Percival, this.possibleResistanceRoles);
-                    this._removePossibleRole(Morgana, this.possibleSpyRoles);
-                }
-                this._removePossibleRole(Leon, this.possibleResistanceRoles);
-                break;
-            case Bedivere:
-            case Gareth:
-                this._removePossibleRole(Bedivere, this.possibleResistanceRoles);
-                this._removePossibleRole(Gareth, this.possibleResistanceRoles);
-                this._removePossibleRole(Morgana, this.possibleSpyRoles);
-                if (!this.usedResistanceRoles.includes(Merlin)) {
-                    this._removePossibleRole(Percival, this.possibleResistanceRoles);
-                }
-                if (this.usedSpyRoles.includes(Maelagant)) {
-                    this._removePossibleRole(Guinevere, this.possibleResistanceRoles);
-                }
-                break;
-            case Gaheris:
-                if (this.usedResistanceRoles.includes(Merlin)) {
-                    this._removePossibleRole(Percival, this.possibleResistanceRoles);
-                }
-                if (this.usedResistanceRoles.includes(Lancelot)) {
-                    this._removePossibleRole(Guinevere, this.possibleResistanceRoles);
                 }
                 break;
         }
 
-        this.usedResistanceRoles.push(role);
+        addRole(role, usedResistanceRoles);
         return true;
     }
 
-    _addSpyRole(role) {
+    function addSpyRole(role) {
+        console.log(`Attempting to add ${role.name}...`);
+
         switch (role) {
             case Morgana:
-                if (!this.usedResistanceRoles.includes(Percival)) {
-                    if ((this.usedResistancelength + 1) < this.resistanceCount) {
-                        this._addResistanceRole(Percival);
+                if (!usedResistanceRoles.includes(Percival)) {
+                    if ((usedResistanceRoles.length + 1) <= resistanceCount && possibleResistanceRoles.includes(Percival)) {
+                        addRole(Percival, usedResistanceRoles);
+                        removePossibleRole(Percival, possibleResistanceRoles);
                     } else {
                         return false;
                     }
                 }
                 break;
         }
-        this.usedSpyRoles.push(role);
+
+        addRole(role, usedSpyRoles);
         return true;
     }
+
+    function addRole(role, usedRoles) {
+        let contains
+        switch(role) {
+            case Percival:
+                let containsMerlin = usedResistanceRoles.includes(Merlin);
+                let containsMorgana = usedSpyRoles.includes(Morgana);
+                if (containsMerlin) {
+                    removePossibleRole(Gaheris, possibleResistanceRoles);
+                }
+                if (containsMorgana) {
+                    removePossibleRole(Bedivere, possibleResistanceRoles);
+                    removePossibleRole(Gareth, possibleResistanceRoles);
+                    removePossibleRole(Kay, possibleResistanceRoles);
+                }
+                if (containsMerlin && containsMorgana) {
+                    removePossibleRole(Guinevere, possibleResistanceRoles);
+                }
+                removePossibleRole(Leon, possibleResistanceRoles);
+                break;
+            case Guinevere:
+                let containsLancelot = usedResistanceRoles.includes(Lancelot);
+                let containsMaelagant = usedSpyRoles.includes(Maelagant);
+                if (containsLancelot) {
+                    removePossibleRole(Gaheris, possibleResistanceRoles);
+                }
+                if (containsMaelagant) {
+                    removePossibleRole(Bedivere, possibleResistanceRoles);
+                    removePossibleRole(Gareth, possibleResistanceRoles);
+                    removePossibleRole(Kay, possibleResistanceRoles);
+                }
+                if (containsLancelot && containsMaelagant) {
+                    removePossibleRole(Percival, possibleResistanceRoles);
+                    removePossibleRole(Morgana, possibleSpyRoles);
+                }
+                removePossibleRole(Leon, possibleResistanceRoles);
+                break;
+            case Leon:
+                removePossibleRole(Percival, possibleResistanceRoles);
+                removePossibleRole(Kay, possibleResistanceRoles);
+                removePossibleRole(Guinevere, possibleResistanceRoles);
+                removePossibleRole(Morgana, possibleSpyRoles);
+            case Uther:
+            case Galahad:
+                removePossibleRole(Uther, possibleResistanceRoles);
+                removePossibleRole(Galahad, possibleResistanceRoles);
+                removePossibleRole(Leon, possibleResistanceRoles);
+                break;
+            case Lancelot:
+            case Puck:
+                removePossibleRole(Lancelot, possibleResistanceRoles);
+                removePossibleRole(Puck, possibleResistanceRoles);
+                break;
+            case Bedivere:
+            case Gareth:
+                removePossibleRole(Bedivere, possibleResistanceRoles);
+                removePossibleRole(Gareth, possibleResistanceRoles);
+                removePossibleRole(Morgana, possibleSpyRoles);
+                if (!usedResistanceRoles.includes(Merlin)) {
+                    removePossibleRole(Percival, possibleResistanceRoles);
+                }
+                if (usedSpyRoles.includes(Maelagant)) {
+                    removePossibleRole(Guinevere, possibleResistanceRoles);
+                }
+                break;
+            case Gaheris:
+                if (usedResistanceRoles.includes(Merlin)) {
+                    removePossibleRole(Percival, possibleResistanceRoles);
+                }
+                if (usedResistanceRoles.includes(Lancelot)) {
+                    removePossibleRole(Guinevere, possibleResistanceRoles);
+                }
+                break;
+            case Maelagant:
+                if (usedResistanceRoles.includes(Bedivere)) {
+                    removePossibleRole(Guinevere, possibleResistanceRoles);
+                }
+                break;
+            case Morgana:
+                removePossibleRole(Bedivere, possibleResistanceRoles);
+                break;
+        }
+
+        usedRoles.push(role);
+        console.log(`Added ${role.name}`);
+    }
     
-    _removePossibleRole(role, possibleRoles) {
-        const roleIndex = possibleindexOf(role);
+    function removePossibleRole(role, possibleRoles) {
+        const roleIndex = possibleRoles.indexOf(role);
         if (roleIndex !== -1) {
             possibleRoles.splice(roleIndex, 1);
         }
     }
+
+    assassinatableRole = getAssassinatableRole();
+    possibleResistanceRoles = getPossibleResistanceRoles(assassinatableRole);
+    possibleSpyRoles = getPossibleSpyRoles(assassinatableRole);
+    
+    addResistanceRole(assassinatableRole);
+    if (assassinatableRole === Tristan) {
+        addResistanceRole(Iseult);
+    }
+
+    do {
+        possibleResistanceRoles = shuffle(possibleResistanceRoles);
+        addResistanceRole(possibleResistanceRoles.pop());
+        if (usedSpyRoles.length < spyCount) {
+            possibleSpyRoles = shuffle(possibleSpyRoles);
+            addSpyRole(possibleSpyRoles.pop());
+        }
+    } while (usedResistanceRoles.length < resistanceCount);
+
+    while (usedSpyRoles.length < spyCount) {
+        possibleSpyRoles = shuffle(possibleSpyRoles);
+        addSpyRole(possibleSpyRoles.pop());
+    }
+
+    Array.prototype.push.apply(generatedRoles, usedSpyRoles);
+    console.log("\nSpy Roles: %j", usedSpyRoles);
+    Array.prototype.push.apply(generatedRoles, usedResistanceRoles);
+    console.log("Resistance Roles: %j\n", usedResistanceRoles);
+    return shuffle(generatedRoles);
 }
 
 module.exports = {
-    
-}
+    generateRoles,
+    Mordred,
+    Morgana,
+    Maelagant,
+    Colgrevance,
+    Lucius,
+    Accolon,
+    Claudas,
+    Merlin,
+    Percival,
+    Uther,
+    Tristan,
+    Iseult,
+    Arthur,
+    Lancelot,
+    Guinevere,
+    Puck,
+    Jester,
+    Galahad,
+    Leon,
+    Titania,
+    Kay,
+    Gareth,
+    Gaheris,
+    Ector,
+    Bedivere,
+    Lamorak,
+    Bors,
+    Gawain
+};

@@ -440,7 +440,7 @@ class GameState {
 
     _getGaherisIntel() {
         const seenPlayer = this.selectPlayers({
-            excludedRoles: ["Gaheris"],
+            excludedRoles: [Roles.Gaheris, Roles.Ector],
             includedTeams: ["Resistance"]
         })[0];
 

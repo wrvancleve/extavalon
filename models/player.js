@@ -65,8 +65,6 @@ class Player {
     }
 
     getPlayerHTML() {
-        console.log(`Current Id: ${this.id}`);
-        console.log("Current Role: %j", this.role);
         switch (this.role) {
             case Roles.Merlin:
                 return this._getMerlinHTML();
@@ -125,7 +123,6 @@ class Player {
             case Roles.Claudas:
                 return this._getClaudasHTML();
             default:
-                console.log("Returning null");
                 return null;
         }
     }
@@ -518,7 +515,7 @@ class Player {
                     <p>You see:</p>
                 </section>
                 <section>
-                    <p><span class="spy">${seenRole}</span> is in the game</p>
+                    <p><span class="resistance">${seenRole}</span> is in the game</p>
                 </section>
             `;
         } else {
@@ -552,7 +549,7 @@ class Player {
                     <p>You see:</p>
                 </section>
                 <section>
-                    <p><span class="resistance">${seenRole}</span> is in the game</p>
+                    <p><span class="spy">${seenRole}</span> is in the game</p>
                 </section>
             `;
         } else {
@@ -571,7 +568,7 @@ class Player {
             garethHTML += this._getResistanceEctorHTML();
         }
 
-        return gaherisHTML;
+        return garethHTML;
     }
 
     _getKayHTML() {
