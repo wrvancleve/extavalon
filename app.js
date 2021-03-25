@@ -175,7 +175,8 @@ app.createServer = function() {
     lobby.lastGunSlots = null;
     for (var i = 0; i < activePlayers.length; i++) {
       const currentPlayer = activePlayers[i];
-      lobby.playerCollection.updatePlayerId(currentPlayer.sessionId, i);
+      //lobby.playerCollection.updatePlayerIdBySessionId(currentPlayer.sessionId, i);
+      lobby.playerCollection.updatePlayerIdBySocketId(currentPlayer.socketId, i);
       sendStartOnlineGame(lobby.game, currentPlayer);
     }
     startProposal(lobby);
