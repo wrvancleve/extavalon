@@ -162,8 +162,7 @@ app.createServer = function() {
     lobby.game = game;
     for (var i = 0; i < activePlayers.length; i++) {
       const currentPlayer = activePlayers[i];
-      //lobby.playerCollection.updatePlayerIdBySessionId(currentPlayer.sessionId, i);
-      lobby.playerCollection.updatePlayerIdBySocketId(currentPlayer.socketId, i);
+      lobby.playerCollection.updatePlayerIdBySessionId(currentPlayer.sessionId, i);
       sendStartLocalGame(lobby.game, currentPlayer);
     }
   }
@@ -175,8 +174,7 @@ app.createServer = function() {
     lobby.lastGunSlots = null;
     for (var i = 0; i < activePlayers.length; i++) {
       const currentPlayer = activePlayers[i];
-      //lobby.playerCollection.updatePlayerIdBySessionId(currentPlayer.sessionId, i);
-      lobby.playerCollection.updatePlayerIdBySocketId(currentPlayer.socketId, i);
+      lobby.playerCollection.updatePlayerIdBySessionId(currentPlayer.sessionId, i);
       sendStartOnlineGame(lobby.game, currentPlayer);
     }
     startProposal(lobby);
@@ -357,8 +355,7 @@ app.createServer = function() {
     const lobby = lobbyCollection.lobbies.get(code);
     if (lobby) {
       lobby.updateTime = Date.now();
-      //if (!lobby.playerCollection.doesSessionIdExist(socket.request.session.id)) {
-      if (!lobby.playerCollection.doesSocketIdExist(socket.id)) {
+      if (!lobby.playerCollection.doesSessionIdExist(socket.request.session.id)) {
         lobby.playerCollection.addPlayer(socket, name);
       } else {
         updatePlayer(lobby, socket, name);

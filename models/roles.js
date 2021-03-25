@@ -141,7 +141,6 @@ const Gareth = {
 };
 
 function generateRoles(resistanceCount, spyCount, settings) {
-    generatedRoles = [];
     playerCount = resistanceCount + spyCount;
     let assassinatableRole = null;
     let usedResistanceRoles = [];
@@ -441,33 +440,39 @@ function generateRoles(resistanceCount, spyCount, settings) {
         }
     }
 
-    assassinatableRole = getAssassinatableRole();
-    possibleResistanceRoles = getPossibleResistanceRoles(assassinatableRole);
-    possibleSpyRoles = getPossibleSpyRoles(assassinatableRole);
-    
-    addResistanceRole(assassinatableRole);
-    if (assassinatableRole === Tristan) {
-        addResistanceRole(Iseult);
-    }
-
     do {
-        possibleResistanceRoles = shuffle(possibleResistanceRoles);
-        addResistanceRole(possibleResistanceRoles.pop());
-        if (usedSpyRoles.length < spyCount) {
+        generatedRoles = [];
+        assassinatableRole = getAssassinatableRole();
+        usedResistanceRoles = [];
+        possibleResistanceRoles = getPossibleResistanceRoles(assassinatableRole);
+        usedSpyRoles = [];
+        possibleSpyRoles = getPossibleSpyRoles(assassinatableRole);
+
+        addResistanceRole(assassinatableRole);
+        if (assassinatableRole === Tristan) {
+            addResistanceRole(Iseult);
+        }
+
+        do {
+            possibleResistanceRoles = shuffle(possibleResistanceRoles);
+            addResistanceRole(possibleResistanceRoles.pop());
+            if (usedSpyRoles.length < spyCount) {
+                possibleSpyRoles = shuffle(possibleSpyRoles);
+                addSpyRole(possibleSpyRoles.pop());
+            }
+        } while (usedResistanceRoles.length < resistanceCount);
+
+        while (usedSpyRoles.length < spyCount) {
             possibleSpyRoles = shuffle(possibleSpyRoles);
             addSpyRole(possibleSpyRoles.pop());
         }
-    } while (usedResistanceRoles.length < resistanceCount);
 
-    while (usedSpyRoles.length < spyCount) {
-        possibleSpyRoles = shuffle(possibleSpyRoles);
-        addSpyRole(possibleSpyRoles.pop());
-    }
+        Array.prototype.push.apply(generatedRoles, usedSpyRoles);
+        console.log("\nSpy Roles: %j", usedSpyRoles);
+        Array.prototype.push.apply(generatedRoles, usedResistanceRoles);
+        console.log("Resistance Roles: %j\n", usedResistanceRoles);
+    } while (generatedRoles.length !== playerCount);
 
-    Array.prototype.push.apply(generatedRoles, usedSpyRoles);
-    console.log("\nSpy Roles: %j", usedSpyRoles);
-    Array.prototype.push.apply(generatedRoles, usedResistanceRoles);
-    console.log("Resistance Roles: %j\n", usedResistanceRoles);
     return shuffle(generatedRoles);
 }
 

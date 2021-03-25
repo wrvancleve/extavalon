@@ -4,8 +4,8 @@ document.addEventListener('DOMContentLoaded', function () {
         ignoreQueryPrefix: true
     });
 
-    //const socket = io.connect(`https://extavalon.com?code=${code}&name=${name}`);
-    const socket = io.connect(`http://localhost:25565?code=${code}&name=${name}`);
+    const socket = io.connect(`https://extavalon.com?code=${code}&name=${name}`);
+    //const socket = io.connect(`http://localhost:25565?code=${code}&name=${name}`);
     //const socket = io.connect(`http://192.168.1.107:25565?code=${code}&name=${name}`);
 
     // Get elements
@@ -107,8 +107,8 @@ document.addEventListener('DOMContentLoaded', function () {
     });
 
     socket.on('close-lobby', () => {
-        //location.replace("https://extavalon.com/");
-        location.replace("http://localhost:25565");
+        location.replace("https://extavalon.com/");
+        //location.replace("http://localhost:25565");
         //location.replace("http://192.168.1.107:25565");
     });
 });
