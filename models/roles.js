@@ -320,6 +320,7 @@ function generateRoles(resistanceCount, spyCount, settings) {
         switch(role) {
             case Percival:
                 removePossibleRole(Leon, possibleResistanceRoles);
+                /*
                 if (containsMerlin) {
                     removePossibleRole(Gaheris, possibleResistanceRoles);
                     if (containsLancelot) {
@@ -337,9 +338,15 @@ function generateRoles(resistanceCount, spyCount, settings) {
                 if (containsMerlin && containsMorgana) {
                     removePossibleRole(Guinevere, possibleResistanceRoles);
                 }
+                */
+                removePossibleRole(Gaheris, possibleResistanceRoles);
+                removePossibleRole(Bedivere, possibleResistanceRoles);
+                removePossibleRole(Gareth, possibleResistanceRoles);
+                removePossibleRole(Kay, possibleResistanceRoles);
                 break;
             case Guinevere:
                 removePossibleRole(Leon, possibleResistanceRoles);
+                /*
                 if (containsLancelot) {
                     removePossibleRole(Gaheris, possibleResistanceRoles);
                     if (containsMerlin) {
@@ -354,6 +361,11 @@ function generateRoles(resistanceCount, spyCount, settings) {
                     removePossibleRole(Percival, possibleResistanceRoles);
                     removePossibleRole(Morgana, possibleSpyRoles);
                 }
+                */
+                removePossibleRole(Gaheris, possibleResistanceRoles);
+                removePossibleRole(Bedivere, possibleResistanceRoles);
+                removePossibleRole(Gareth, possibleResistanceRoles);
+                removePossibleRole(Kay, possibleResistanceRoles);
                 break;
             case Leon:
                 removePossibleRole(Percival, possibleResistanceRoles);
@@ -365,8 +377,11 @@ function generateRoles(resistanceCount, spyCount, settings) {
                 removePossibleRole(Uther, possibleResistanceRoles);
                 removePossibleRole(Galahad, possibleResistanceRoles);
                 removePossibleRole(Leon, possibleResistanceRoles);
+
+                removePossibleRole(Kay, possibleResistanceRoles);
                 break;
             case Lancelot:
+                /*
                 if (containsGuinevere) {
                     removePossibleRole(Gaheris, possibleResistanceRoles);
                     if (containsMaelagant) {
@@ -377,6 +392,7 @@ function generateRoles(resistanceCount, spyCount, settings) {
                 if (containsPercival && containsMerlin) {
                     removePossibleRole(Guinevere, possibleResistanceRoles);
                 }
+                */
             case Puck:
                 removePossibleRole(Lancelot, possibleResistanceRoles);
                 removePossibleRole(Puck, possibleResistanceRoles);
@@ -386,14 +402,20 @@ function generateRoles(resistanceCount, spyCount, settings) {
                 removePossibleRole(Bedivere, possibleResistanceRoles);
                 removePossibleRole(Gareth, possibleResistanceRoles);
                 removePossibleRole(Morgana, possibleSpyRoles);
+                /*
                 if (!containsMerlin) {
                     removePossibleRole(Percival, possibleResistanceRoles);
                 }
                 if (containsMaelagant) {
                     removePossibleRole(Guinevere, possibleResistanceRoles);
                 }
+                */
+
+                removePossibleRole(Percival, possibleResistanceRoles);
+                removePossibleRole(Guinevere, possibleResistanceRoles);
                 break;
             case Gaheris:
+                /*
                 if (containsMerlin) {
                     removePossibleRole(Percival, possibleResistanceRoles);
                     removePossibleRole(Morgana, possibleSpyRoles);
@@ -401,9 +423,15 @@ function generateRoles(resistanceCount, spyCount, settings) {
                 if (containsLancelot) {
                     removePossibleRole(Guinevere, possibleResistanceRoles);
                 }
+                */
+
+                removePossibleRole(Guinevere, possibleResistanceRoles);
+                removePossibleRole(Percival, possibleResistanceRoles);
+                removePossibleRole(Morgana, possibleSpyRoles);
                 break;
             case Maelagant:
                 // If Guinevere: 
+                /*
                 if (containsGuinevere) {
                     removePossibleRole(Bedivere, possibleResistanceRoles);
                     removePossibleRole(Gareth, possibleResistanceRoles);
@@ -415,9 +443,10 @@ function generateRoles(resistanceCount, spyCount, settings) {
                 if (containsPercival && containsMorgana) {
                     removePossibleRole(Guinevere, possibleResistanceRoles);
                 }
-
+                */
                 break;
             case Morgana:
+                /*
                 removePossibleRole(Bedivere, possibleResistanceRoles);
                 removePossibleRole(Gareth, possibleResistanceRoles);
                 if (containsPercival && containsMerlin) {
@@ -426,6 +455,7 @@ function generateRoles(resistanceCount, spyCount, settings) {
                 if (containsGuinevere) {
                     removePossibleRole(Maelagant, possibleSpyRoles);
                 }
+                */
                 break;
         }
 

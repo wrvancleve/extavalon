@@ -46,7 +46,6 @@ router.post('/', [check('name', 'Invalid Name').trim().matches("^[ a-zA-z0-9]{2,
             galahad: req.body.galahad === 'on',
             titania: req.body.titania === 'on',
             gawain: req.body.gawain === 'on',
-            ector: req.body.ector === 'on',
             bedivere: req.body.bedivere === 'on',
             gaheris: req.body.gaheris === 'on',
             gareth: req.body.gareth === 'on',
@@ -57,6 +56,7 @@ router.post('/', [check('name', 'Invalid Name').trim().matches("^[ a-zA-z0-9]{2,
         //lamorak: req.body.lamorak === 'on',
         //claudas: req.body.claudas === 'on'
         //bors: req.body.bors === 'on',
+        //ector: req.body.ector === 'on',
 
         const type = req.query.type || 'local';
         const name = req.body.name
