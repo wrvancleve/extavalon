@@ -190,8 +190,7 @@ app.createServer = function() {
   function sendStartOnlineGame(game, receiver) {
     io.sockets.to(receiver.socketId).emit('start-game', {
       gameHTML: game.getPlayerHTML(receiver.id),
-      players: game.getPlayerInformation(receiver.id),
-      role: game.getRole(receiver.id)
+      players: game.getPlayerInformation(receiver.id)
     });
   }
 

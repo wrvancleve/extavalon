@@ -57,10 +57,6 @@ class Mission {
     getMissionTeam() {
         return this.getCurrentProposal().team;
     }
-
-    getApprovers() {
-        return this.getCurrentProposal().getApprovers();
-    }
 }
 
 module.exports = Mission;

@@ -27,16 +27,6 @@ class Proposal {
     finalize() {
         this.result = this.rejectCount < Math.ceil(this.voteCount / 2);
     }
-
-    getApprovers() {
-        const approvers = [];
-        for (let [playerId, vote] of this.votesByPlayerId) {
-            if (vote) {
-                approvers.push(playerId);
-            }
-        }
-        return approvers;
-    }
 }
 
 module.exports = Proposal;

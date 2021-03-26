@@ -470,7 +470,7 @@ select {
   font-size: 1.75em;
 }
 
-#results-area, #intel-modal-area, #assassination-area, #mission-information-area {
+#results-area, #intel-modal-area, #assassination-area {
   align-items: center;
   justify-content: center;
   display: flex;
@@ -516,7 +516,7 @@ select {
   z-index: 7;
 }
 
-#results-modal, #mission-information-modal {
+#results-modal {
   color: #b6f0fc;
   display: none;
   background-color: black;

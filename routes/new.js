@@ -39,26 +39,12 @@ router.post('/', [check('name', 'Invalid Name').trim().matches("^[ a-zA-z0-9]{2,
         res.redirect(`/new?type=${type}`);
     } else {
         const settings = {
-            guinevere: req.body.guinevere === 'on',
-            puck: req.body.puck === 'on',
-            jester: req.body.jester === 'on',
-            leon: req.body.leon === 'on',
             galahad: req.body.galahad === 'on',
             titania: req.body.titania === 'on',
-            gawain: req.body.gawain === 'on',
             bedivere: req.body.bedivere === 'on',
-            gaheris: req.body.gaheris === 'on',
-            gareth: req.body.gareth === 'on',
-            kay: req.body.kay === 'on',
             lucius: req.body.lucius === 'on',
-            accolon: req.body.accolon === 'on',
-            lamorak: req.body.lamorak === 'on',
-            claudas: req.body.claudas === 'on'
+            accolon: req.body.accolon === 'on'
         };
-        //lamorak: req.body.lamorak === 'on',
-        //claudas: req.body.claudas === 'on'
-        //bors: req.body.bors === 'on',
-        //ector: req.body.ector === 'on',
 
         const type = req.query.type || 'local';
         const name = req.body.name
