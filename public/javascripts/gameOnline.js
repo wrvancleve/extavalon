@@ -714,11 +714,14 @@ document.addEventListener('DOMContentLoaded', function () {
                 }
                 break;
         }
+        if (playerRole.name === "Lamorak" || playerRole.name === "Claudas") {
+            resultImage.classList.add("clickable");
+        }
         boardArea.appendChild(resultImage);
 
         if (playerRole.name === "Lamorak" || playerRole.name === "Claudas") {
             resultImage.onclick = function () {
-                showMissionInformation(result)
+                showMissionInformation(result);
             }
         }
     }
