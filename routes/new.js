@@ -51,7 +51,9 @@ router.post('/', [check('name', 'Invalid Name').trim().matches("^[ a-zA-z0-9]{2,
             gareth: req.body.gareth === 'on',
             kay: req.body.kay === 'on',
             lucius: req.body.lucius === 'on',
-            accolon: req.body.accolon === 'on'
+            accolon: req.body.accolon === 'on',
+            lamorak: req.body.lamorak === 'on',
+            claudas: req.body.claudas === 'on'
         };
         //lamorak: req.body.lamorak === 'on',
         //claudas: req.body.claudas === 'on'

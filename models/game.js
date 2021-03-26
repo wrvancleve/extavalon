@@ -67,6 +67,10 @@ class Game {
         return this.state.players[id].getPlayerObject();
     }
 
+    getRole(id) {
+        return this.state.players[id].role;
+    }
+
     isGameOver() {
         return this.state.phase === GameState.PHASE_DONE; 
     }
@@ -214,7 +218,19 @@ class Game {
                 result: mission.result,
                 successCount: mission.actionCount - mission.failActionCount - mission.reverseActionCount,
                 failCount: mission.failActionCount,
-                reverseCount: mission.reverseActionCount
+                reverseCount: mission.reverseActionCount,
+                team: mission.getMissionTeam().map(playerId => {
+                    return {
+                        id: playerId,
+                        name: this.state.players[playerId].name
+                    };
+                }),
+                approvers: mission.getApprovers().map(playerId => {
+                    return {
+                        id: playerId,
+                        name: this.state.players[playerId].name
+                    };
+                })
             };
         } else {
             return null;

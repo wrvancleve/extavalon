@@ -28,6 +28,7 @@ document.addEventListener('DOMContentLoaded', function () {
     let gamePlayers = [];
     let gunSelected = null;
     let playersSelected = null;
+    let playerRole = null;
     const leftPlayerArea = document.getElementById("left-player-area");
     const topPlayerArea = document.getElementById("top-player-area");
     const rightPlayerArea = document.getElementById("right-player-area");
@@ -42,6 +43,10 @@ document.addEventListener('DOMContentLoaded', function () {
     const assassinationModal = document.getElementById("assassination-modal");
     const assassinationArea = document.getElementById("assassination-area");
     const resultsArea = document.getElementById("results-area");
+
+    const missionInformationModal = document.getElementById("mission-information-modal");
+    const closeMissionInformationModalButton = document.getElementById("close-mission-information-modal-button");
+    const missionInformationArea = document.getElementById("mission-information-area");
 
     // Setup Page
     openIntelModalButton.onclick = function() {
@@ -80,6 +85,10 @@ document.addEventListener('DOMContentLoaded', function () {
 
     closeResultsModalButton.onclick = function() {
         resultsModal.style.display = "none";
+    }
+
+    closeMissionInformationModalButton.onclick = function() {
+        missionInformationModal.style.display = "none";
     }
 
     if (startGameButton) {
@@ -206,10 +215,11 @@ document.addEventListener('DOMContentLoaded', function () {
         }
     }
 
-    function setupGame(gameHTML, players) {
+    function setupGame(gameHTML, players, role) {
         gamePlayers = [];
         gunSelected = null;
         playersSelected = null;
+        playerRole = role;
         leftPlayerArea.innerHTML = "";
         topPlayerArea.innerHTML = "";
         rightPlayerArea.innerHTML = "";
@@ -219,6 +229,7 @@ document.addEventListener('DOMContentLoaded', function () {
             closeGameButton.style.display = "none";
         }
         resultsModal.style.display = "none";
+        missionInformationModal.style.display = "none";
         if (toggleHostInformationButton) {
             toggleHostInformationButton.style.display = "block";
         }
@@ -704,6 +715,39 @@ document.addEventListener('DOMContentLoaded', function () {
                 break;
         }
         boardArea.appendChild(resultImage);
+
+        if (playerRole.name === "Lamorak" || playerRole.name === "Claudas") {
+            resultImage.onclick = function () {
+                showMissionInformation(result)
+            }
+        }
+    }
+
+    function showMissionInformation(result) {
+        missionInformationModal.style.display = "flex";
+        resultsModal.style.display = "none";
+        rolesModal.style.display = "none";
+        intelModal.style.display = "none";
+        missionInformationArea.innerHTML = `
+            <p>Team: ${result.team.map(player => `${player.name}`).join(', ')}</p>
+            <p>Successes: ${result.successCount}</p>
+            <p>Fails: ${result.failCount}</p>
+            <p>Reverses: ${result.reverseCount}</p>
+            <p>Approvers: ${result.approvers.map(player => `${player.name}`).join(', ')}</p>
+        `;
+    }
+
+    function showGameResult(winner, message) {
+        resultsModal.style.display = "flex";
+        missionInformationModal.style.display = "none";
+        rolesModal.style.display = "none";
+        intelModal.style.display = "none";
+        resultsArea.innerHTML = message;
+        statusMessage.innerHTML = `${winner} wins!`;
+        if (startGameButton) {
+            startGameButton.style.display = "block";
+            closeGameButton.style.display = "block";
+        }
     }
 
     function disableAssassinationConfirm() {
@@ -834,8 +878,8 @@ document.addEventListener('DOMContentLoaded', function () {
         updateLobby(currentPlayers);
     });
     
-    socket.on('start-game', ({gameHTML, players}) => {
-        setupGame(gameHTML, players);
+    socket.on('start-game', ({gameHTML, players, role}) => {
+        setupGame(gameHTML, players, role);
     });
 
     socket.on('close-lobby', () => {
