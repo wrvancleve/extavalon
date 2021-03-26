@@ -12,11 +12,11 @@ class Proposal {
         return this.votesByPlayerId;
     }
 
-    addVote(playerId, vote) {
+    setVote(playerId, vote) {
+        const newVote = !this.votesByPlayerId.has(playerId);
         this.votesByPlayerId.set(playerId, vote);
-        this.voteCount += 1;
-        if (!vote) {
-            this.rejectCount += 1;
+        if (newVote) {
+            this.voteCount += 1;
         }
     }
 
@@ -25,6 +25,11 @@ class Proposal {
     }
 
     finalize() {
+        for (let vote of this.votesByPlayerId.values()){
+            if (!vote) {
+                this.rejectCount += 1;
+            }
+        }
         this.result = this.rejectCount < Math.ceil(this.voteCount / 2);
     }
 }

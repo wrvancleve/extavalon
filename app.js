@@ -253,7 +253,7 @@ app.createServer = function() {
 
   function processVoteTeam(lobby, sessionId, vote) {
     const playerId = lobby.playerCollection.getPlayerIdOfSessionId(sessionId);
-    if (lobby.game.addProposalVote(playerId, vote)) {
+    if (lobby.game.setProposalVote(playerId, vote)) {
       sendVoteResult(lobby, lobby.code);
       if (lobby.game.getCurrentPhase() !== GameState.PHASE_VOTE_REACT) {
         sendMissionResult(lobby, lobby.code, false);

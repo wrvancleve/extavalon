@@ -114,12 +114,8 @@ class GameState {
     _performAccolonSabotage() {
         let possibleTargetRoles = [
             Roles.Merlin, Roles.Percival, Roles.Tristan, Roles.Iseult, Roles.Arthur,
-            Roles.Jester, Roles.Uther, Roles.Galahad, Roles.Guinevere, Roles.Bedivere,
-            Roles.Gareth, Roles.Gaheris, Roles.Kay
+            Roles.Jester, Roles.Uther, Roles.Galahad, Roles.Guinevere, Roles.Bedivere
         ];
-        if (this.playersByRole.has(Roles.Leon) && this.playersByRole.get(Roles.Leon).intel[0].spyCount < 2) {
-            possibleTargetRoles.push(Roles.Leon);
-        }
 
         const target = this.selectPlayers({
             includedRoles: possibleTargetRoles,
@@ -127,32 +123,22 @@ class GameState {
         })[0];
         let intel = target.intel[0];
 
-        if (target.role === Roles.Arthur || target.role === Roles.Bedivere) {
+        if (target.role === Roles.Arthur) {
             const randomIndex = Math.floor(Math.random() * intel.length);
+            intel[randomIndex] = null;
+            target.performSabotage(intel);
+        } else if (target.role === Roles.Bedivere) {
+            const possibleIndexes = [];
+            for (let i = 0; i < intel.length; i++) {
+                if (intel[i] !== Roles.Accolon.name) {
+                    possibleIndexes.push(i);
+                }
+            }
+            const randomIndex = choice(possibleIndexes);
             intel[randomIndex] = null;
             target.performSabotage(intel);
         } else if (target.role === Roles.Jester) {
             target.performSabotage(intel.length);
-        } else if (target.role === Roles.Gareth || target.role === Roles.Gaheris || target.role === Roles.Kay) {
-            target.performSabotage(null);
-        } else if (target.role === Roles.Leon) {
-            let insertPlayer = null;
-            if (intel.spyCount === 0) {
-                insertPlayer = this.selectPlayers({
-                    excludedIds: [intel.players[0].id, intel.players[1].id],
-                    includedTeams: ["Spies"]
-                })[0];
-                intel.spyCount += 1;
-            } else {
-                insertPlayer = this.selectPlayers({
-                    excludedIds: [intel.players[0].id, intel.players[1].id],
-                    includedTeams: ["Resistance"]
-                })[0];
-            }
-
-            intel.players.push({id: insertPlayer.id, name: insertPlayer.name});
-            intel.players = shuffle(intel.players);
-            target.performSabotage(intel);
         } else {
             let insertPlayer = null;
             switch (target.role) {
@@ -238,9 +224,6 @@ class GameState {
                 case Roles.Uther:
                     resistancePlayer.addIntel(this._getUtherIntel());
                     break;
-                case Roles.Leon:
-                    resistancePlayer.addIntel(this._getLeonIntel());
-                    break;
                 case Roles.Arthur:
                     resistancePlayer.addIntel(this._getArthurIntel());
                     break;
@@ -252,15 +235,6 @@ class GameState {
                     break;
                 case Roles.Bedivere:
                     resistancePlayer.addIntel(this._getBedivereIntel());
-                    break;
-                case Roles.Gareth:
-                    resistancePlayer.addIntel(this._getGarethIntel());
-                    break;
-                case Roles.Gaheris:
-                    resistancePlayer.addIntel(this._getGaherisIntel());
-                    break;
-                case Roles.Kay:
-                    resistancePlayer.addIntel(this._getKayIntel());
                     break;
                 default:
                     resistancePlayer.addIntel(null);
@@ -367,31 +341,6 @@ class GameState {
         });
     }
 
-    _getLeonIntel() {
-        const seenPlayers = this.selectPlayers({
-            excludedRoles: [Roles.Leon]
-        }).slice(0, 2);
-
-        const players = [];
-        let spyCount = 0;
-        for (let i = 0; i < seenPlayers.length; i++) {
-            const seenPlayer = seenPlayers[i];
-            if (seenPlayer.isSpy) {
-                spyCount += 1;
-            }
-
-            players.push({
-                id: seenPlayer.id,
-                name: seenPlayer.name
-            });
-        }
-
-        return  {
-            players: players,
-            spyCount: spyCount
-        };
-    }
-
     _getArthurIntel() {
         const seenPlayers = this.selectPlayers({
             excludedRoles: [Roles.Arthur],
@@ -405,7 +354,7 @@ class GameState {
 
     _getJesterIntel() {
         const seenPlayers = this.selectPlayers({
-            includedRoles: [Roles.Tristan, Roles.Iseult, Roles.Merlin, Roles.Arthur, Roles.Ector],
+            includedRoles: [Roles.Tristan, Roles.Iseult, Roles.Merlin, Roles.Arthur],
             includedTeams: []
         });
 
@@ -436,34 +385,6 @@ class GameState {
         return seenPlayers.map(player => {
             return player.role.name;
         });
-    }
-
-    _getGaherisIntel() {
-        const seenPlayer = this.selectPlayers({
-            excludedRoles: [Roles.Gaheris, Roles.Ector],
-            includedTeams: ["Resistance"]
-        })[0];
-
-        return seenPlayer.role.name;
-    }
-
-    _getGarethIntel() {
-        const seenPlayer = this.selectPlayers({
-            includedTeams: ["Spies"]
-        })[0];
-
-        return seenPlayer.role.name;
-    }
-
-    _getKayIntel() {
-        const seenPlayer = this.selectPlayers({
-            includedTeams: ["Spies"]
-        })[0];
-
-        return {
-            id: seenPlayer.id,
-            name: seenPlayer.name
-        };
     }
 
     _getLuciusIntel() {

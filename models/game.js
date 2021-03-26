@@ -166,9 +166,9 @@ class Game {
         this.advance();
     }
 
-    addProposalVote(id, vote) {
+    setProposalVote(id, vote) {
         const currentProposal = this.getCurrentProposal();
-        currentProposal.addVote(id, vote);
+        currentProposal.setVote(id, vote);
         if (currentProposal.voteCount === this.state.playerCount) {
             currentProposal.finalize();
             this.advance();
