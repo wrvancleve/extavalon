@@ -5,8 +5,8 @@ const Mission = require('./mission');
 const Proposal = require('./proposal');
 
 class Game {
-    constructor(playerInformation, settings, previousGame) {
-        this.state = new GameState(playerInformation, settings, previousGame);
+    constructor(playerInformation, settings) {
+        this.state = new GameState(playerInformation, settings);
         this.resultHTML = null;
     }
 

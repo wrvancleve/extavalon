@@ -161,8 +161,7 @@ app.createServer = function() {
 
   function startLocalGame(lobby) {
     const activePlayers = lobby.playerCollection.getActivePlayers();
-    const previousGame = lobby.game;
-    const game = new Game(activePlayers.map(({name}) => ({name})), lobby.settings, previousGame);
+    const game = new Game(activePlayers.map(({name}) => ({name})), lobby.settings);
     lobby.game = game;
     for (var i = 0; i < activePlayers.length; i++) {
       const currentPlayer = activePlayers[i];
@@ -173,8 +172,7 @@ app.createServer = function() {
 
   function startOnlineGame(lobby) {
     const activePlayers = lobby.playerCollection.getActivePlayers();
-    const previousGame = lobby.game;
-    const game = new Game(activePlayers.map(({name}) => ({name})), lobby.settings, previousGame);
+    const game = new Game(activePlayers.map(({name}) => ({name})), lobby.settings);
     lobby.game = game;
     lobby.lastGunSlots = null;
     for (var i = 0; i < activePlayers.length; i++) {
