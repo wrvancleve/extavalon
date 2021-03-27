@@ -459,20 +459,37 @@ document.addEventListener('DOMContentLoaded', function () {
                 <img class="vote-image clickable" id="approve-team-image" alt="Approve Team" src='/images/approve.png'></img>
                 <img class="vote-image clickable" id="reject-team-image" alt="Reject Team" src='/images/reject.png'></img>
             </div>
-        `; 
+        `;
 
-        document.getElementById("approve-team-image").onclick = function() {
-            socket.emit('vote-team', {vote: true});
-            actionArea.innerHTML= "";
+        const approveTeamImage = document.getElementById("approve-team-image");
+        const rejectTeamImage = document.getElementById("reject-team-image");
+
+        approveTeamImage.onclick = function() {
+            if (!approveTeamImage.classList.contains("future-box")) {
+                socket.emit('vote-team', {vote: true});
+                approveTeamImage.classList.add("future-box");
+            }
+            
+            if (rejectTeamImage.classList.contains("future-box")) {
+                rejectTeamImage.classList.remove("future-box");
+            }
         }
 
-        document.getElementById("reject-team-image").onclick = function() {
-            socket.emit('vote-team', {vote: false});
-            actionArea.innerHTML= "";
+        rejectTeamImage.onclick = function() {
+            if (!rejectTeamImage.classList.contains("future-box")) {
+                socket.emit('vote-team', {vote: false});
+                rejectTeamImage.classList.add("future-box");
+            }
+
+            if (approveTeamImage.classList.contains("future-box")) {
+                approveTeamImage.classList.remove("future-box");
+            }
         }
     }
 
     function showVoteResult(votes, approved) {
+        actionArea.innerHTML= "";
+
         if (approved) {
             statusMessage.innerHTML = "Proposal Approved!";
         } else {
