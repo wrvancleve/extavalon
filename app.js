@@ -107,11 +107,14 @@ app.createServer = function() {
             break;
           case GameState.PHASE_VOTE:
             const currentProposal = lobby.game.getCurrentProposal();
-            if (!currentProposal.hasVoted(currentPlayer.id)) {
-              sendVoteTeam(socketId);
-            } else {
-              sendStatusMessage("Voting on team...", socketId);
+            let playerVote = null;
+            for (let [playerId, vote] of currentProposal.getVotes()) {
+              sendPlayerVoted(playerId, socketId);
+              if (playerId === currentPlayer.id) {
+                playerVote = vote;
+              }
             }
+            sendVoteTeam(playerVote, socketId);
             break;
           case GameState.PHASE_VOTE_REACT:
             if (currentPlayer.id === 0) {
@@ -231,13 +234,17 @@ app.createServer = function() {
     sendUpdateTeam(gunSlots, lobby.code)
   }
 
-  function sendVoteTeam(receiver) {
-    io.sockets.to(receiver).emit('vote-team');
+  function sendVoteTeam(selectedVote, receiver) {
+    io.sockets.to(receiver).emit('vote-team', {selectedVote: selectedVote});
   }
 
   function proposeTeam(lobby, selectedIds) {
     lobby.game.createProposal(selectedIds);
-    sendVoteTeam(lobby.code);
+    sendVoteTeam(null, lobby.code);
+  }
+
+  function sendPlayerVoted(playerId, receiver) {
+    io.sockets.to(receiver).emit('player-vote', {id: playerId});
   }
 
   function sendVoteResult(lobby, receiver) {
@@ -253,7 +260,9 @@ app.createServer = function() {
 
   function processVoteTeam(lobby, sessionId, vote) {
     const playerId = lobby.playerCollection.getPlayerIdOfSessionId(sessionId);
-    if (lobby.game.setProposalVote(playerId, vote)) {
+    const voteFinished = lobby.game.setProposalVote(playerId, vote);
+    sendPlayerVoted(playerId, lobby.code);
+    if (voteFinished) {
       sendVoteResult(lobby, lobby.code);
       if (lobby.game.getCurrentPhase() !== GameState.PHASE_VOTE_REACT) {
         sendMissionResult(lobby, lobby.code, false);

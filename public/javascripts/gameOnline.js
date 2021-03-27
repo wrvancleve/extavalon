@@ -359,6 +359,7 @@ document.addEventListener('DOMContentLoaded', function () {
         for (let i = 0; i < gamePlayers.length; i++) {
             const gunSlot = document.getElementById(gamePlayers[i].gunSlotId);
             if (gunSlot.style.visibility === "visible") {
+                gunSlot.classList.add("clickable");
                 gunSlot.onclick = function () {
                     updateGunSelected(gunSlot);
                     attachNameClicks();
@@ -472,7 +473,7 @@ document.addEventListener('DOMContentLoaded', function () {
         socket.emit('propose-team', {selectedIds});
     }
 
-    function setupVote() {
+    function setupVote(selectedVote) {
         statusMessage.innerHTML = "Voting on team...";
 
         actionArea.innerHTML = `
@@ -506,6 +507,18 @@ document.addEventListener('DOMContentLoaded', function () {
                 approveTeamImage.classList.remove("selected-image");
             }
         }
+
+        if (selectedVote === true) {
+            approveTeamImage.classList.add("selected-image");
+        } else if (selectedVote == false) {
+            rejectTeamImage.classList.add("selected-image");
+        }
+    }
+
+    function showPlayerVoted(id) {
+        const voteSlot = document.getElementById(gamePlayers[id].voteSlotId);
+        voteSlot.style.visibility = "visible";
+        voteSlot.src = "/images/blank.png";
     }
 
     function showVoteResult(votes, approved) {
@@ -519,7 +532,6 @@ document.addEventListener('DOMContentLoaded', function () {
 
         for (let i = 0; i < gamePlayers.length; i++) {
             const voteSlot = document.getElementById(gamePlayers[i].voteSlotId);
-            voteSlot.style.visibility = "visible";
             if (votes[i]) {
                 voteSlot.src = "/images/approve.png";
             } else {
@@ -914,8 +926,12 @@ document.addEventListener('DOMContentLoaded', function () {
         updateGunSlots(gunSlots);
     });
 
-    socket.on('vote-team', () => {
-        setupVote();
+    socket.on('vote-team', ({selectedVote}) => {
+        setupVote(selectedVote);
+    });
+
+    socket.on('player-vote', ({id}) => {
+        showPlayerVoted(id);
     });
 
     socket.on('vote-result', ({votes, approved}) => {
