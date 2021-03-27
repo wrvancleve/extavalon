@@ -42,25 +42,30 @@ class GameState {
         return 5;
     }
 
-    constructor(playerInformation, settings) {
+    constructor(playerInformation, settings, previousGame) {
         this.resistanceWins = 0;
         this.spyWins = 0;
         this.playersByRole = new Map();
         this.resistance = [];
         this.spys = [];
         this.settings = settings;
-        this._createPlayers(playerInformation);
+        this._createPlayers(playerInformation, previousGame);
         this._createMissions();
         this.phase = GameState.PHASE_PROPOSE;
         this.winner = null;
     }
 
-    _createPlayers(playerInformation) {
+    _createPlayers(playerInformation, previousGame) {
         this.playerCount = playerInformation.length;
         this.spyPlayerCount = this._getSpyCount();
         this.resistancePlayerCount = this.playerCount - this.spyPlayerCount;
 
-        const playerRoles = Roles.generateRoles(this.resistancePlayerCount, this.spyPlayerCount, this.settings);
+        if (previousGame) {
+            console.log("Has previous game");
+            console.log("Previous roles: %j", previousGame.state.players.map(player => player.role));
+        }
+        const previousRoles = previousGame ? previousGame.state.players.map(player => player.role) : null;
+        const playerRoles = Roles.generateRoles(this.resistancePlayerCount, this.spyPlayerCount, this.settings, previousRoles);
         this.players = [];
 
         for (let id = 0; id < this.playerCount; id++) {
@@ -81,8 +86,15 @@ class GameState {
         }
 
         // Set First Leader
-        this.currentLeaderId = Math.floor(Math.random() * this.playerCount);
-        console.debug(`First Leader Id: ${this.currentLeaderId}`);
+        if (previousGame) {
+            do {
+                this.firstLeaderId = Math.floor(Math.random() * this.playerCount);
+            } while (this.firstLeaderId === previousGame.state.firstLeaderId);
+        } else {
+            this.firstLeaderId = Math.floor(Math.random() * this.playerCount);
+        }
+        this.currentLeaderId = this.firstLeaderId;
+        console.debug(`First Leader Id: ${this.firstLeaderId}`);
 
         // Set Assassin
         this.assassinId = choice(this.spys).id;

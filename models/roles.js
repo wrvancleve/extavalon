@@ -95,7 +95,7 @@ const Bedivere = {
     team: "Resistance"
 };
 
-function generateRoles(resistanceCount, spyCount, settings) {
+function generateRoles(resistanceCount, spyCount, settings, previousRoles) {
     playerCount = resistanceCount + spyCount;
     let usedResistanceRoles = [Merlin];
     let possibleResistanceRoles = [];
@@ -272,6 +272,7 @@ function generateRoles(resistanceCount, spyCount, settings) {
         } while (usedResistanceRoles.length !== resistanceCount && possibleResistanceRoles.length > 0);
     }
 
+    let generatedRoles = null;
     do {
         generatedRoles = [];
         usedResistanceRoles = [Merlin];
@@ -300,9 +301,69 @@ function generateRoles(resistanceCount, spyCount, settings) {
         console.log("\nSpy Roles: %j", usedSpyRoles);
         Array.prototype.push.apply(generatedRoles, usedResistanceRoles);
         console.log("Resistance Roles: %j\n", usedResistanceRoles);
+
+        generatedRoles = shuffle(generatedRoles);
+
+        let largetResistanceSpan = 0;
+        const maxResistanceSpan = playerCount < 8 ? 3 : 4;
+        let sameRoleCount = 0;
+        let shuffleCount = 0;
+        do {
+            largetResistanceSpan = 0;
+            sameRoleCount = 0;
+            console.log("Checking consecutive roles...");
+            let currentResistanceSpan = 0;
+            for (let i = 0; i < generatedRoles.length; i++) {
+                if (i === 0) {
+                    if (generatedRoles[i].team === "Resistance") {
+                        currentResistanceSpan = 1;
+                        for (let j = generatedRoles.length - 1; j >= 0; j--) {
+                            if (generatedRoles[j].team === "Resistance") {
+                                currentResistanceSpan += 1;
+                            } else {
+                                break;
+                            }
+                        }
+                        largetResistanceSpan = currentResistanceSpan;
+                    }
+                } else {
+                    if (generatedRoles[i].team === "Resistance") {
+                        currentResistanceSpan += 1;
+                        if (currentResistanceSpan > largetResistanceSpan) {
+                            largetResistanceSpan = currentResistanceSpan;
+                        }
+                    } else {
+                        currentResistanceSpan = 0;
+                    }
+                }
+            }
+    
+            if (largetResistanceSpan > maxResistanceSpan) {
+                console.log(`${largetResistanceSpan} resistance roles in a row. Shuffling...`);
+                generatedRoles = shuffle(generatedRoles);
+                shuffleCount += 1;
+            } else if (previousRoles) {
+                console.log("Checking previous roles...");
+                for (let i = 0; i < generatedRoles.length; i++) {
+                    const oldRole = previousRoles.length - 1 >= i ? previousRoles[i] : null;
+                    const newRole = generatedRoles.length - 1 >= i ? generatedRoles[i] : null;
+                    if (oldRole === newRole) {
+                        sameRoleCount += 1;
+                    }
+                }
+
+                if (sameRoleCount > 1) {
+                    console.log("More than one player has same role. Shuffling...");
+                    generatedRoles = shuffle(generatedRoles);
+                    shuffleCount += 1;
+                }
+            }
+        } while (largetResistanceSpan > maxResistanceSpan || sameRoleCount > 1);
+
+        console.log(`Finished role generation in ${shuffleCount} shuffles`);
     } while (generatedRoles.length !== playerCount);
 
-    return shuffle(generatedRoles);
+    return generatedRoles;
 }
 
 module.exports = {
