@@ -384,6 +384,7 @@ document.addEventListener('DOMContentLoaded', function () {
             playerName.onclick = function () {
                 handleNameClick(i);
 
+                gunSelected.classList.remove("selected-image");
                 gunSelected = null;
                 removeNameClicks();
 
@@ -413,7 +414,13 @@ document.addEventListener('DOMContentLoaded', function () {
                 gunSlot.alt = gunSelected.alt;
                 gunSlot.classList.add("clickable");
                 gunSlot.onclick = function () {
+                    if (gunSelected && gunSelected.classList.contains("selected-image")) {
+                        gunSelected.classList.remove("selected-image");
+                    }
                     gunSelected = gunSlot;
+                    if (!gunSelected.classList.contains("selected-image")) {
+                        gunSelected.classList.add("selected-image");
+                    }
                     attachNameClicks();
                 };
     
@@ -423,6 +430,7 @@ document.addEventListener('DOMContentLoaded', function () {
                     gunSelected.src = "";
                     gunSelected.alt = "Gun Slot";
                     gunSelected.classList.remove("clickable");
+                    gunSelected.classList.remove("selected-image");
                     gunSelected.onclick = "";
                     gunSelected.style.visibility = "hidden";
                 }
@@ -465,24 +473,24 @@ document.addEventListener('DOMContentLoaded', function () {
         const rejectTeamImage = document.getElementById("reject-team-image");
 
         approveTeamImage.onclick = function() {
-            if (!approveTeamImage.classList.contains("future-box")) {
+            if (!approveTeamImage.classList.contains("selected-image")) {
                 socket.emit('vote-team', {vote: true});
-                approveTeamImage.classList.add("future-box");
+                approveTeamImage.classList.add("selected-image");
             }
             
-            if (rejectTeamImage.classList.contains("future-box")) {
-                rejectTeamImage.classList.remove("future-box");
+            if (rejectTeamImage.classList.contains("selected-image")) {
+                rejectTeamImage.classList.remove("selected-image");
             }
         }
 
         rejectTeamImage.onclick = function() {
-            if (!rejectTeamImage.classList.contains("future-box")) {
+            if (!rejectTeamImage.classList.contains("selected-image")) {
                 socket.emit('vote-team', {vote: false});
-                rejectTeamImage.classList.add("future-box");
+                rejectTeamImage.classList.add("selected-image");
             }
 
-            if (approveTeamImage.classList.contains("future-box")) {
-                approveTeamImage.classList.remove("future-box");
+            if (approveTeamImage.classList.contains("selected-image")) {
+                approveTeamImage.classList.remove("selected-image");
             }
         }
     }

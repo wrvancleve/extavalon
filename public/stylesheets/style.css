@@ -622,6 +622,7 @@ select {
   width: 10vw;
   min-height: 6vh;
   min-width: 10vw;
+  border: 2px solid transparent;
 }
 
 .vote-image {
@@ -629,6 +630,7 @@ select {
   width: 6vw;
   min-height: 10vh;
   min-width: 6vw;
+  border: 2px solid transparent;
 }
 
 .action-image {
@@ -636,6 +638,11 @@ select {
   width: 12vw;
   min-height: 16vh;
   min-width: 12vw;
+}
+
+.selected-image {
+  border: 2px solid #029dbb !important;
+  box-shadow: 0 0 4px rgb(2 157 187 / 65%);
 }
 
 #action-area {
