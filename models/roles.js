@@ -97,7 +97,6 @@ const Bedivere = {
 
 function generateRoles(resistanceCount, spyCount, settings) {
     playerCount = resistanceCount + spyCount;
-    let assassinatableRole = null;
     let usedResistanceRoles = [Merlin];
     let possibleResistanceRoles = [];
     let usedSpyRoles = [Mordred];
@@ -114,12 +113,6 @@ function generateRoles(resistanceCount, spyCount, settings) {
         if (playerCount > 6) {
             possibleResistanceRoles.push(Puck);
         }
-        if (settings.bedivere && playerCount > 7) {
-            possibleResistanceRoles.push(Bedivere);
-        }
-        if (settings.titania && playerCount > 7) {
-            possibleResistanceRoles.push(Titania);
-        }
 
         return shuffle(possibleResistanceRoles);
     }
@@ -129,11 +122,11 @@ function generateRoles(resistanceCount, spyCount, settings) {
             Maelagant, Colgrevance, Morgana
         ];
 
+        if (settings.accolon && playerCount > 6) {
+            possibleSpyRoles.push(Accolon);
+        }
         if (settings.lucius && playerCount > 7) {
             possibleSpyRoles.push(Lucius);
-        }
-        if (settings.accolon && playerCount > 7) {
-            possibleSpyRoles.push(Accolon);
         }
 
         return shuffle(possibleSpyRoles);
@@ -202,6 +195,11 @@ function generateRoles(resistanceCount, spyCount, settings) {
                 break;
             case Guinevere:
                 removePossibleRole(Percival, possibleResistanceRoles);
+                if (possibleResistanceRoles.includes(Lancelot)) {
+                    removePossibleRole(Maelagant, possibleSpyRoles);
+                } else {
+                    removePossibleRole(Lancelot, possibleResistanceRoles);
+                }
                 break;
             case Tristan:
                 removePossibleRole(Uther, possibleResistanceRoles);
@@ -215,13 +213,18 @@ function generateRoles(resistanceCount, spyCount, settings) {
                 removePossibleRole(Tristan, possibleResistanceRoles);
                 removePossibleRole(Uther, possibleResistanceRoles);
                 break;
-            case Lancelot:
             case Jester:
                 removePossibleRole(Puck, possibleResistanceRoles);
                 break;
             case Puck:
                 removePossibleRole(Lancelot, possibleResistanceRoles);
                 removePossibleRole(Jester, possibleResistanceRoles);
+                break;
+            case Accolon:
+                removePossibleRole(Lucius, possibleSpyRoles);
+                break;
+            case Lucius:
+                removePossibleRole(Accolon, possibleSpyRoles);
                 break;
         }
 
@@ -236,13 +239,7 @@ function generateRoles(resistanceCount, spyCount, settings) {
         }
     }
 
-    do {
-        generatedRoles = [];
-        usedResistanceRoles = [Merlin];
-        possibleResistanceRoles = getPossibleResistanceRoles();
-        usedSpyRoles = [Mordred];
-        possibleSpyRoles = getPossibleSpyRoles();
-
+    function addRoles() {
         do {
             possibleResistanceRoles = shuffle(possibleResistanceRoles);
             addResistanceRole(possibleResistanceRoles.pop());
@@ -250,7 +247,27 @@ function generateRoles(resistanceCount, spyCount, settings) {
                 possibleSpyRoles = shuffle(possibleSpyRoles);
                 addSpyRole(possibleSpyRoles.pop());
             }
-        } while (usedResistanceRoles.length < resistanceCount);
+        } while (usedResistanceRoles.length !== resistanceCount && possibleResistanceRoles.length > 0);
+    }
+
+    do {
+        generatedRoles = [];
+        usedResistanceRoles = [Merlin];
+        possibleResistanceRoles = getPossibleResistanceRoles();
+        usedSpyRoles = [Mordred];
+        possibleSpyRoles = getPossibleSpyRoles();
+
+        addRoles();
+
+        if (usedResistanceRoles.length !== resistanceCount) {
+            if (settings.bedivere && playerCount > 7) {
+                possibleResistanceRoles.push(Bedivere);
+            }
+            if (settings.titania && playerCount > 7) {
+                possibleResistanceRoles.push(Titania);
+            }
+            addRoles();
+        }
 
         while (usedSpyRoles.length < spyCount) {
             possibleSpyRoles = shuffle(possibleSpyRoles);

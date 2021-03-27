@@ -532,6 +532,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
         for (let i = 0; i < gamePlayers.length; i++) {
             const voteSlot = document.getElementById(gamePlayers[i].voteSlotId);
+            voteSlot.style.visibility = "visible";
             if (votes[i]) {
                 voteSlot.src = "/images/approve.png";
             } else {
