@@ -102,20 +102,19 @@ class Player {
     _getMerlinHTML() {
         let merlinHTML = `<h2 class="resistance">Merlin</h2><section>`;
         if (this.intelSabotaged) {
-            merlinHTML += `<p>Your vision has been sabotaged by <span class="spy">Accolon</span></p>`;
+            merlinHTML += `
+                <p>Your vision has been sabotaged by <span class="spy">Accolon</span></p>
+                <p>One of the players you see is not a <span class="spy">spy</span> or <span class="resistance">Puck</span></p>
+            `;
         }
         merlinHTML += `<p>You see:</p></section><section>`;
 
         const seenPlayers = this.intel[0];
         for (let i = 0; i < seenPlayers.length; i++) {
-            if (this.gameState.settings.puck) {
-                merlinHTML += `
-                    <p>${seenPlayers[i].name} is <span class="spy">evil</span>
-                    or <span class="resistance">Puck</span></p>
-                `;
-            } else {
-                merlinHTML += `<p>${seenPlayers[i].name} is <span class="spy">evil</span></p>`;
-            }
+            merlinHTML += `
+                <p>${seenPlayers[i].name} is <span class="spy">evil</span>
+                or <span class="resistance">Puck</span></p>
+            `;
         }
         merlinHTML += `</section>`;
 
@@ -127,7 +126,10 @@ class Player {
             <h2 class="resistance">Percival</h2><section>
         `;
         if (this.intelSabotaged) {
-            percivalHTML += `<p>Your vision has been sabotaged by <span class="spy">Accolon</span></p>`;
+            percivalHTML += `
+                <p>Your vision has been sabotaged by <span class="spy">Accolon</span></p>
+                <p>One of the players you see is not <span class="resistance">Merlin</span> or <span class="spy">Morgana</span></p>
+            `;
         }
         percivalHTML += `<p>You see:</p></section><section>`;
 
@@ -148,7 +150,10 @@ class Player {
             <h2 class="resistance">Tristan</h2><section>
         `;
         if (this.intelSabotaged) {
-            tristanHTML += `<p>Your vision has been sabotaged by <span class="spy">Accolon</span></p>`;
+            tristanHTML += `
+                <p>Your vision has been sabotaged by <span class="spy">Accolon</span></p>
+                <p>One of the players you see is not <span class="resistance">Iseult</span></p>
+            `;
         }
         tristanHTML += `<p>You see:</p></section><section>`;
 
@@ -166,7 +171,10 @@ class Player {
             <h2 class="resistance">Iseult</h2><section>
         `;
         if (this.intelSabotaged) {
-            iseultHTML += `<p>Your vision has been sabotaged by <span class="spy">Accolon</span></p>`;
+            iseultHTML += `
+                <p>Your vision has been sabotaged by <span class="spy">Accolon</span></p>
+                <p>One of the players you see is not <span class="resistance">Tristan</span></p>
+            `;
         }
         iseultHTML += `<p>You see:</p></section><section>`;
 
@@ -184,7 +192,10 @@ class Player {
             <h2 class="resistance">Uther</h2><section>
         `;
         if (this.intelSabotaged) {
-            utherHTML += `<p>Your vision has been sabotaged by <span class="spy">Accolon</span></p>`;
+            utherHTML += `
+                <p>Your vision has been sabotaged by <span class="spy">Accolon</span></p>
+                <p>One of the players you see may or may not be <span class="resistance">good</span></p>
+            `;
         }
         utherHTML += `<p>You see:</p></section><section>`;
 
@@ -298,7 +309,10 @@ class Player {
             <h2 class="resistance">Guinevere</h2><section>
         `;
         if (this.intelSabotaged) {
-            guinevereHTML += `<p>Your vision has been sabotaged by <span class="spy">Accolon</span></p>`;
+            guinevereHTML += `
+                <p>Your vision has been sabotaged by <span class="spy">Accolon</span></p>
+                <p>One of the players you see is not <span class="resistance">Lancelot</span> or <span class="spy">Maelagant</span></p>
+            `;
         }
         guinevereHTML += `<p>You see:</p></section><section>`;
 
@@ -353,7 +367,10 @@ class Player {
             <h2 class="resistance">Galahad</h2><section>
         `;
         if (this.intelSabotaged) {
-            galahadHTML += `<p>Your vision has been sabotaged by <span class="spy">Accolon</span></p>`;
+            galahadHTML += `
+                <p>Your vision has been sabotaged by <span class="spy">Accolon</span></p>
+                <p>One of the players you see is not <span class="resistance">Arthur</span></p>
+            `;
         }
         galahadHTML += `<p>You see:</p></section><section>`;
 
@@ -433,7 +450,7 @@ class Player {
         let luciusHTML = `
             <h2 class="spy">Lucius</h2>
             <section>
-                <p>You hijacked the <span class="resistance">resistance</span> roles:</p>
+                <p>You hijacked some <span class="resistance">resistance</span> roles:</p>
             </section><section>
         `;
 
@@ -457,6 +474,7 @@ class Player {
         if (this.intelSabotaged) {
             spyHTML += `
                 <section><p>Your vision has been sabotaged by <span class="resistance">Titania</span></p>
+                <p>One of the players you see is not a <span class="spy">spy</span></p>
                 <p>You see:</p></section><section>
             `;
         } else {

@@ -104,12 +104,9 @@ function generateRoles(resistanceCount, spyCount, settings) {
 
     function getPossibleResistanceRoles() {
         const possibleResistanceRoles = [
-            Arthur, Tristan, Percival, Lancelot, Uther, Jester
+            Arthur, Tristan, Percival, Lancelot, Uther, Jester, Guinevere
         ];
 
-        if (settings.galahad) {
-            possibleResistanceRoles.push(Galahad);
-        }
         if (playerCount > 6) {
             possibleResistanceRoles.push(Puck);
         }
@@ -135,6 +132,13 @@ function generateRoles(resistanceCount, spyCount, settings) {
     function addResistanceRole(role) {
         console.log(`Attempting to add ${role.name}...`);
         switch (role) {
+            case Tristan:
+                if (usedResistanceRoles.length + 2 <= resistanceCount) {
+                    addRole(Iseult, usedResistanceRoles);
+                } else {
+                    return false;
+                }
+                break;
             case Guinevere:
                 const containsLancelot = usedResistanceRoles.includes(Lancelot);
                 const containsMaelagant = usedSpyRoles.includes(Maelagant);
@@ -195,15 +199,22 @@ function generateRoles(resistanceCount, spyCount, settings) {
                 break;
             case Guinevere:
                 removePossibleRole(Percival, possibleResistanceRoles);
-                if (possibleResistanceRoles.includes(Lancelot)) {
+                if (usedResistanceRoles.includes(Lancelot)) {
                     removePossibleRole(Maelagant, possibleSpyRoles);
                 } else {
                     removePossibleRole(Lancelot, possibleResistanceRoles);
                 }
                 break;
             case Tristan:
+                removePossibleRole(Arthur, possibleResistanceRoles);
                 removePossibleRole(Uther, possibleResistanceRoles);
                 removePossibleRole(Galahad, possibleResistanceRoles);
+                break;
+            case Arthur:
+                removePossibleRole(Tristan, possibleResistanceRoles);
+                if (possibleResistanceRoles.includes(Uther) && settings.galahad) {
+                    possibleResistanceRoles.push(Galahad);
+                }
                 break;
             case Uther:
                 removePossibleRole(Tristan, possibleResistanceRoles);
@@ -219,6 +230,17 @@ function generateRoles(resistanceCount, spyCount, settings) {
             case Puck:
                 removePossibleRole(Lancelot, possibleResistanceRoles);
                 removePossibleRole(Jester, possibleResistanceRoles);
+                break;
+            case Lancelot:
+                removePossibleRole(Puck, possibleResistanceRoles);
+                if (usedSpyRoles.includes(Maelagant)) {
+                    removePossibleRole(Guinevere, possibleResistanceRoles);
+                }
+                break;
+            case Maelagant:
+                if (usedResistanceRoles.includes(Lancelot)) {
+                    removePossibleRole(Guinevere, possibleResistanceRoles);
+                }
                 break;
             case Accolon:
                 removePossibleRole(Lucius, possibleSpyRoles);

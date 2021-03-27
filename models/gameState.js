@@ -124,13 +124,19 @@ class GameState {
         let intel = target.intel[0];
 
         if (target.role === Roles.Arthur) {
-            const randomIndex = Math.floor(Math.random() * intel.length);
+            const possibleIndexes = [];
+            for (let i = 0; i < intel.length; i++) {
+                if (intel[i] !== Roles.Merlin.name) {
+                    possibleIndexes.push(i);
+                }
+            }
+            const randomIndex = choice(possibleIndexes);
             intel[randomIndex] = null;
             target.performSabotage(intel);
         } else if (target.role === Roles.Bedivere) {
             const possibleIndexes = [];
             for (let i = 0; i < intel.length; i++) {
-                if (intel[i] !== Roles.Accolon.name) {
+                if (intel[i] !== Roles.Accolon.name && intel[i] !== Roles.Mordred.name) {
                     possibleIndexes.push(i);
                 }
             }
@@ -390,8 +396,8 @@ class GameState {
     _getLuciusIntel() {
         const seenPlayers = this.selectPlayers({
             excludedRoles: [
-                Roles.Arthur, Roles.Tristan, Roles.Iseult, Roles.Merlin, Roles.Ector,
-                Roles.Percival, Roles.Galahad, Roles.Uther, Roles.Leon, Roles.Gaheris
+                Roles.Merlin, Roles.Arthur, Roles.Tristan, Roles.Iseult,
+                Roles.Galahad, Roles.Uther, Roles.Jester
             ],
             includedTeams: ["Resistance"]
         });
