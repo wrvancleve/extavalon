@@ -355,6 +355,17 @@ document.addEventListener('DOMContentLoaded', function () {
     function setupProposal(gunSlots) {
         actionArea.innerHTML = "";
 
+        // Set click events for guns already attached to players
+        for (let i = 0; i < gamePlayers.length; i++) {
+            const gunSlot = document.getElementById(gamePlayers[i].gunSlotId);
+            if (gunSlot.style.visibility === "visible") {
+                gunSlot.onclick = function () {
+                    updateGunSelected(gunSlot);
+                    attachNameClicks();
+                };
+            }
+        }
+
         if (gunSlots.length) {
             const gunArea = document.createElement('div');
             gunArea.id = selectGunAreaId;
@@ -367,7 +378,7 @@ document.addEventListener('DOMContentLoaded', function () {
                 gunImage.alt = gunSlot;
                 gunImage.src = `/images/${gunSlot}.png`;
                 gunImage.onclick = function () {
-                    gunSelected = gunImage;
+                    updateGunSelected(gunImage);
                     attachNameClicks();
                 };
                 gunArea.appendChild(gunImage);
@@ -377,15 +388,23 @@ document.addEventListener('DOMContentLoaded', function () {
         }
     }
 
+    function updateGunSelected(gunClicked) {
+        if (gunSelected && gunSelected.classList.contains("selected-image")) {
+            gunSelected.classList.remove("selected-image");
+        }
+        gunSelected = gunClicked;
+        if (gunSelected && !gunSelected.classList.contains("selected-image")) {
+            gunSelected.classList.add("selected-image");
+        }
+    }
+
     function attachNameClicks() {
         for (let i = 0; i < gamePlayers.length; i++) {
             const playerName = document.getElementById(gamePlayers[i].nameId);
             playerName.classList.add("clickable");
             playerName.onclick = function () {
                 handleNameClick(i);
-
-                gunSelected.classList.remove("selected-image");
-                gunSelected = null;
+                updateGunSelected(null);
                 removeNameClicks();
 
                 socket.emit('update-team', {gunSlots: getGunSlots()});
@@ -414,13 +433,7 @@ document.addEventListener('DOMContentLoaded', function () {
                 gunSlot.alt = gunSelected.alt;
                 gunSlot.classList.add("clickable");
                 gunSlot.onclick = function () {
-                    if (gunSelected && gunSelected.classList.contains("selected-image")) {
-                        gunSelected.classList.remove("selected-image");
-                    }
-                    gunSelected = gunSlot;
-                    if (!gunSelected.classList.contains("selected-image")) {
-                        gunSelected.classList.add("selected-image");
-                    }
+                    updateGunSelected(gunSlot);
                     attachNameClicks();
                 };
     
