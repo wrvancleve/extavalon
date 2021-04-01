@@ -638,6 +638,7 @@ select {
   width: 12vw;
   min-height: 16vh;
   min-width: 12vw;
+  border: 2px solid transparent;
 }
 
 .selected-image {

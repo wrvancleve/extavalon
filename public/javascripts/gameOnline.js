@@ -34,7 +34,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
     const actionArea = document.getElementById("action-area");
     const selectGunAreaId = "select-gun-area";
-    const selectActionAreaId = "select-action-area";
+    const selectMissionActionContainerId = "select-mission-action-container";
     const actionResultsAreaId = "action-results-area";
 
     const resultsModal = document.getElementById("results-modal");
@@ -106,9 +106,43 @@ document.addEventListener('DOMContentLoaded', function () {
     }
 
     // Helper Function
+    function addClassToElement(element, className) {
+        if (!element.classList.contains(className)) {
+            element.classList.add(className);
+        }
+    }
+
+    function removeClassFromElement(element, className) {
+        if (element.classList.contains(className)) {
+            element.classList.remove(className);
+        }
+    }
+
     function hideElement(element) {
         element.style.display = "none";
         element.disable = true;
+    }
+
+    function createButton(text, styleClasses) {
+        const button = document.createElement('button');
+        button.innerText = text;
+        for (let styleClass of styleClasses) {
+            button.classList.add(styleClass);
+        }
+        return button;
+    }
+
+    function createImage(id, src, alt, styleClasses) {
+        const image = document.createElement('img');
+        if (id) {
+            image.id = id;
+        }
+        image.src = src;
+        image.alt = alt;
+        for (let styleClass of styleClasses) {
+            image.classList.add(styleClass);
+        }
+        return image;
     }
 
     function createPlayer(player, section, unshift) {
@@ -328,28 +362,28 @@ document.addEventListener('DOMContentLoaded', function () {
         gunSelected = null;
     }
 
-    function showConfirmProposal() {
-        actionArea.innerHTML = `
-            <button class="future-color future-secondary-font future-box" type="button"
-            id="confirm-proposal-button">Confirm Proposal</button>
-        `;
+    function showButton(text, handleClick) {
+        const button = createButton(text, ["future-color", "future-secondary-font", "future-box"]);
+        button.onclick = handleClick;
+        actionArea.appendChild(button);
+    }
 
-        document.getElementById("confirm-proposal-button").onclick = function () {
-            actionArea.innerHTML = "";
-            submitProposal();
-        };
+    function showConfirmProposal() {
+        if (actionArea.getElementsByTagName("button").length === 0) {
+            showButton("Confirm", function () {
+                actionArea.innerHTML = "";
+                submitProposal();
+            });
+        }
     }
 
     function showAdvance() {
-        actionArea.innerHTML += `
-            <button class="future-color future-secondary-font future-box" type="button"
-            id="advance-button">Advance</button>
-        `;
-
-        document.getElementById("advance-button").onclick = function () {
-            actionArea.innerHTML = "";
-            socket.emit('advance-mission');
-        };
+        if (actionArea.getElementsByTagName("button").length === 0) {
+            showButton("Advance", function () {
+                actionArea.innerHTML = "";
+                socket.emit('advance-mission');
+            });
+        }
     }
 
     function setupProposal(gunSlots) {
@@ -373,11 +407,7 @@ document.addEventListener('DOMContentLoaded', function () {
             actionArea.appendChild(gunArea);
             for (let i = 0; i < gunSlots.length; i++) {
                 const gunSlot = gunSlots[i];
-                const gunImage = document.createElement('img');
-                gunImage.classList.add("gun-image");
-                gunImage.classList.add("clickable");
-                gunImage.alt = gunSlot;
-                gunImage.src = `/images/${gunSlot}.png`;
+                const gunImage = createImage(null, `/images/${gunSlot}.png`, gunSlot, ["gun-image", "clickable"]);
                 gunImage.onclick = function () {
                     updateGunSelected(gunImage);
                     attachNameClicks();
@@ -390,12 +420,12 @@ document.addEventListener('DOMContentLoaded', function () {
     }
 
     function updateGunSelected(gunClicked) {
-        if (gunSelected && gunSelected.classList.contains("selected-image")) {
-            gunSelected.classList.remove("selected-image");
+        if (gunSelected) {
+            removeClassFromElement(gunSelected, "selected-image");
         }
         gunSelected = gunClicked;
-        if (gunSelected && !gunSelected.classList.contains("selected-image")) {
-            gunSelected.classList.add("selected-image");
+        if (gunSelected) {
+            addClassToElement(gunSelected, "selected-image");
         }
     }
 
@@ -492,9 +522,7 @@ document.addEventListener('DOMContentLoaded', function () {
                 approveTeamImage.classList.add("selected-image");
             }
             
-            if (rejectTeamImage.classList.contains("selected-image")) {
-                rejectTeamImage.classList.remove("selected-image");
-            }
+            removeClassFromElement(rejectTeamImage, "selected-image");
         }
 
         rejectTeamImage.onclick = function() {
@@ -503,9 +531,7 @@ document.addEventListener('DOMContentLoaded', function () {
                 rejectTeamImage.classList.add("selected-image");
             }
 
-            if (approveTeamImage.classList.contains("selected-image")) {
-                approveTeamImage.classList.remove("selected-image");
-            }
+            removeClassFromElement(approveTeamImage, "selected-image");
         }
 
         if (selectedVote === true) {
@@ -541,40 +567,73 @@ document.addEventListener('DOMContentLoaded', function () {
         }
     }
 
-    function setupMission(failAllowed, reverseAllowed) {
-        const selectActionArea = document.createElement('div');
-        selectActionArea.id = selectActionAreaId;
-        actionArea.appendChild(selectActionArea);
-        selectActionArea.innerHTML = `
-            <img class="action-image clickable" id="succeed-mission-image" alt="Succeed Mission" src='/images/success.png'></img>
-        `; 
-        if (failAllowed) {
-            selectActionArea.innerHTML += `
-                <img class="action-image clickable" id="fail-mission-image" alt="Fail Mission" src='/images/fail.png'></img>
-            `;
+    function showConfirmMissionAction(action) {
+        const actionAreaButtons = actionArea.getElementsByTagName("button");
+        if (actionAreaButtons.length === 0) { 
+            showButton("Confirm", function () {
+                socket.emit('conduct-mission', {action: action});
+                actionArea.innerHTML = "";
+            });
+        } else {
+            actionAreaButtons[0].onclick = function () {
+                socket.emit('conduct-mission', {action: action});
+                actionArea.innerHTML = "";
+            };
         }
-        if (reverseAllowed) {
-            selectActionArea.innerHTML += `
-                <img class="action-image clickable" id="reverse-mission-image" alt="Reverse Mission" src='/images/reverse.png'></img>
-            `;
+    }
+
+    function setupMission(failAllowed, reverseAllowed) {
+        const selectMissionActionContainer = document.createElement('div');
+        selectMissionActionContainer.id = selectMissionActionContainerId;
+
+        const succeedMissionImageId = 'succeed-mission-image';
+        const failMissionImageId = 'fail-mission-image';
+        const reverseMissionImageId = 'reverse-mission-image';
+
+        const successMissionActionImage = createImage(succeedMissionImageId, '/images/success.png', 'Succeed Mission', ['action-image', 'clickable']);
+        successMissionActionImage.onclick = function () {
+            for (let child of selectMissionActionContainer.children) {
+                if (child.id === successMissionActionImage.id) {
+                    addClassToElement(child, "selected-image");
+                } else {
+                    removeClassFromElement(child, "selected-image");
+                }
+            }
+            showConfirmMissionAction('Succeed');
+        };
+        selectMissionActionContainer.appendChild(successMissionActionImage);
+
+        if (failAllowed) {
+            const failMissionActionImage = createImage(failMissionImageId, '/images/fail.png', 'Fail Mission', ['action-image', 'clickable']);
+            failMissionActionImage.onclick = function () {
+                for (let child of selectMissionActionContainer.children) {
+                    if (child.id === failMissionActionImage.id) {
+                        addClassToElement(child, "selected-image");
+                    } else {
+                        removeClassFromElement(child, "selected-image");
+                    }
+                }
+                showConfirmMissionAction('Fail');
+            };
+            selectMissionActionContainer.appendChild(failMissionActionImage);
         }
 
-        document.getElementById("succeed-mission-image").onclick = function() {
-            socket.emit('conduct-mission', {action: 'Succeed'});
-            actionArea.innerHTML = "";
-        }
-        if (failAllowed) {
-            document.getElementById("fail-mission-image").onclick = function() {
-                socket.emit('conduct-mission', {action: 'Fail'});
-                actionArea.innerHTML = "";
-            }
-        }
         if (reverseAllowed) {
-            document.getElementById("reverse-mission-image").onclick = function() {
-                socket.emit('conduct-mission', {action: 'Reverse'});
-                actionArea.innerHTML = "";
-            }
+            const reverseMissionActionImage = createImage(reverseMissionImageId, '/images/reverse.png', 'Reverse Mission', ['action-image', 'clickable']);
+            reverseMissionActionImage.onclick = function () {
+                for (let child of selectMissionActionContainer.children) {
+                    if (child.id === reverseMissionActionImage.id) {
+                        addClassToElement(child, "selected-image");
+                    } else {
+                        removeClassFromElement(child, "selected-image");
+                    }
+                }
+                showConfirmMissionAction('Reverse');
+            };
+            selectMissionActionContainer.appendChild(reverseMissionActionImage);
         }
+
+        actionArea.appendChild(selectMissionActionContainer);
     }
 
     function showMissionResult(result, showActions) {
@@ -585,17 +644,17 @@ document.addEventListener('DOMContentLoaded', function () {
             actionArea.appendChild(actionResultArea);
             for (let i = 0; i < result.successCount; i++) {
                 actionResultArea.innerHTML += `
-                    <img class="action-image" id="succeed-mission-image" alt="Succeed Mission" src='/images/success.png'></img>
+                    <img class="action-image" alt="Succeed Mission" src='/images/success.png'></img>
                 `;
             }
             for (let i = 0; i < result.failCount; i++) {
                 actionResultArea.innerHTML += `
-                    <img class="action-image" id="fail-mission-image" alt="Fail Mission" src='/images/fail.png'></img>
+                    <img class="action-image" alt="Fail Mission" src='/images/fail.png'></img>
                 `;
             }
             for (let i = 0; i < result.reverseCount; i++) {
                 actionResultArea.innerHTML += `
-                    <img class="action-image" id="reverse-mission-image" alt="Reverse Mission" src='/images/reverse.png'></img>
+                    <img class="action-image" alt="Reverse Mission" src='/images/reverse.png'></img>
                 `;
             }
         }

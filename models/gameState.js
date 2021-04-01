@@ -397,7 +397,7 @@ class GameState {
         const seenPlayers = this.selectPlayers({
             excludedRoles: [
                 Roles.Merlin, Roles.Arthur, Roles.Tristan, Roles.Iseult,
-                Roles.Galahad, Roles.Uther, Roles.Jester
+                Roles.Galahad, Roles.Uther, Roles.Jester, Roles.Percival
             ],
             includedTeams: ["Resistance"]
         });
