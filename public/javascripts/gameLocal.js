@@ -1,27 +1,41 @@
+const ROOT_URL = "https://extavalon.com";
+//const ROOT_URL = "http://localhost:25565";
+
+const LOBBY_ID = "lobby";
+const LOBBY_INFORMATION_ID = "lobby-information";
+const TOGGLE_LOBBY_BUTTON_ID = "toggle-lobby-button";
+const LOBBY_PLAYER_COUNT_ID = "lobby-player-count";
+const LOBBY_PLAYER_LIST_ID = "lobby-player-list";
+const PLAYER_NAME_ID = "name";
+const ROLES_MODAL_ID = "roles-modal";
+const OPEN_ROLES_MODAL_BUTTON_ID = "open-roles-modal-button";
+const CLOSE_ROLES_MODAL_BUTTON_ID = "close-roles-modal-button";
+const START_GAME_BUTTON_ID = "start-game-button";
+const CLOSE_GAME_BUTTON_ID = "close-game-button";
+const GAME_INFORMATION_ID = "game-information";
+const GAME_CODE_ID = "game-code";
+
 document.addEventListener('DOMContentLoaded', function () {
-    
     const {name, code} = Qs.parse(location.search, {
         ignoreQueryPrefix: true
     });
 
-    const socket = io.connect(`https://extavalon.com?code=${code}&name=${name}`);
-    //const socket = io.connect(`http://localhost:25565?code=${code}&name=${name}`);
-    //const socket = io.connect(`http://192.168.1.107:25565?code=${code}&name=${name}`);
+    const socket = io.connect(`${ROOT_URL}?code=${code}&name=${name}`);
 
     // Get elements
-    const lobby = document.getElementById("lobby")
-    const lobbyInformation = document.getElementById("lobby-information");
-    const toggleLobbyButton = document.getElementById("toggle-lobby-button");
-    const playerName = document.getElementById("name");
-    const rolesModal = document.getElementById("roles-modal");
-    const openRolesModalButton = document.getElementById("open-roles-modal-button");
-    const closeRolesModalButton = document.getElementById("close-roles-modal-button");
-    const startGameButton = document.getElementById("start-game-button");
-    const closeGameButton = document.getElementById("close-game-button");
-    const gameInformation = document.getElementById("game-information");
+    const lobby = document.getElementById(LOBBY_ID);
+    const lobbyInformation = document.getElementById(LOBBY_INFORMATION_ID);
+    const toggleLobbyButton = document.getElementById(TOGGLE_LOBBY_BUTTON_ID);
+    const playerName = document.getElementById(PLAYER_NAME_ID);
+    const rolesModal = document.getElementById(ROLES_MODAL_ID);
+    const openRolesModalButton = document.getElementById(OPEN_ROLES_MODAL_BUTTON_ID);
+    const closeRolesModalButton = document.getElementById(CLOSE_ROLES_MODAL_BUTTON_ID);
+    const startGameButton = document.getElementById(START_GAME_BUTTON_ID);
+    const closeGameButton = document.getElementById(CLOSE_GAME_BUTTON_ID);
+    const gameInformation = document.getElementById(GAME_INFORMATION_ID);
 
     // Setup Page
-    document.getElementById("game-code").innerHTML = `Game Code: ${code}`;
+    document.getElementById(GAME_CODE_ID).innerHTML = `Game Code: ${code}`;
 
     toggleLobbyButton.onclick = function() {
         if (lobbyInformation.style.display === "none") {
@@ -59,8 +73,8 @@ document.addEventListener('DOMContentLoaded', function () {
     // Setup Socket Functions
     function updateLobby(players) {
         const activePlayerCount = players.filter(p => p.active).length;
-        document.getElementById("lobby-player-count").innerHTML = `Players [${activePlayerCount}]`;
-        document.getElementById("lobby-player-list").innerHTML = `
+        document.getElementById(LOBBY_PLAYER_COUNT_ID).innerHTML = `Players [${activePlayerCount}]`;
+        document.getElementById(LOBBY_PLAYER_LIST_ID).innerHTML = `
             ${players.map(player => `<li class="${player.active ? 'player-active' : 'player-inactive'}">${player.name}</li>`).join('')}
         `;
         if (startGameButton) {
@@ -107,8 +121,6 @@ document.addEventListener('DOMContentLoaded', function () {
     });
 
     socket.on('close-lobby', () => {
-        location.replace("https://extavalon.com/");
-        //location.replace("http://localhost:25565");
-        //location.replace("http://192.168.1.107:25565");
+        location.replace(ROOT_URL);
     });
 });
