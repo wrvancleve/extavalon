@@ -94,6 +94,12 @@ class PlayerCollection {
         this.playersByPlayerId.set(playerId, player);
     }
 
+    clearPlayerIds() {
+        for (let player of this.players) {
+            player.id = null;
+        }
+    }
+
     _updateSocketId(player, socketId) {
         this.playersBySocketId.delete(player.socketId);
         player.socketId = socketId;

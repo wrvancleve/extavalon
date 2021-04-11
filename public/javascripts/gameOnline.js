@@ -559,10 +559,16 @@ document.addEventListener('DOMContentLoaded', function () {
             const gunSlot = document.getElementById(gamePlayers[i].gunSlotId);
             if (gunSlot.style.visibility === "visible") {
                 selectedIds.push(i);
-                gunSlot.classList.remove("clickable");
+                removeClassFromElement(gunSlot, "clickable");
                 gunSlot.onclick = "";
             }
+
+            const playerName = document.getElementById(gamePlayers[i].nameId);
+            removeClassFromElement(playerName, "clickable");
+            playerName.onclick = "";
         }
+
+        updateGunSelected(null);
 
         socket.emit('propose-team', {selectedIds});
     }
@@ -1041,5 +1047,4 @@ document.addEventListener('DOMContentLoaded', function () {
     socket.on('game-result', ({winner, message}) => {
         showGameResult(winner, message);
     });
-    //test
 });

@@ -84,68 +84,70 @@ app.createServer = function() {
   
     if (lobby.game) {
       const currentPlayer = lobby.playerCollection.getPlayerOfSessionId(sessionId);
-      if (lobby.type === 'online') {
-        sendStartOnlineGame(lobby.game, currentPlayer);
-        const leader = sendUpdateLeader(lobby.game, socketId);
-        sendMissionResults(lobby, socketId);
-        sendUpdateTeam(lobby.lastGunSlots, socketId);
-
-        if (lobby.game.state.phase >= GameState.PHASE_VOTE_REACT) {
-          sendVoteResult(lobby, socketId);
-        }
-
-        if (lobby.game.state.phase >= GameState.PHASE_CONDUCT_REACT) {
-          sendMissionResult(lobby, socketId, true);
-        }
-
-        switch (lobby.game.state.phase) {
-          case GameState.PHASE_PROPOSE:
-            sendStatusMessage(`${leader.name} is proposing team...`, socketId);
-            if (lobby.game.getCurrentLeader().id === currentPlayer.id) {
-              sendProposeTeam(lobby, socketId);
-            }
-            break;
-          case GameState.PHASE_VOTE:
-            const currentProposal = lobby.game.getCurrentProposal();
-            let playerVote = null;
-            for (let [playerId, vote] of currentProposal.getVotes()) {
-              sendPlayerVoted(playerId, socketId);
-              if (playerId === currentPlayer.id) {
-                playerVote = vote;
+      if (currentPlayer.id !== null) {
+        if (lobby.type === 'online') {
+          sendStartOnlineGame(lobby.game, currentPlayer);
+          const leader = sendUpdateLeader(lobby.game, socketId);
+          sendMissionResults(lobby, socketId);
+          sendUpdateTeam(lobby.lastGunSlots, socketId);
+  
+          if (lobby.game.state.phase >= GameState.PHASE_VOTE_REACT) {
+            sendVoteResult(lobby, socketId);
+          }
+  
+          if (lobby.game.state.phase >= GameState.PHASE_CONDUCT_REACT) {
+            sendMissionResult(lobby, socketId, true);
+          }
+  
+          switch (lobby.game.state.phase) {
+            case GameState.PHASE_PROPOSE:
+              sendStatusMessage(`${leader.name} is proposing team...`, socketId);
+              if (lobby.game.getCurrentLeader().id === currentPlayer.id) {
+                sendProposeTeam(lobby, socketId);
               }
-            }
-            sendVoteTeam(playerVote, socketId);
-            break;
-          case GameState.PHASE_VOTE_REACT:
-            if (currentPlayer.id === 0) {
-              sendReact(socketId);
-            }
-            break;
-          case GameState.PHASE_CONDUCT:
-            const currentMission = lobby.game.getCurrentMission();
-            if (currentMission.getMissionTeam().includes(currentPlayer.id) && !currentMission.hasConducted(currentPlayer.id)) {
-              sendConductMission(lobby.game, currentPlayer);
-            }
-            sendStatusMessage("Conducting mission...", socketId);
-            break;
-          case GameState.PHASE_CONDUCT_REACT:
-            if (currentPlayer.id === 0) {
-              sendReact(socketId);
-            }
-            break;
-          case GameState.PHASE_ASSASSINATION:
-            const assassin = lobby.playerCollection.getPlayerOfPlayerId(lobby.game.state.assassinId);
-            if (currentPlayer.id === assassin.id) {
-              sendConductAssassination(socketId);
-            }
-            sendStatusMessage(`${assassin.name} is choosing who to assassinate...`, socketId);
-            break;
-          case GameState.PHASE_DONE:
-            sendGameResult(lobby, socketId);
-            break;
+              break;
+            case GameState.PHASE_VOTE:
+              const currentProposal = lobby.game.getCurrentProposal();
+              let playerVote = null;
+              for (let [playerId, vote] of currentProposal.getVotes()) {
+                sendPlayerVoted(playerId, socketId);
+                if (playerId === currentPlayer.id) {
+                  playerVote = vote;
+                }
+              }
+              sendVoteTeam(playerVote, socketId);
+              break;
+            case GameState.PHASE_VOTE_REACT:
+              if (currentPlayer.id === 0) {
+                sendReact(socketId);
+              }
+              break;
+            case GameState.PHASE_CONDUCT:
+              const currentMission = lobby.game.getCurrentMission();
+              if (currentMission.getMissionTeam().includes(currentPlayer.id) && !currentMission.hasConducted(currentPlayer.id)) {
+                sendConductMission(lobby.game, currentPlayer);
+              }
+              sendStatusMessage("Conducting mission...", socketId);
+              break;
+            case GameState.PHASE_CONDUCT_REACT:
+              if (currentPlayer.id === 0) {
+                sendReact(socketId);
+              }
+              break;
+            case GameState.PHASE_ASSASSINATION:
+              const assassin = lobby.playerCollection.getPlayerOfPlayerId(lobby.game.state.assassinId);
+              if (currentPlayer.id === assassin.id) {
+                sendConductAssassination(socketId);
+              }
+              sendStatusMessage(`${assassin.name} is choosing who to assassinate...`, socketId);
+              break;
+            case GameState.PHASE_DONE:
+              sendGameResult(lobby, socketId);
+              break;
+          }
+        } else {
+          sendStartLocalGame(lobby.game, currentPlayer);
         }
-      } else {
-        sendStartLocalGame(lobby.game, currentPlayer);
       }
     }
   }
@@ -163,6 +165,7 @@ app.createServer = function() {
     const activePlayers = lobby.playerCollection.getActivePlayers();
     const game = new Game(activePlayers.map(({name}) => ({name})), lobby.settings);
     lobby.game = game;
+    lobby.playerCollection.clearPlayerIds();
     for (var i = 0; i < activePlayers.length; i++) {
       const currentPlayer = activePlayers[i];
       lobby.playerCollection.updatePlayerIdBySessionId(currentPlayer.sessionId, i);
@@ -175,6 +178,7 @@ app.createServer = function() {
     const game = new Game(activePlayers.map(({name}) => ({name})), lobby.settings);
     lobby.game = game;
     lobby.lastGunSlots = null;
+    lobby.playerCollection.clearPlayerIds();
     for (var i = 0; i < activePlayers.length; i++) {
       const currentPlayer = activePlayers[i];
       lobby.playerCollection.updatePlayerIdBySessionId(currentPlayer.sessionId, i);
