@@ -181,7 +181,7 @@ function generateRoles(resistanceCount, spyCount, settings) {
 
     function getPossibleResistanceRoles(usedAssassinatableRoles) {
         const possibleResistanceRoles = [
-            Percival, Lancelot, Jester, Guinevere
+            Percival, Lancelot, Jester
         ];
 
         if (!usedAssassinatableRoles.includes(Tristan)) {
@@ -189,6 +189,7 @@ function generateRoles(resistanceCount, spyCount, settings) {
         }
 
         if (playerCount > 6) {
+            possibleResistanceRoles.push(Guinevere);
             possibleResistanceRoles.push(Puck);
         }
 
