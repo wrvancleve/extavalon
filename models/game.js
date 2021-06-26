@@ -67,6 +67,24 @@ class Game {
         return this.state.players[id].getPlayerObject();
     }
 
+    getResistancePlayers() {
+        return this.state.resistance.map(player => {
+            return {
+                name: player.name,
+                role: player.role.name
+            }
+        });
+    }
+
+    getSpyPlayers() {
+        return this.state.spys.map(player => {
+            return {
+                name: player.name,
+                role: player.role.name
+            }
+        });
+    }
+
     isGameOver() {
         return this.state.phase === GameState.PHASE_DONE; 
     }

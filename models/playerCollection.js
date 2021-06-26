@@ -58,6 +58,15 @@ class PlayerCollection {
         this.playersBySocketId.set(socketId, newPlayer);
     }
 
+    removePlayer(playerId) {
+        const removedPlayer = this.players.splice(playerId, 1)[0];
+        this.playersBySessionId.delete(removedPlayer.sessionId);
+        this.playersBySocketId.delete(removedPlayer.socketId);
+        if (removedPlayer.id !== null) {
+            this.playersByPlayerId.delete(removedPlayer.id);
+        } 
+    }
+
     updatePlayer(sessionId, socketId, name, active) {
         const player = this.playersBySessionId.get(sessionId);
         player.socketId = socketId;

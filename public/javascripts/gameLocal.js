@@ -1,5 +1,6 @@
 const ROOT_URL = "https://extavalon.com";
 //const ROOT_URL = "http://localhost:25565";
+//const ROOT_URL = "http://192.168.1.107:25565";
 
 const LOBBY_ID = "lobby";
 const LOBBY_INFORMATION_ID = "lobby-information";
@@ -11,7 +12,8 @@ const ROLES_MODAL_ID = "roles-modal";
 const OPEN_ROLES_MODAL_BUTTON_ID = "open-roles-modal-button";
 const CLOSE_ROLES_MODAL_BUTTON_ID = "close-roles-modal-button";
 const START_GAME_BUTTON_ID = "start-game-button";
-const CLOSE_GAME_BUTTON_ID = "close-game-button";
+const FINISH_GAME_BUTTON_ID = "finish-game-button";
+const CLOSE_LOBBY_BUTTON_ID = "close-lobby-button";
 const GAME_INFORMATION_ID = "game-information";
 const GAME_CODE_ID = "game-code";
 
@@ -31,7 +33,8 @@ document.addEventListener('DOMContentLoaded', function () {
     const openRolesModalButton = document.getElementById(OPEN_ROLES_MODAL_BUTTON_ID);
     const closeRolesModalButton = document.getElementById(CLOSE_ROLES_MODAL_BUTTON_ID);
     const startGameButton = document.getElementById(START_GAME_BUTTON_ID);
-    const closeGameButton = document.getElementById(CLOSE_GAME_BUTTON_ID);
+    const finishGameButton = document.getElementById(FINISH_GAME_BUTTON_ID);
+    const closeLobbyButton = document.getElementById(CLOSE_LOBBY_BUTTON_ID);
     const gameInformation = document.getElementById(GAME_INFORMATION_ID);
 
     // Setup Page
@@ -63,7 +66,8 @@ document.addEventListener('DOMContentLoaded', function () {
         startGameButton.onclick = function () {
             socket.emit('start-game-local');
         };
-        closeGameButton.onclick = function () {
+        finishGameButton.style.display = "none";
+        closeLobbyButton.onclick = function () {
             socket.emit('close-lobby');
         };
     } else {
@@ -74,9 +78,34 @@ document.addEventListener('DOMContentLoaded', function () {
     function updateLobby(players) {
         const activePlayerCount = players.filter(p => p.active).length;
         document.getElementById(LOBBY_PLAYER_COUNT_ID).innerHTML = `Players [${activePlayerCount}]`;
-        document.getElementById(LOBBY_PLAYER_LIST_ID).innerHTML = `
-            ${players.map(player => `<li class="${player.active ? 'player-active' : 'player-inactive'}">${player.name}</li>`).join('')}
-        `;
+        const lobbyPlayerList = document.getElementById(LOBBY_PLAYER_LIST_ID);
+
+        while (lobbyPlayerList.firstChild) {
+            lobbyPlayerList.removeChild(lobbyPlayerList.firstChild);
+        }
+        
+        for (let i = 0; i < players.length; i++) {
+            const player = players[i];
+            const playerListElement = document.createElement('li');
+            const playerNameElement = document.createElement('span');
+
+            playerNameElement.classList.add(player.active ? 'player-active' : 'player-inactive');
+            playerNameElement.innerHTML = player.name;
+            playerListElement.appendChild(playerNameElement);
+
+            if (startGameButton && !player.active) {
+                const playerKickElement = document.createElement('span');
+                playerKickElement.innerHTML = "&times;";
+                playerKickElement.classList.add('remove-player-button');
+                playerKickElement.onclick = function() {
+                    socket.emit('kick-player', i);
+                }
+                playerListElement.appendChild(playerKickElement);
+            }
+
+            lobbyPlayerList.appendChild(playerListElement);
+        }
+
         if (startGameButton) {
             startGameButton.disabled = activePlayerCount < 5;
             if (startGameButton.disabled) {
@@ -107,8 +136,34 @@ document.addEventListener('DOMContentLoaded', function () {
         }
 
         if (startGameButton) {
-            startGameButton.innerHTML = 'Play Again';
+            startGameButton.innerHTML = 'New Game';
+            finishGameButton.style.display = "block";
+            finishGameButton.classList.remove("future-disabled");
+            finishGameButton.disabled = false;
+            finishGameButton.onclick = function () {
+                socket.emit('finish-game-local');
+            };
         }
+    }
+
+    function finishGame(resistancePlayers, spyPlayers) {
+        if (finishGameButton) {
+            finishGameButton.style.display = "none";
+            finishGameButton.classList.add("future-disabled");
+            finishGameButton.disabled = true;
+            finishGameButton.onclick = "";
+        }
+
+        gameInformation.innerHTML = `
+            <h2 class="resistance">Resistance</h2>
+            <section>
+            ${resistancePlayers.map(player => `<p>(<span class="resistance">${player.role}</span>): ${player.name}</p>`).join('')}
+            </section>
+            <h2 class="spy">Spies</h2>
+            <section>
+            ${spyPlayers.map(player => `<p>(<span class="spy">${player.role}</span>): ${player.name}</p>`).join('')}
+            </section>
+        `;
     }
 
     // Attach Socket functions
@@ -118,6 +173,10 @@ document.addEventListener('DOMContentLoaded', function () {
     
     socket.on('start-game', ({gameHTML, amFirstPlayer}) => {
         startGame(gameHTML, amFirstPlayer);
+    });
+
+    socket.on('finish-game-local', ({resistancePlayers, spyPlayers}) => {
+        finishGame(resistancePlayers, spyPlayers);
     });
 
     socket.on('close-lobby', () => {

@@ -39,6 +39,7 @@ const sessionMiddleware = expressSession({
   secret: 'extavalon',
   resave: false,
   saveUninitialized: false,
+  secure: true
 });
 
 app.use(sessionMiddleware);
@@ -156,6 +157,11 @@ app.createServer = function() {
     io.sockets.to(receiver).emit('update-players', lobby.playerCollection.getLobbyPlayers());
   }
 
+  function kickPlayer(lobby, playerId) {
+    lobby.playerCollection.removePlayer(playerId);
+    sendUpdatePlayers(lobby, lobby.code);
+  }
+
   function handleDisconnect(lobby, sessionId) {
     lobby.playerCollection.deactivatePlayer(sessionId);
     sendUpdatePlayers(lobby, lobby.code);
@@ -171,6 +177,12 @@ app.createServer = function() {
       lobby.playerCollection.updatePlayerIdBySessionId(currentPlayer.sessionId, i);
       sendStartLocalGame(lobby.game, currentPlayer);
     }
+  }
+
+  function finishLocalGame(lobby) {
+    const resistancePlayers = lobby.game.getResistancePlayers();
+    const spyPlayers = lobby.game.getSpyPlayers();
+    io.sockets.to(lobby.code).emit('finish-game-local', {resistancePlayers, spyPlayers});
   }
 
   function startOnlineGame(lobby) {
@@ -382,6 +394,10 @@ app.createServer = function() {
         startLocalGame(lobby);
       });
 
+      socket.on('finish-game-local', () => {
+        finishLocalGame(lobby);
+      });
+
       socket.on('start-game-online', () => {
         lobby.updateTime = Date.now();
         startOnlineGame(lobby);
@@ -415,6 +431,10 @@ app.createServer = function() {
       socket.on('conduct-assassination', ({ids, role}) => {
         lobby.updateTime = Date.now();
         handleAssassination(lobby, ids, role);
+      });
+
+      socket.on('kick-player', (playerId) => {
+        kickPlayer(lobby, playerId);
       });
 
       socket.on('close-lobby', () => {

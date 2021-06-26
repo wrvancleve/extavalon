@@ -299,6 +299,28 @@ select {
   font-size: 1.25em;
 }
 
+.remove-player-button {
+  font-size: 1.25em;
+  font-weight: 700;
+  color: #9debfb;
+  position: absolute;
+  right: 20px;
+}
+
+.remove-player-button:hover,
+.remove-player-button:focus {
+  text-decoration: none;
+  cursor: pointer;
+  color: #08a5c4;
+}
+
+.remove-player-button span {
+  display: block;
+  position: absolute;
+  top:0;
+  left:0;
+}
+
 #propose-team {
   display: none;
   margin: auto;
