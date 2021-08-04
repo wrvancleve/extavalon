@@ -8,27 +8,19 @@ const bodyParser = require('body-parser');
 const logger = require('morgan');
 const hbs = require('express-handlebars');
 const expressSession = require('express-session');
-//const mongoose = require('mongoose');
 const http = require('http');
 
 const indexRouter = require('./routes/index');
-const joinGameRouter = require('./routes/join');
-const newGameRouter = require('./routes/new');
-//const gameRouter = require('./routes/game');
-const gameLocalRouter = require('./routes/gameLocal');
-const gameOnlineRouter = require('./routes/gameOnline');
+const loginRouter = require('./routes/login');
+const profileRouter = require('./routes/profile');
+const gameRouter = require('./routes/game');
 
-const lobbyCollection = require('./models/lobbyCollection');
+const { lobbies } = require('./models/lobbyCollection');
 const Game = require('./models/game');
 const GameState = require('./models/gameState');
+const postgres = require('./models/database');
 
 const app = express();
-
-/*
-const mongo_db_default_url = 'mongodb://localhost:27017/extavalon'
-mongoose.connect(process.env.MONGO_URL || mongo_db_default_url);
-mongoose.Promise = global.Promise;
-*/
 
 // view engine setup
 app.engine('hbs', hbs({extname: 'hbs', defaultLayout: 'layout', layoutsDir: __dirname + '/views/layouts/'}))
@@ -50,11 +42,9 @@ app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'public')));
 
 app.use('/', indexRouter);
-app.use('/join', joinGameRouter);
-app.use('/new', newGameRouter);
-app.use('/game-local', gameLocalRouter);
-app.use('/game-online', gameOnlineRouter);
-//app.use('/game', gameRouter);
+app.use('/login', loginRouter);
+app.use('/profile', profileRouter);
+app.use('/game', gameRouter);
 
 app.createServer = function() {
   const server = http.createServer(app);
@@ -65,26 +55,26 @@ app.createServer = function() {
 
   function closeLobby(lobby) {
     const code = lobby.code;
-    lobbyCollection.lobbies.delete(code);
+    lobbies.delete(code);
     io.sockets.to(code).emit('close-lobby');
   };
 
   setInterval(function() {
     var time = Date.now();
-    for (let lobby of lobbyCollection.lobbies.values()) {
+    for (let lobby of lobbies.values()) {
       if (lobby.updateTime < (time - 3600000)) {
         closeLobby(lobby);
       }
     }
   }, 600000);
   
-  function updatePlayer(lobby, socket, name) {
-    const sessionId = socket.request.session.id;
+  function updatePlayer(lobby, socket) {
+    const userId = socket.handshake.query.userId;
     const socketId = socket.id;
-    lobby.playerCollection.updatePlayer(sessionId, socketId, name, true);
+    lobby.playerCollection.updatePlayer(userId, socketId, true);
   
     if (lobby.game) {
-      const currentPlayer = lobby.playerCollection.getPlayerOfSessionId(sessionId);
+      const currentPlayer = lobby.playerCollection.getPlayerOfUserId(userId);
       if (currentPlayer.id !== null) {
         if (lobby.type === 'online') {
           sendStartOnlineGame(lobby.game, currentPlayer);
@@ -153,30 +143,53 @@ app.createServer = function() {
     }
   }
 
-  function sendUpdatePlayers(lobby, receiver) {
-    io.sockets.to(receiver).emit('update-players', lobby.playerCollection.getLobbyPlayers());
+  function sendUpdatePlayers(lobby) {
+    const players = lobby.playerCollection.getPlayers();
+    const lobbyPlayers = lobby.playerCollection.getLobbyPlayers();
+    const isLocalGame = lobby.type === 'local';
+    for (let player of players) {
+      if (isLocalGame) {
+        io.sockets.to(player.socketId).emit('update-players', { 
+          displayName: player.displayName,
+          currentPlayers: lobbyPlayers
+        });
+      } else {
+        io.sockets.to(player.socketId).emit('update-players', { 
+          currentPlayers: lobbyPlayers
+        });
+      }
+    }
   }
 
   function kickPlayer(lobby, playerId) {
     lobby.playerCollection.removePlayer(playerId);
-    sendUpdatePlayers(lobby, lobby.code);
+    sendUpdatePlayers(lobby);
   }
 
-  function handleDisconnect(lobby, sessionId) {
-    lobby.playerCollection.deactivatePlayer(sessionId);
-    sendUpdatePlayers(lobby, lobby.code);
+  function handleDisconnect(lobby, userId) {
+    lobby.playerCollection.deactivatePlayer(userId);
+    sendUpdatePlayers(lobby);
   }
 
   function startLocalGame(lobby) {
-    const activePlayers = lobby.playerCollection.getActivePlayers();
-    const game = new Game(activePlayers.map(({name}) => ({name})), lobby.settings);
+    const players = lobby.playerCollection.getPlayers();
+    const game = new Game(players.map(({ displayName }) => ({name: displayName})), lobby.settings);
     lobby.game = game;
     lobby.playerCollection.clearPlayerIds();
-    for (var i = 0; i < activePlayers.length; i++) {
-      const currentPlayer = activePlayers[i];
-      lobby.playerCollection.updatePlayerIdBySessionId(currentPlayer.sessionId, i);
+    for (var i = 0; i < players.length; i++) {
+      const currentPlayer = players[i];
+      lobby.playerCollection.updatePlayerIdByUserId(currentPlayer.userId, i);
       sendStartLocalGame(lobby.game, currentPlayer);
     }
+  }
+
+  async function processLocalGameResults(lobby, gameResult) {
+    console.log('In processLocalGameResults');
+    console.log(gameResult.missions);
+    if (gameResult.assassination) {
+      console.log(gameResult.assassination);
+    }
+    console.log('Reached end of processLocalGameResults');
   }
 
   function finishLocalGame(lobby) {
@@ -186,14 +199,14 @@ app.createServer = function() {
   }
 
   function startOnlineGame(lobby) {
-    const activePlayers = lobby.playerCollection.getActivePlayers();
-    const game = new Game(activePlayers.map(({name}) => ({name})), lobby.settings);
+    const players = lobby.playerCollection.getPlayers();
+    const game = new Game(players.map(({displayName}) => ({name: displayName})), lobby.settings);
     lobby.game = game;
     lobby.lastGunSlots = null;
     lobby.playerCollection.clearPlayerIds();
-    for (var i = 0; i < activePlayers.length; i++) {
-      const currentPlayer = activePlayers[i];
-      lobby.playerCollection.updatePlayerIdBySessionId(currentPlayer.sessionId, i);
+    for (var i = 0; i < players.length; i++) {
+      const currentPlayer = players[i];
+      lobby.playerCollection.updatePlayerIdByUserId(currentPlayer.userId, i);
       sendStartOnlineGame(lobby.game, currentPlayer);
     }
     startProposal(lobby);
@@ -274,8 +287,8 @@ app.createServer = function() {
     io.sockets.to(receiver).emit('react');
   }
 
-  function processVoteTeam(lobby, sessionId, vote) {
-    const playerId = lobby.playerCollection.getPlayerIdOfSessionId(sessionId);
+  function processVoteTeam(lobby, userId, vote) {
+    const playerId = lobby.playerCollection.getPlayerIdOfUserId(userId);
     const voteFinished = lobby.game.setProposalVote(playerId, vote);
     sendPlayerVoted(playerId, lobby.code);
     if (voteFinished) {
@@ -340,8 +353,8 @@ app.createServer = function() {
     }
   }
 
-  function processMissionAction(lobby, sessionId, action) {
-    const playerId = lobby.playerCollection.getPlayerIdOfSessionId(sessionId);
+  function processMissionAction(lobby, userId, action) {
+    const playerId = lobby.playerCollection.getPlayerIdOfUserId(userId);
     if (lobby.game.addMissionAction(playerId, action)) {
       sendMissionResult(lobby, lobby.code, true);
       if (lobby.game.getCurrentPhase() === GameState.PHASE_ASSASSINATION) {
@@ -374,28 +387,41 @@ app.createServer = function() {
 
   io.on('connection', socket => {
     const code = socket.handshake.query.code;
-    const name = socket.handshake.query.name;
-    const sessionId = socket.request.session.id;
+    const userId = socket.handshake.query.userId;
+    console.log(`Handling request for ${userId}`);
 
-    const lobby = lobbyCollection.lobbies.get(code);
+    const lobby = lobbies.get(code);
     if (lobby) {
+      console.log("Found code");
       lobby.updateTime = Date.now();
-      if (!lobby.playerCollection.doesSessionIdExist(socket.request.session.id)) {
-        lobby.playerCollection.addPlayer(socket, name);
+      if (!lobby.playerCollection.doesUserIdExist(userId)) {
+        console.log("Adding player...");
+        lobby.playerCollection.addPlayer(socket);
       } else {
-        updatePlayer(lobby, socket, name);
+        console.log("Updating player...");
+        updatePlayer(lobby, socket);
       }
       socket.join(code);
 
-      sendUpdatePlayers(lobby, lobby.code);
+      console.log("Sending player updates...");
+      sendUpdatePlayers(lobby);
 
       socket.on('start-game-local', () => {
         lobby.updateTime = Date.now();
         startLocalGame(lobby);
       });
 
-      socket.on('finish-game-local', () => {
-        finishLocalGame(lobby);
+      socket.on('setup-finish-game-local', () => {
+        const assassinatablePlayers = lobby.game.getResistancePlayers().map(({id, name}) => ({id, name}));
+        socket.emit('setup-finish-game-local', {assassinatablePlayers});
+      });
+
+      socket.on('finish-game-local', ({gameResult}) => {
+        console.log('Before processLocalGameResults');
+        processLocalGameResults(lobby, gameResult).then(() => {
+          console.log('Before finishLocalGame');
+          finishLocalGame(lobby);
+        });
       });
 
       socket.on('start-game-online', () => {
@@ -415,12 +441,12 @@ app.createServer = function() {
 
       socket.on('vote-team', ({vote}) => {
         lobby.updateTime = Date.now();
-        processVoteTeam(lobby, sessionId, vote);
+        processVoteTeam(lobby, userId, vote);
       });
 
       socket.on('conduct-mission', ({action}) => {
         lobby.updateTime = Date.now();
-        processMissionAction(lobby, sessionId, action);
+        processMissionAction(lobby, userId, action);
       });
 
       socket.on('advance-mission', () => {
@@ -443,7 +469,7 @@ app.createServer = function() {
 
       socket.on('disconnect', () => {
         lobby.updateTime = Date.now();
-        handleDisconnect(lobby, sessionId);
+        handleDisconnect(lobby, userId);
       });
     }
   });

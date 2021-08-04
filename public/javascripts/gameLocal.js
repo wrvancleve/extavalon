@@ -1,7 +1,8 @@
-const ROOT_URL = "https://extavalon.com";
-//const ROOT_URL = "http://localhost:25565";
+//const ROOT_URL = "https://extavalon.com";
+const ROOT_URL = "http://localhost:25565";
 //const ROOT_URL = "http://192.168.1.107:25565";
 
+const ROOT_ID = "root";
 const LOBBY_ID = "lobby";
 const LOBBY_INFORMATION_ID = "lobby-information";
 const TOGGLE_LOBBY_BUTTON_ID = "toggle-lobby-button";
@@ -15,16 +16,31 @@ const START_GAME_BUTTON_ID = "start-game-button";
 const FINISH_GAME_BUTTON_ID = "finish-game-button";
 const CLOSE_LOBBY_BUTTON_ID = "close-lobby-button";
 const GAME_INFORMATION_ID = "game-information";
-const GAME_CODE_ID = "game-code";
+const HOST_INFORMATION_ID = "host-information";
+const SUBMIT_RESULTS_MODAL_ID = "submit-results-modal";
+
+function parseCookie(str) {
+    return str.split(';').map(v => v.split('=')).reduce((acc, v) => {
+      acc[decodeURIComponent(v[0].trim())] = decodeURIComponent(v[1].trim());
+      return acc;
+    }, {});
+};
 
 document.addEventListener('DOMContentLoaded', function () {
-    const {name, code} = Qs.parse(location.search, {
+    const {code} = Qs.parse(location.search, {
         ignoreQueryPrefix: true
     });
 
-    const socket = io.connect(`${ROOT_URL}?code=${code}&name=${name}`);
+    const parsedCookie = parseCookie(document.cookie);
+
+    const userId = parsedCookie.userId;
+    const firstName = parsedCookie.firstName;
+    const lastName = parsedCookie.lastName;
+
+    const socket = io.connect(`${ROOT_URL}?code=${code}&userId=${userId}&firstName=${firstName}&lastName=${lastName}`);
 
     // Get elements
+    const root = document.getElementById(ROOT_ID);
     const lobby = document.getElementById(LOBBY_ID);
     const lobbyInformation = document.getElementById(LOBBY_INFORMATION_ID);
     const toggleLobbyButton = document.getElementById(TOGGLE_LOBBY_BUTTON_ID);
@@ -36,10 +52,9 @@ document.addEventListener('DOMContentLoaded', function () {
     const finishGameButton = document.getElementById(FINISH_GAME_BUTTON_ID);
     const closeLobbyButton = document.getElementById(CLOSE_LOBBY_BUTTON_ID);
     const gameInformation = document.getElementById(GAME_INFORMATION_ID);
+    const hostInformation = document.getElementById(HOST_INFORMATION_ID);
 
     // Setup Page
-    document.getElementById(GAME_CODE_ID).innerHTML = `Game Code: ${code}`;
-
     toggleLobbyButton.onclick = function() {
         if (lobbyInformation.style.display === "none") {
             lobbyInformation.style.display = "block";
@@ -74,15 +89,35 @@ document.addEventListener('DOMContentLoaded', function () {
         lobbyInformation.style.display = "none";
     }
 
-    // Setup Socket Functions
+    // Socket Handlers
+    socket.on('update-players', ({displayName, currentPlayers}) => {
+        playerName.innerText = displayName;
+        updateLobby(currentPlayers);
+    });
+    
+    socket.on('start-game', ({gameHTML, amFirstPlayer}) => {
+        startGame(gameHTML, amFirstPlayer);
+    });
+
+    socket.on('setup-finish-game-local', ({assassinatablePlayers}) => {
+        setupFinishGame(assassinatablePlayers);
+    });
+
+    socket.on('finish-game-local', ({resistancePlayers, spyPlayers}) => {
+        showTeams(resistancePlayers, spyPlayers);
+    });
+
+    socket.on('close-lobby', () => {
+        location.replace(`${ROOT_URL}?menu=join`);
+    });
+
+    // Socket Functions
     function updateLobby(players) {
         const activePlayerCount = players.filter(p => p.active).length;
         document.getElementById(LOBBY_PLAYER_COUNT_ID).innerHTML = `Players [${activePlayerCount}]`;
         const lobbyPlayerList = document.getElementById(LOBBY_PLAYER_LIST_ID);
 
-        while (lobbyPlayerList.firstChild) {
-            lobbyPlayerList.removeChild(lobbyPlayerList.firstChild);
-        }
+        clearChildrenFromElement(lobbyPlayerList);
         
         for (let i = 0; i < players.length; i++) {
             const player = players[i];
@@ -107,12 +142,7 @@ document.addEventListener('DOMContentLoaded', function () {
         }
 
         if (startGameButton) {
-            startGameButton.disabled = activePlayerCount < 5;
-            if (startGameButton.disabled) {
-                startGameButton.classList.add("future-disabled");
-            } else {
-                startGameButton.classList.remove("future-disabled");
-            }
+            setButtonDisabled(startGameButton, activePlayerCount < 5);
         }
     }
 
@@ -120,33 +150,231 @@ document.addEventListener('DOMContentLoaded', function () {
         lobbyInformation.style.display = "none";
 
         if (amFirstPlayer) {
-            if (!playerName.classList.contains("first-player")) {
-                playerName.classList.add("first-player");
-            }
+            addClassToElement(playerName, "first-player");
         } else {
-            if (playerName.classList.contains("first-player")) {
-                playerName.classList.remove("first-player");
-            }
+            removeClassFromElement(playerName, "first-player");
         }
 
         gameInformation.innerHTML = gameHTML;
 
-        if (!gameInformation.classList.contains("active")) {
-            gameInformation.classList.add("active");
-        }
+        addClassToElement(gameInformation, "active");
 
         if (startGameButton) {
+            let submitResultsModal = null;
+            for (var i = 0; i < root.children.length; i++) {
+                const child = root.children[i];
+                if (child.id === SUBMIT_RESULTS_MODAL_ID) {
+                    submitResultsModal = child;
+                }
+            }
+
+            if (submitResultsModal) {
+                root.removeChild(submitResultsModal);
+            }
+
             startGameButton.innerHTML = 'New Game';
             finishGameButton.style.display = "block";
-            finishGameButton.classList.remove("future-disabled");
-            finishGameButton.disabled = false;
+            setButtonDisabled(finishGameButton, false);
             finishGameButton.onclick = function () {
-                socket.emit('finish-game-local');
+                socket.emit('setup-finish-game-local');
             };
         }
     }
 
-    function finishGame(resistancePlayers, spyPlayers) {
+    function setupFinishGame(assassinatablePlayers) {
+        const submitResultsDiv = createDiv(SUBMIT_RESULTS_MODAL_ID, ["online-modal"]);
+        const missionOneLabel = createLabel("mission-one-result-select", "Mission 1 Winner:");
+        const missionTwoLabel = createLabel("mission-two-result-select", "Mission 2 Winner:");
+        const missionThreeLabel = createLabel("mission-three-result-select", "Mission 3 Winner:");
+        const missionFourLabel = createLabel("mission-four-result-select", "Mission 4 Winner:");
+        const missionFiveLabel = createLabel("mission-five-result-select", "Mission 5 Winner:");
+        const missionOneSelect = createMissionResultSelect("mission-one-result-select", false);
+        const missionTwoSelect = createMissionResultSelect("mission-two-result-select", false);
+        const missionThreeSelect = createMissionResultSelect("mission-three-result-select", false);
+        const missionFourSelect = createMissionResultSelect("mission-four-result-select", true);
+        const missionFiveSelect = createMissionResultSelect("mission-five-result-select", true);
+        const assassinationRoleLabel = createLabel("assassination-role-select", "Role:");
+        const assassinationRoleSelect = createSelect("assassination-role-select", false);
+        assassinationRoleSelect.appendChild(createOption("merlin", "Merlin"));
+        assassinationRoleSelect.appendChild(createOption("arthur", "Arthur"));
+        assassinationRoleSelect.appendChild(createOption("lovers", "Tristan & Iseult"));
+        const assassinationFirstPlayerLabel = createLabel("assassination-first-player-select", "Player:");
+        const assassinationSecondPlayerLabel = createLabel("assassination-second-player-select", "Player:");
+        const assassinationFirstPlayerSelect = createSelect("assassination-first-player-select", false);
+        const assassinationSecondPlayerSelect = createSelect("assassination-second-player-select", false);
+        for (let player of assassinatablePlayers) {
+            assassinationFirstPlayerSelect.appendChild(createOption(player.id, player.name));
+            assassinationSecondPlayerSelect.appendChild(createOption(player.id, player.name));
+        }
+
+        let currentGameResult = {
+            missions: [null, null, null, null, null],
+            assassination: null
+        };
+
+        function handleMissionResultChange(mission, result) {
+            currentGameResult.missions[mission] = result;
+            const missionsWinner = getMissionsWinner();
+            if (missionsWinner === "spies") {
+                assassinationRoleLabel.style.visibility = "hidden";
+                hideSelect(assassinationRoleSelect);
+                assassinationFirstPlayerLabel.style.visibility = "hidden";
+                hideSelect(assassinationFirstPlayerSelect);
+                assassinationSecondPlayerLabel.style.visibility = "hidden";
+                hideSelect(assassinationSecondPlayerSelect);
+                finishGameButton.onclick = function () {
+                    socket.emit('finish-game-local', {gameResult: currentGameResult});
+                };
+                setButtonDisabled(finishGameButton, false);
+            } else if (missionsWinner === "resistance") {
+                assassinationRoleLabel.style.visibility = "visible";
+                reshowSelect(assassinationRoleSelect);
+                assassinationFirstPlayerLabel.style.visibility = "hidden";
+                hideSelect(assassinationFirstPlayerSelect);
+                assassinationSecondPlayerLabel.style.visibility = "hidden";
+                hideSelect(assassinationSecondPlayerSelect);
+            } else {
+                assassinationRoleLabel.style.visibility = "hidden";
+                hideSelect(assassinationRoleSelect);
+                assassinationFirstPlayerLabel.style.visibility = "hidden";
+                hideSelect(assassinationFirstPlayerSelect);
+                assassinationSecondPlayerLabel.style.visibility = "hidden";
+                hideSelect(assassinationSecondPlayerSelect);
+                finishGameButton.removeAttribute("onclick");
+                setButtonDisabled(finishGameButton, true);
+            }
+        }
+
+        function getMissionsWinner() {
+            let resistanceWins = 0;
+            let spyWins = 0;
+            for (let missionWinner of currentGameResult.missions) {
+                if (missionWinner === "resistance") {
+                    if (resistanceWins === 3 || spyWins === 3) {
+                        return null;
+                    } else {
+                        resistanceWins += 1;
+                    }
+                } else if (missionWinner === "spies") {
+                    if (resistanceWins === 3 || spyWins === 3) {
+                        return null;
+                    } else {
+                        spyWins += 1;
+                    }
+                } else if (resistanceWins !== 3 && spyWins !== 3) {
+                    return null;
+                }
+            }
+            return resistanceWins === 3 ? "resistance" : "spies";
+        }
+
+        function handleAssassinationRoleChange() {
+            switch (assassinationRoleSelect.selectedIndex) {
+                case 0:
+                    assassinationFirstPlayerLabel.style.visibility = "hidden";
+                    hideSelect(assassinationFirstPlayerSelect);
+                    assassinationSecondPlayerLabel.style.visibility = "hidden";
+                    hideSelect(assassinationSecondPlayerSelect);
+                    break;
+                case 3:
+                    assassinationFirstPlayerLabel.style.visibility = "visible";
+                    reshowSelect(assassinationFirstPlayerSelect);
+                    assassinationSecondPlayerLabel.style.visibility = "visible";
+                    reshowSelect(assassinationSecondPlayerSelect);
+                    break;
+                default:
+                    assassinationFirstPlayerLabel.style.visibility = "visible";
+                    reshowSelect(assassinationFirstPlayerSelect);
+                    assassinationSecondPlayerLabel.style.visibility = "hidden";
+                    hideSelect(assassinationSecondPlayerSelect);
+                    break;
+            }
+            finishGameButton.removeAttribute("onclick");
+            setButtonDisabled(finishGameButton, true);
+        }
+
+        function handleAssassinationPlayerChange() {
+            if (assassinationRoleSelect.value === "lovers") {
+                if (assassinationFirstPlayerSelect.selectedIndex !== 0 && assassinationSecondPlayerSelect.selectedIndex !== 0) {
+                    currentGameResult.assassination = {
+                        role: "lovers",
+                        players: [assassinationFirstPlayerSelect.value, assassinationSecondPlayerSelect.value]
+                    };
+                    finishGameButton.onclick = function () {
+                        socket.emit('finish-game-local', {gameResult: currentGameResult});
+                    };
+                    setButtonDisabled(finishGameButton, false);
+                } else {
+                    currentGameResult.assassination = null;
+                    finishGameButton.removeAttribute("onclick");
+                    setButtonDisabled(finishGameButton, true);
+                }
+            } else {
+                if (assassinationFirstPlayerSelect.selectedIndex !== 0) {
+                    currentGameResult.assassination = {
+                        role: assassinationRoleSelect.value,
+                        players: [assassinationFirstPlayerSelect.value]
+                    };
+                    finishGameButton.onclick = function () {
+                        socket.emit('finish-game-local', {gameResult: currentGameResult});
+                    };
+                    setButtonDisabled(finishGameButton, false);
+                } else {
+                    currentGameResult.assassination = null;
+                    finishGameButton.removeAttribute("onclick");
+                    setButtonDisabled(finishGameButton, true);
+                }
+            }
+        }
+
+        missionOneSelect.onchange = function () {
+            handleMissionResultChange(0, missionOneSelect.value);
+        };
+        missionTwoSelect.onchange = function () {
+            handleMissionResultChange(1, missionTwoSelect.value);
+        };
+        missionThreeSelect.onchange = function () {
+            handleMissionResultChange(2, missionThreeSelect.value);
+        };
+        missionFourSelect.onchange = function () {
+            handleMissionResultChange(3, missionFourSelect.value);
+        };
+        missionFiveSelect.onchange = function () {
+            handleMissionResultChange(4, missionFiveSelect.value);
+        };
+        assassinationRoleSelect.onchange = handleAssassinationRoleChange;
+        assassinationFirstPlayerSelect.onchange = handleAssassinationPlayerChange;
+        assassinationSecondPlayerSelect.onchange = handleAssassinationPlayerChange;
+
+        submitResultsDiv.appendChild(missionOneLabel);
+        submitResultsDiv.appendChild(missionOneSelect);
+        submitResultsDiv.appendChild(missionTwoLabel);
+        submitResultsDiv.appendChild(missionTwoSelect);
+        submitResultsDiv.appendChild(missionThreeLabel);
+        submitResultsDiv.appendChild(missionThreeSelect);
+        submitResultsDiv.appendChild(missionFourLabel);
+        submitResultsDiv.appendChild(missionFourSelect);
+        submitResultsDiv.appendChild(missionFiveLabel);
+        submitResultsDiv.appendChild(missionFiveSelect);
+        submitResultsDiv.appendChild(assassinationRoleLabel);
+        submitResultsDiv.appendChild(assassinationRoleSelect);
+        submitResultsDiv.appendChild(assassinationFirstPlayerLabel);
+        submitResultsDiv.appendChild(assassinationFirstPlayerSelect);
+        submitResultsDiv.appendChild(assassinationSecondPlayerLabel);
+        submitResultsDiv.appendChild(assassinationSecondPlayerSelect);
+        root.appendChild(submitResultsDiv);
+
+        assassinationRoleLabel.style.visibility = "hidden";
+        hideSelect(assassinationRoleSelect);
+        assassinationFirstPlayerLabel.style.visibility = "hidden";
+        hideSelect(assassinationFirstPlayerSelect);
+        assassinationSecondPlayerLabel.style.visibility = "hidden";
+        hideSelect(assassinationSecondPlayerSelect);
+        finishGameButton.removeAttribute("onclick");
+        setButtonDisabled(finishGameButton, true);
+    }
+
+    function showTeams(resistancePlayers, spyPlayers) {
         if (finishGameButton) {
             finishGameButton.style.display = "none";
             finishGameButton.classList.add("future-disabled");
@@ -166,20 +394,87 @@ document.addEventListener('DOMContentLoaded', function () {
         `;
     }
 
-    // Attach Socket functions
-    socket.on('update-players', currentPlayers => {
-        updateLobby(currentPlayers);
-    });
+    // Helper Functions
+    function createDiv(id, styleClasses) {
+        const divElement = document.createElement('div');
+        divElement.id = id;
+        for (let styleClass of styleClasses) {
+            divElement.classList.add(styleClass);
+        }
+        return divElement;
+    }
+
+    function createLabel(idFor, text) {
+        const labelElement = document.createElement('label');
+        labelElement.for = idFor;
+        labelElement.innerText = text;
+        return labelElement;
+    }
+
+    function createOption(value, text) {
+        const optionElement = document.createElement('option');
+        optionElement.value = value;
+        if (text) {
+            optionElement.innerText = text;
+        }
+        return optionElement;
+    }
+
+    function createSelect(id, enableNoneOption) {
+        const selectElement = document.createElement('select');
+        selectElement.id = id;
+        const noneResultOption = createOption("none");
+        noneResultOption.selected = true;
+        if (!enableNoneOption) {
+            noneResultOption.disabled = true;
+        }
+        selectElement.appendChild(noneResultOption);
+        return selectElement;
+    }
+
+    function createMissionResultSelect(id, enableNoneOption) {
+        const missionResultSelect = createSelect(id, enableNoneOption);
+        missionResultSelect.appendChild(createOption("resistance", "Resistance"));
+        missionResultSelect.appendChild(createOption("spies", "Spies"));
+        return missionResultSelect;
+    }
+
+    function addClassToElement(element, className) {
+        if (!element.classList.contains(className)) {
+            element.classList.add(className);
+        }
+    }
     
-    socket.on('start-game', ({gameHTML, amFirstPlayer}) => {
-        startGame(gameHTML, amFirstPlayer);
-    });
+    function removeClassFromElement(element, className) {
+        if (element.classList.contains(className)) {
+            element.classList.remove(className);
+        }
+    }
 
-    socket.on('finish-game-local', ({resistancePlayers, spyPlayers}) => {
-        finishGame(resistancePlayers, spyPlayers);
-    });
+    function clearChildrenFromElement(element) {
+        while (element.children.length > 0) {
+            element.removeChild(element.lastChild);
+        }
+    }
 
-    socket.on('close-lobby', () => {
-        location.replace(ROOT_URL);
-    });
+    function setButtonDisabled(buttonElement, disabled) {
+        buttonElement.disabled = disabled;
+        if (buttonElement.disabled) {
+            addClassToElement(buttonElement, "future-disabled");
+        } else {
+            removeClassFromElement(buttonElement, "future-disabled");
+        }
+    }
+
+    function hideSelect(selectElement) {
+        selectElement.selectedIndex = 0;
+        selectElement.disabled = true;
+        selectElement.style.visibility = "hidden";
+    }
+
+    function reshowSelect(selectElement) {
+        selectElement.selectedIndex = 0;
+        selectElement.disabled = false;
+        selectElement.style.visibility = "visible";
+    }
 });

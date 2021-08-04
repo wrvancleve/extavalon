@@ -1,5 +1,5 @@
-const ROOT_URL = "https://extavalon.com";
-//const ROOT_URL = "http://localhost:25565";
+//const ROOT_URL = "https://extavalon.com";
+const ROOT_URL = "http://localhost:25565";
 
 const LOBBY_INFORMATION_ID = "lobby-information";
 const TOGGLE_HOST_INFORMATION_BUTTON_ID = "toggle-host-information-button";
@@ -69,6 +69,13 @@ const SUCCESSFUL_MISSION_IMG_ALT = "Success";
 const FAILED_MISSION_IMG_SRC = "/images/failed-mission.png";
 const FAILED_MISSION_IMG_ALT = "Fail";
 
+function parseCookie(str) {
+    return str.split(';').map(v => v.split('=')).reduce((acc, v) => {
+      acc[decodeURIComponent(v[0].trim())] = decodeURIComponent(v[1].trim());
+      return acc;
+    }, {});
+};
+
 function addClassToElement(element, className) {
     if (!element.classList.contains(className)) {
         element.classList.add(className);
@@ -109,11 +116,17 @@ function createImage(id, src, alt, styleClasses) {
 }
 
 document.addEventListener('DOMContentLoaded', function () {
-    const {name, code} = Qs.parse(location.search, {
+    const {code} = Qs.parse(location.search, {
         ignoreQueryPrefix: true
     });
 
-    const socket = io.connect(`${ROOT_URL}?code=${code}&name=${name}`);
+    const parsedCookie = parseCookie(document.cookie);
+
+    const userId = parsedCookie.userId;
+    const firstName = parsedCookie.firstName;
+    const lastName = parsedCookie.lastName;
+
+    const socket = io.connect(`${ROOT_URL}?code=${code}&userId=${userId}&firstName=${firstName}&lastName=${lastName}`);
 
     // Get Elements
     const lobbyInformation = document.getElementById(LOBBY_INFORMATION_ID);
@@ -126,7 +139,7 @@ document.addEventListener('DOMContentLoaded', function () {
     const openIntelModalButton = document.getElementById(OPEN_INTEL_MODAL_BUTTON_ID);
     const closeIntelModalButton = document.getElementById(CLOSE_INTEL_MODAL_BUTTON_ID);
     const startGameButton = document.getElementById(START_GAME_BUTTON_ID);
-    const closeGameButton = document.getElementById(CLOSE_LOBBY_BUTTON_ID);
+    const closeGameButton = document.getElementById(CLOSE_GAME_BUTTON_ID);
     const game = document.getElementById(GAME_ID);
 
     const statusMessage = document.getElementById(STATUS_MESSAGE_ID);
@@ -212,6 +225,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
     function updateLobby(players) {
         const activePlayerCount = players.filter(p => p.active).length;
+        console.log(`Active Count: ${activePlayerCount}`);
         document.getElementById(LOBBY_PLAYER_COUNT_ID).innerHTML = `Players [${activePlayerCount}]`;
         document.getElementById(LOBBY_PLAYER_LIST_ID).innerHTML = `
             ${players.map(player => `<li class="${player.active ? 'player-active' : 'player-inactive'}">${player.name}</li>`).join('')}
@@ -988,7 +1002,7 @@ document.addEventListener('DOMContentLoaded', function () {
     }
 
     // Attach Socket functions
-    socket.on('update-players', currentPlayers => {
+    socket.on('update-players', ({currentPlayers}) => {
         updateLobby(currentPlayers);
     });
     
@@ -997,7 +1011,7 @@ document.addEventListener('DOMContentLoaded', function () {
     });
 
     socket.on('close-lobby', () => {
-        location.replace(ROOT_URL);
+        location.replace(`${ROOT_URL}?menu=join`);
     });
 
     socket.on('update-leader', ({previousLeaderId, leaderId}) => {

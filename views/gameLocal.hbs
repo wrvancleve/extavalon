@@ -1,24 +1,26 @@
 <div class="flex-column" id="root">
     <div class="flex-column" id="lobby">
-        <h2 id="name">{{title}}</h2>
+        <h2 id="name"></h2>
         <div class="future-color" id="lobby-information">
-            <h2 id="game-code">Game Code: </h2>
+            <h2 id="game-code">Game Code: {{code}}</h2>
             <div id="lobby-players">
                 <h2 id="lobby-player-count">Players [0]</h2>
                 <ul id="lobby-player-list"></ul>
             </div>
         </div>
-        <div id="game-information">
+        <div id="game-information" class="flex-column">
             {{# unless host }}
                 <h2>Waiting for role information...</h2>
             {{/unless}}
         </div>
         {{# if host }}
-            <button class="future-color future-secondary-font future-disabled future-box" type="button"
+            <div id="host-information" class="flex-column future-color">
+                <button class="future-color future-secondary-font future-disabled future-box" type="button"
                     id="start-game-button" disabled>Start Game</button>
-            <button class="future-color future-secondary-font future-disabled future-box" type="button"
-                    id="finish-game-button" disabled>Finish Game</button>
-            <button class="future-color future-secondary-font future-box" type="button" id="close-lobby-button">Close Lobby</button>
+                <button class="future-color future-secondary-font future-disabled future-box" type="button"
+                        id="finish-game-button" disabled>Finish Game</button>
+                <button class="future-color future-secondary-font future-box" type="button" id="close-lobby-button">Close Lobby</button>
+            </div>
         {{/if}}
     </div>
     <button id="toggle-lobby-button" title="Toggle Lobby Information"> # </button>

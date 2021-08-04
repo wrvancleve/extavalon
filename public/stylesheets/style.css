@@ -64,17 +64,24 @@ body {
   color: #FFD700 !important;
 }
 
-.errors {
+#errors {
   border: 1px solid;
-  margin: 10px 0px;
-  padding: 15px 10px 15px 50px;
+  margin: 2vh auto 0px;
+  padding: 1vh 1vw;
+  width: 80vw;
+  max-width: 400px;
   background-repeat: no-repeat;
   background-position: 10px center;
   color: #D8000C;
   background-color: transparent;
+  text-align: center;
 }
 
 /* Common Elements */
+
+a { 
+  color: inherit;
+} 
 
 p {
   line-height: 150%;
@@ -146,6 +153,29 @@ div.setting-item input[type=checkbox] {
 form {
   display: flex;
   flex-direction: column;
+}
+
+section.profile-section {
+  padding: 2vh 2vw;
+  width: 75vw;
+  max-width: 75vw;
+  margin: 3vh auto 0vh auto;
+}
+
+dl.property-table {
+  margin: 0vh 2vw;
+  line-height: 2em;
+}
+
+dt.property-tag {
+  float: left;
+  clear: left;
+  width: 10vw;
+  font-weight: bold;
+}
+
+dd.property-value {
+  float: left;
 }
 
 /* Index Page */
@@ -340,6 +370,7 @@ select {
 #game-information {
   text-align: center;
   color: #b6f0fc;
+  align-items: center;
 }
 
 #game-information section {
@@ -352,6 +383,10 @@ select {
 
 #game-information p {
   margin: 0px;
+}
+
+#host-information {
+  align-items: center;
 }
 
 #game-code {
@@ -559,6 +594,15 @@ select {
   font-family: 'Helvetica', sans-serif;
   min-width: 30vw;
   min-height: 30vh;
+}
+
+#submit-results-modal {
+  color: #b6f0fc;
+  background-color: transparent;
+  border: 2px solid #029dbb;
+  box-shadow: 0 0 4px rgba(2,157,187,0.65);
+  font-family: 'Helvetica', sans-serif;
+  z-index: 6;
 }
 
 #status-message {

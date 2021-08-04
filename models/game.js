@@ -70,6 +70,7 @@ class Game {
     getResistancePlayers() {
         return this.state.resistance.map(player => {
             return {
+                id: player.id,
                 name: player.name,
                 role: player.role.name
             }
@@ -79,6 +80,7 @@ class Game {
     getSpyPlayers() {
         return this.state.spys.map(player => {
             return {
+                id: player.id,
                 name: player.name,
                 role: player.role.name
             }

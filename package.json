@@ -17,6 +17,7 @@
     "http-errors": "~1.6.3",
     "mongoose": "^5.10.9",
     "morgan": "~1.9.1",
+    "pg": "^8.6.0",
     "socket.io": "^2.3.0"
   },
   "engines": {
