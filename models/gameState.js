@@ -55,18 +55,13 @@ class GameState {
         this.winner = null;
     }
 
-    _createPlayers(playerInformation) {
-        this.playerCount = playerInformation.length;
-        this.spyPlayerCount = this._getSpyCount();
-        this.resistancePlayerCount = this.playerCount - this.spyPlayerCount;
-
-        const playerRoles = Roles.generateRoles(this.resistancePlayerCount, this.spyPlayerCount, this.settings);
-        this.players = [];
+    assignRoles(identityPickInformation) {
+        const playerRoles = Roles.generateRoles(this.resistancePlayerCount, this.spyPlayerCount, this.settings, identityPickInformation);
 
         for (let id = 0; id < this.playerCount; id++) {
+            const player = this.players[id];
             const playerRole = playerRoles.pop();
-            const player = new Player(this, id, playerInformation[id].name, playerRole);
-            this.players.push(player);
+            player.assignRole(playerRole);
             this.playersByRole.set(playerRole, player);
             
             if (playerRole.team === "Resistance") {
@@ -79,10 +74,6 @@ class GameState {
                 }
             }
         }
-
-        // Set First Leader
-        this.currentLeaderId = Math.floor(Math.random() * this.playerCount);
-        console.debug(`First Leader Id: ${this.currentLeaderId}`);
 
         // Set Assassin
         this.assassinId = choice(this.spys).id;
@@ -97,6 +88,22 @@ class GameState {
         if (this.playersByRole.has(Roles.Titania)) {
             this._performTitaniaSabotage();
         }
+    }
+
+    _createPlayers(playerInformation) {
+        this.playerCount = playerInformation.length;
+        this.spyPlayerCount = this._getSpyCount();
+        this.resistancePlayerCount = this.playerCount - this.spyPlayerCount;
+        this.players = [];
+
+        for (let id = 0; id < this.playerCount; id++) {
+            const player = new Player(this, id, playerInformation[id].name);
+            this.players.push(player);
+        }
+
+        // Set First Leader
+        this.currentLeaderId = Math.floor(Math.random() * this.playerCount);
+        console.debug(`First Leader Id: ${this.currentLeaderId}`);
     }
 
     _getSpyCount() {

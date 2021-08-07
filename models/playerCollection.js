@@ -141,6 +141,7 @@ class PlayerCollection {
         for (let player of this.players) {
             player.id = null;
         }
+        this.playersByPlayerId.clear();
     }
 
     _updateSocketId(player, socketId) {

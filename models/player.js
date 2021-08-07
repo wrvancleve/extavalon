@@ -1,14 +1,19 @@
 const Roles = require('./roles');
 
 class Player {
-    constructor(gameState, id, name, role) {
+    constructor(gameState, id, name) {
         this.gameState = gameState;
         this.id = id;
         this.name = name;
-        this.role = role;
-        this.isSpy = role.team === 'Spies';
+        this.role = null;
+        this.isSpy = null;
         this.intel = [];
         this.intelSabotaged = false;
+    }
+
+    assignRole(role) {
+        this.role = role;
+        this.isSpy = role.team === 'Spies';
     }
 
     addIntel(intel) {

@@ -1,15 +1,14 @@
 const express = require('express');
 const router = express.Router();
 const authenticate = require('../middleware/authenticate');
-const { lobbies, generate_code } = require('../models/lobbyCollection');
-const PlayerCollection = require('../models/playerCollection');
+const lobbyManager = require('../models/lobbyManager');
 
 /* GET game page. */
 router.get('/', authenticate, function(req, res) {
     const redirectURL = req.session.backURL || `/?menu=join`;
     const code = req.query.code;
-    if (lobbies.has(code)) {
-        const lobby = lobbies.get(code);
+    if (lobbyManager.has(code)) {
+        const lobby = lobbyManager.get(code);
         console.log(`Connecting Player: ${req.cookies.userId}`);
         const host = lobby.host === req.cookies.userId;
         const lobbyFull = !lobby.playerCollection.doesUserIdExist(req.cookies.userId) && lobby.playerCollection.getPlayerCount() === 10;
@@ -31,25 +30,15 @@ router.get('/', authenticate, function(req, res) {
 });
 
 router.post('/', authenticate, function(req, res) {
-    const code = generate_code();
     const type = req.body.type;
-    const newLobby = {
-        code: code,
-        host: req.cookies.userId,
-        type: type,
-        settings: {
-            galahad: req.body.galahad === 'on',
-            titania: req.body.titania === 'on',
-            bedivere: req.body.bedivere === 'on',
-            lucius: req.body.lucius === 'on',
-            accolon: req.body.accolon === 'on'
-        },
-        playerCollection: new PlayerCollection(),
-        game: null,
-        updateTime: Date.now()
+    const settings = {
+        galahad: req.body.galahad === 'on',
+        titania: req.body.titania === 'on',
+        bedivere: req.body.bedivere === 'on',
+        lucius: req.body.lucius === 'on',
+        accolon: req.body.accolon === 'on'
     };
-    lobbies.set(code, newLobby);
-    console.log(`Set lobby host as ${newLobby.host}`);
+    const code = lobbyManager.create(req.cookies.userId, type, settings);
     
     req.session.backURL = `/?menu=new-${type}`;
     res.redirect(`/game?code=${code}`);

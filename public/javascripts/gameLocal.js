@@ -94,6 +94,14 @@ document.addEventListener('DOMContentLoaded', function () {
         playerName.innerText = displayName;
         updateLobby(currentPlayers);
     });
+
+    socket.on('setup-game', () => {
+        handleSetupGame();
+    });
+
+    socket.on('pick-identity', ({possibleResistanceRoles, possibleSpyRoles}) => {
+        handlePickIdentity(possibleResistanceRoles, possibleSpyRoles);
+    });
     
     socket.on('start-game', ({gameHTML, amFirstPlayer}) => {
         startGame(gameHTML, amFirstPlayer);
@@ -142,8 +150,67 @@ document.addEventListener('DOMContentLoaded', function () {
         }
 
         if (startGameButton) {
-            setButtonDisabled(startGameButton, activePlayerCount < 5);
+            setButtonDisabled(startGameButton, activePlayerCount < 5, false);
         }
+    }
+
+    function handleSetupGame() {
+        clearChildrenFromElement(gameInformation);
+        removeClassFromElement(gameInformation, "active");
+        const waitingHeader = document.createElement("h2");
+        waitingHeader.innerText = "Waiting for role information...";
+        gameInformation.appendChild(waitingHeader);
+    }
+
+    function handlePickIdentity(possibleResistanceRoles, possibleSpyRoles) {
+        clearChildrenFromElement(gameInformation);
+
+        const identityHeader = document.createElement("h2");
+        identityHeader.innerText = "Congratulations, you may select your role/team for this game!";
+
+        const identitySelect = document.createElement("select");
+        const blankOption = createOption("none");
+        blankOption.selected = true;
+        blankOption.disabled = true;
+        identitySelect.appendChild(blankOption);
+        identitySelect.appendChild(createOption("Resistance", "Resistance"));
+        for (let possibleResistanceRole of possibleResistanceRoles) {
+            identitySelect.appendChild(createOption(possibleResistanceRole, `(Resistance) ${possibleResistanceRole}`));
+        }
+        identitySelect.appendChild(createOption("Spy", "Spy"));
+        for (let possibleSpyRole of possibleSpyRoles) {
+            identitySelect.appendChild(createOption(possibleSpyRole, `(Spy) ${possibleSpyRole}`));
+        }
+
+        const submitIdentitySelectionButton = createButton("Submit", ["future-color", "future-secondary-font", "future-box"]);
+        setButtonDisabled(submitIdentitySelectionButton, true);
+
+        identitySelect.onchange = function () {
+            if (identitySelect.selectedIndex !== 0) {
+                setButtonDisabled(submitIdentitySelectionButton, false);
+                submitIdentitySelectionButton.onclick = function () {
+                    handleSubmitIdentitySelection(identitySelect.value);
+                };
+            } else {
+                setButtonDisabled(submitIdentitySelectionButton, true);
+            }
+        };
+
+        gameInformation.appendChild(identityHeader);
+        gameInformation.appendChild(identitySelect);
+        gameInformation.appendChild(submitIdentitySelectionButton);
+    }
+
+    function handleSubmitIdentitySelection(identitySelection) {
+        const identityPickInformation = {
+            value: identitySelection
+        }
+        if (identitySelection === "Resistance" || identitySelection === "Spy") {
+            identityPickInformation.type = "Team";
+        } else {
+            identityPickInformation.type = "Role";
+        }
+        socket.emit('pick-identity', ({identityPickInformation}));
     }
 
     function startGame(gameHTML, amFirstPlayer) {
@@ -240,7 +307,6 @@ document.addEventListener('DOMContentLoaded', function () {
                 hideSelect(assassinationFirstPlayerSelect);
                 assassinationSecondPlayerLabel.style.visibility = "hidden";
                 hideSelect(assassinationSecondPlayerSelect);
-                finishGameButton.removeAttribute("onclick");
                 setButtonDisabled(finishGameButton, true);
             }
         }
@@ -289,7 +355,6 @@ document.addEventListener('DOMContentLoaded', function () {
                     hideSelect(assassinationSecondPlayerSelect);
                     break;
             }
-            finishGameButton.removeAttribute("onclick");
             setButtonDisabled(finishGameButton, true);
         }
 
@@ -306,7 +371,6 @@ document.addEventListener('DOMContentLoaded', function () {
                     setButtonDisabled(finishGameButton, false);
                 } else {
                     currentGameResult.assassination = null;
-                    finishGameButton.removeAttribute("onclick");
                     setButtonDisabled(finishGameButton, true);
                 }
             } else {
@@ -321,7 +385,6 @@ document.addEventListener('DOMContentLoaded', function () {
                     setButtonDisabled(finishGameButton, false);
                 } else {
                     currentGameResult.assassination = null;
-                    finishGameButton.removeAttribute("onclick");
                     setButtonDisabled(finishGameButton, true);
                 }
             }
@@ -370,7 +433,6 @@ document.addEventListener('DOMContentLoaded', function () {
         hideSelect(assassinationFirstPlayerSelect);
         assassinationSecondPlayerLabel.style.visibility = "hidden";
         hideSelect(assassinationSecondPlayerSelect);
-        finishGameButton.removeAttribute("onclick");
         setButtonDisabled(finishGameButton, true);
     }
 
@@ -395,6 +457,15 @@ document.addEventListener('DOMContentLoaded', function () {
     }
 
     // Helper Functions
+    function createButton(text, styleClasses) {
+        const buttonElement = document.createElement('button');
+        buttonElement.innerText = text;
+        for (let styleClass of styleClasses) {
+            buttonElement.classList.add(styleClass);
+        }
+        return buttonElement;
+    }
+
     function createDiv(id, styleClasses) {
         const divElement = document.createElement('div');
         divElement.id = id;
@@ -457,10 +528,13 @@ document.addEventListener('DOMContentLoaded', function () {
         }
     }
 
-    function setButtonDisabled(buttonElement, disabled) {
+    function setButtonDisabled(buttonElement, disabled, removeOnClick=true) {
         buttonElement.disabled = disabled;
         if (buttonElement.disabled) {
             addClassToElement(buttonElement, "future-disabled");
+            if (removeOnClick) {
+                buttonElement.removeAttribute("onclick");
+            }
         } else {
             removeClassFromElement(buttonElement, "future-disabled");
         }
