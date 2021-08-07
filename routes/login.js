@@ -3,6 +3,15 @@ const router = express.Router();
 const { check, validationResult } = require('express-validator');
 const postgres = require('../models/database');
 
+function titleCase (str) {
+    if ((str===null) || (str===''))
+         return false;
+    else
+     str = str.toString();
+  
+   return str.replace(/\w\S*/g, function(txt){return txt.charAt(0).toUpperCase() + txt.substr(1).toLowerCase();});
+  }
+
 /* GET home page. */
 router.get('/', function(req, res) {
     res.cookie('userId', {expires: Date.now()});
@@ -20,15 +29,19 @@ router.post('/', function(req, res) {
         req.session.errors = errors.array();
         res.redirect(`/login`);
     } else {
+        const firstName = titleCase(req.body.firstName);
+        console.log(`First Name: ${firstName}`);
+        const lastName = titleCase(req.body.lastName);
+        console.log(`Last Name: ${lastName}`);
         console.log("Getting id...");
-        getPlayerId(req.body.firstName, req.body.lastName, (err, result) => {
+        getPlayerId(firstName, lastName, (err, result) => {
             if (err) {
                 res.redirect(`/login`);
             } else {
                 console.log(`Id returned from getPlayerId: ${result}`);
                 res.cookie('userId', result);
-                res.cookie('firstName', req.body.firstName);
-                res.cookie('lastName', req.body.lastName);
+                res.cookie('firstName', firstName);
+                res.cookie('lastName', lastName);
                 res.redirect(`/`);
             }
         });
