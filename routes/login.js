@@ -30,15 +30,11 @@ router.post('/', function(req, res) {
         res.redirect(`/login`);
     } else {
         const firstName = titleCase(req.body.firstName);
-        console.log(`First Name: ${firstName}`);
         const lastName = titleCase(req.body.lastName);
-        console.log(`Last Name: ${lastName}`);
-        console.log("Getting id...");
         getPlayerId(firstName, lastName, (err, result) => {
             if (err) {
                 res.redirect(`/login`);
             } else {
-                console.log(`Id returned from getPlayerId: ${result}`);
                 res.cookie('userId', result);
                 res.cookie('firstName', firstName);
                 res.cookie('lastName', lastName);
@@ -55,7 +51,6 @@ function getPlayerId(firstName, lastName, callback) {
             console.log(err.stack)
             callback(err, null);
         } else {
-            console.log(`Id returned from query: ${result.rows[0].player_id}`);
             callback(null, result.rows[0].player_id);
         }
     });

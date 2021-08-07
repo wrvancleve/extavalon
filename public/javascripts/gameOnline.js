@@ -226,7 +226,6 @@ document.addEventListener('DOMContentLoaded', function () {
 
     function updateLobby(players) {
         const activePlayerCount = players.filter(p => p.active).length;
-        console.log(`Active Count: ${activePlayerCount}`);
         document.getElementById(LOBBY_PLAYER_COUNT_ID).innerHTML = `Players [${activePlayerCount}]`;
         document.getElementById(LOBBY_PLAYER_LIST_ID).innerHTML = `
             ${players.map(player => `<li class="${player.active ? 'player-active' : 'player-inactive'}">${player.name}</li>`).join('')}
