@@ -231,7 +231,7 @@ app.createServer = function() {
     const game = lobby.game;
     const gameWinner = lobby.game.processLocalGameResult(gameResult.missions, gameResult.assassination);
     const createGameQuery = `
-      select extavalon.create_game('${game.startTime.toISOString()}',
+      select create_game('${game.startTime.toISOString()}',
                                    '${new Date(Date.now()).toISOString()}',
                                    ${gameResult.missions[0] ? `'${gameResult.missions[0]}'` : 'null'},
                                    ${gameResult.missions[1] ? `'${gameResult.missions[1]}'` : 'null'},
@@ -246,7 +246,7 @@ app.createServer = function() {
       let insertAssassinationQuery = null;
       if (gameResult.assassination.players.length > 1) {
         insertAssassinationQuery = `
-          insert into extavalon.game_assassinations(game_id, assassin_player_id, target_one_player_id, target_one_role, target_two_player_id, target_two_role, successful)
+          insert into game_assassinations(game_id, assassin_player_id, target_one_player_id, target_one_role, target_two_player_id, target_two_role, successful)
             values (${gameId},
                     ${lobby.playerCollection.getUserIdOfPlayerId(game.state.assassinId)},
                     ${lobby.playerCollection.getUserIdOfPlayerId(gameResult.assassination.players[0])},
@@ -257,7 +257,7 @@ app.createServer = function() {
         `;
       } else {
         insertAssassinationQuery = `
-          insert into extavalon.game_assassinations(game_id, assassin_player_id, target_one_player_id, target_one_role, successful)
+          insert into game_assassinations(game_id, assassin_player_id, target_one_player_id, target_one_role, successful)
             values (${gameId},
                     ${lobby.playerCollection.getUserIdOfPlayerId(game.state.assassinId)},
                     ${lobby.playerCollection.getUserIdOfPlayerId(gameResult.assassination.players[0])},
@@ -270,7 +270,7 @@ app.createServer = function() {
 
     for (let player of game.state.players) {
       const insertGamePlayerQuery = `
-        insert into extavalon.game_players(game_id, player_id, role)
+        insert into game_players(game_id, player_id, role)
           values(${gameId}, ${lobby.playerCollection.getUserIdOfPlayerId(player.id)}, '${player.role.name}');
       `;
       await postgres.query(insertGamePlayerQuery);
