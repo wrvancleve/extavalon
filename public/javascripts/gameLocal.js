@@ -249,30 +249,70 @@ document.addEventListener('DOMContentLoaded', function () {
     }
 
     function setupFinishGame(assassinatablePlayers) {
-        const submitResultsDiv = createDiv(SUBMIT_RESULTS_MODAL_ID, ["online-modal"]);
+        clearChildrenFromElement(gameInformation);
+
+        const missionOneDiv = document.createElement('div');
+        missionOneDiv.classList.add("setting-item");
         const missionOneLabel = createLabel("mission-one-result-select", "Mission 1 Winner:");
-        const missionTwoLabel = createLabel("mission-two-result-select", "Mission 2 Winner:");
-        const missionThreeLabel = createLabel("mission-three-result-select", "Mission 3 Winner:");
-        const missionFourLabel = createLabel("mission-four-result-select", "Mission 4 Winner:");
-        const missionFiveLabel = createLabel("mission-five-result-select", "Mission 5 Winner:");
         const missionOneSelect = createMissionResultSelect("mission-one-result-select", false);
+        missionOneDiv.appendChild(missionOneLabel);
+        missionOneDiv.appendChild(missionOneSelect);
+
+        const missionTwoDiv = document.createElement('div');
+        missionTwoDiv.classList.add("setting-item");
+        const missionTwoLabel = createLabel("mission-two-result-select", "Mission 2 Winner:");
         const missionTwoSelect = createMissionResultSelect("mission-two-result-select", false);
+        missionTwoDiv.appendChild(missionTwoLabel);
+        missionTwoDiv.appendChild(missionTwoSelect);
+
+        const missionThreeDiv = document.createElement('div');
+        missionThreeDiv.classList.add("setting-item");
+        const missionThreeLabel = createLabel("mission-three-result-select", "Mission 3 Winner:");
         const missionThreeSelect = createMissionResultSelect("mission-three-result-select", false);
+        missionThreeDiv.appendChild(missionThreeLabel);
+        missionThreeDiv.appendChild(missionThreeSelect);
+
+        const missionFourDiv = document.createElement('div');
+        missionFourDiv.classList.add("setting-item");
+        const missionFourLabel = createLabel("mission-four-result-select", "Mission 4 Winner:");
         const missionFourSelect = createMissionResultSelect("mission-four-result-select", true);
+        missionFourDiv.appendChild(missionFourLabel);
+        missionFourDiv.appendChild(missionFourSelect);
+
+        const missionFiveDiv = document.createElement('div');
+        missionFiveDiv.classList.add("setting-item");
+        const missionFiveLabel = createLabel("mission-five-result-select", "Mission 5 Winner:");
         const missionFiveSelect = createMissionResultSelect("mission-five-result-select", true);
+        missionFiveDiv.appendChild(missionFiveLabel);
+        missionFiveDiv.appendChild(missionFiveSelect);
+        
+        const assassinationRoleDiv = document.createElement('div');
+        assassinationRoleDiv.classList.add("setting-item");
         const assassinationRoleLabel = createLabel("assassination-role-select", "Role:");
         const assassinationRoleSelect = createSelect("assassination-role-select", false);
         assassinationRoleSelect.appendChild(createOption("merlin", "Merlin"));
         assassinationRoleSelect.appendChild(createOption("arthur", "Arthur"));
         assassinationRoleSelect.appendChild(createOption("lovers", "Tristan & Iseult"));
+        assassinationRoleDiv.appendChild(assassinationRoleLabel);
+        assassinationRoleDiv.appendChild(assassinationRoleSelect);
+
+        const assassinationFirstPlayerDiv = document.createElement('div');
+        assassinationFirstPlayerDiv.classList.add("setting-item");
         const assassinationFirstPlayerLabel = createLabel("assassination-first-player-select", "Player:");
-        const assassinationSecondPlayerLabel = createLabel("assassination-second-player-select", "Player:");
         const assassinationFirstPlayerSelect = createSelect("assassination-first-player-select", false);
+        assassinationFirstPlayerDiv.appendChild(assassinationFirstPlayerLabel);
+        assassinationFirstPlayerDiv.appendChild(assassinationFirstPlayerSelect);
+
+        const assassinationSecondPlayerDiv = document.createElement('div');
+        assassinationSecondPlayerDiv.classList.add("setting-item");
+        const assassinationSecondPlayerLabel = createLabel("assassination-second-player-select", "Player:");
         const assassinationSecondPlayerSelect = createSelect("assassination-second-player-select", false);
         for (let player of assassinatablePlayers) {
             assassinationFirstPlayerSelect.appendChild(createOption(player.id, player.name));
             assassinationSecondPlayerSelect.appendChild(createOption(player.id, player.name));
         }
+        assassinationSecondPlayerDiv.appendChild(assassinationSecondPlayerLabel);
+        assassinationSecondPlayerDiv.appendChild(assassinationSecondPlayerSelect);
 
         let currentGameResult = {
             missions: [null, null, null, null, null],
@@ -360,7 +400,8 @@ document.addEventListener('DOMContentLoaded', function () {
 
         function handleAssassinationPlayerChange() {
             if (assassinationRoleSelect.value === "lovers") {
-                if (assassinationFirstPlayerSelect.selectedIndex !== 0 && assassinationSecondPlayerSelect.selectedIndex !== 0) {
+                if (assassinationFirstPlayerSelect.selectedIndex !== 0 && assassinationSecondPlayerSelect.selectedIndex !== 0
+                        && assassinationFirstPlayerSelect.selectedIndex != assassinationSecondPlayerSelect.selectedIndex) {
                     currentGameResult.assassination = {
                         role: "lovers",
                         players: [assassinationFirstPlayerSelect.value, assassinationSecondPlayerSelect.value]
@@ -408,24 +449,15 @@ document.addEventListener('DOMContentLoaded', function () {
         assassinationRoleSelect.onchange = handleAssassinationRoleChange;
         assassinationFirstPlayerSelect.onchange = handleAssassinationPlayerChange;
         assassinationSecondPlayerSelect.onchange = handleAssassinationPlayerChange;
-
-        submitResultsDiv.appendChild(missionOneLabel);
-        submitResultsDiv.appendChild(missionOneSelect);
-        submitResultsDiv.appendChild(missionTwoLabel);
-        submitResultsDiv.appendChild(missionTwoSelect);
-        submitResultsDiv.appendChild(missionThreeLabel);
-        submitResultsDiv.appendChild(missionThreeSelect);
-        submitResultsDiv.appendChild(missionFourLabel);
-        submitResultsDiv.appendChild(missionFourSelect);
-        submitResultsDiv.appendChild(missionFiveLabel);
-        submitResultsDiv.appendChild(missionFiveSelect);
-        submitResultsDiv.appendChild(assassinationRoleLabel);
-        submitResultsDiv.appendChild(assassinationRoleSelect);
-        submitResultsDiv.appendChild(assassinationFirstPlayerLabel);
-        submitResultsDiv.appendChild(assassinationFirstPlayerSelect);
-        submitResultsDiv.appendChild(assassinationSecondPlayerLabel);
-        submitResultsDiv.appendChild(assassinationSecondPlayerSelect);
-        root.appendChild(submitResultsDiv);
+        
+        gameInformation.appendChild(missionOneDiv);
+        gameInformation.appendChild(missionTwoDiv);
+        gameInformation.appendChild(missionThreeDiv);
+        gameInformation.appendChild(missionFourDiv);
+        gameInformation.appendChild(missionFiveDiv);
+        gameInformation.appendChild(assassinationRoleDiv);
+        gameInformation.appendChild(assassinationFirstPlayerDiv);
+        gameInformation.appendChild(assassinationSecondPlayerDiv);
 
         assassinationRoleLabel.style.visibility = "hidden";
         hideSelect(assassinationRoleSelect);

@@ -192,6 +192,20 @@ dd.property-value {
 
 /* New Game Page */
 
+.row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 80vw;
+  max-width: 500px;
+  padding: 1vh 1vw;
+}
+
+.row label {
+  font-size: 1.25em;
+  font-weight: 700;
+}
+
 .setting-container {
   margin: auto;
   margin-top: 2vh;

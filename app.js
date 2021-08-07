@@ -138,7 +138,15 @@ app.createServer = function() {
               break;
           }
         } else {
-          sendStartLocalGame(lobby.game, currentPlayer);
+          if (lobby.currentIdentityPicker) {
+            if (currentPlayer.userId === lobby.currentIdentityPicker) {
+              sendPickIdentity(lobby.game, currentPlayer);
+            } else {
+              sendLocalGameSetup(currentPlayer);
+            }
+          } else {
+            sendStartLocalGame(lobby.game, currentPlayer);
+          }
         }
       }
     }
