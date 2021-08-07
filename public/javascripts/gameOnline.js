@@ -1,6 +1,5 @@
-//const ROOT_URL = "https://extavalon.com";
+const ROOT_URL = "https://extavalon.com";
 //const ROOT_URL = "http://localhost:25565";
-const ROOT_URL = "http://150.136.155.83:80";
 
 const LOBBY_INFORMATION_ID = "lobby-information";
 const TOGGLE_HOST_INFORMATION_BUTTON_ID = "toggle-host-information-button";
