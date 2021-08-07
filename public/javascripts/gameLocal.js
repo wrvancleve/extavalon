@@ -1,5 +1,4 @@
 const ROOT_URL = "https://extavalon.com";
-//const ROOT_URL = "http://localhost:25565";
 //const ROOT_URL = "http://192.168.1.107:25565";
 
 const ROOT_ID = "root";

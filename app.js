@@ -240,7 +240,8 @@ app.createServer = function() {
                                    ${gameResult.missions[4] ? `'${gameResult.missions[4]}'` : 'null'},
                                    '${gameWinner}') as game_id
     `;
-    const gameId = await postgres.query(createGameQuery).rows[0].game_id;
+    const createGameQueryResult = await postgres.query(createGameQuery);
+    const gameId = createGameQueryResult.rows[0].game_id;
     if (gameResult.assassination) {
       const assassinationSuccessful = gameWinner === "Spies";
       let insertAssassinationQuery = null;
