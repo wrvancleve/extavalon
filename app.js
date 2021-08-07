@@ -228,12 +228,53 @@ app.createServer = function() {
   }
 
   async function processLocalGameResults(lobby, gameResult) {
-    console.log('In processLocalGameResults');
-    console.log(gameResult.missions);
+    const game = lobby.game;
+    const gameWinner = lobby.game.processLocalGameResult(gameResult.missions, gameResult.assassination);
+    const createGameQuery = `
+      select extavalon.create_game('${game.startTime.toISOString()}',
+                                   '${new Date(Date.now()).toISOString()}',
+                                   ${gameResult.missions[0] ? `'${gameResult.missions[0]}'` : 'null'},
+                                   ${gameResult.missions[1] ? `'${gameResult.missions[1]}'` : 'null'},
+                                   ${gameResult.missions[2] ? `'${gameResult.missions[2]}'` : 'null'},
+                                   ${gameResult.missions[3] ? `'${gameResult.missions[3]}'` : 'null'},
+                                   ${gameResult.missions[4] ? `'${gameResult.missions[4]}'` : 'null'},
+                                   '${gameWinner}') as game_id
+    `;
+    const gameId = await postgres.query(createGameQuery).rows[0].game_id;
     if (gameResult.assassination) {
-      console.log(gameResult.assassination);
+      const assassinationSuccessful = gameWinner === "Spies";
+      let insertAssassinationQuery = null;
+      if (gameResult.assassination.players.length > 1) {
+        insertAssassinationQuery = `
+          insert into extavalon.game_assassinations(game_id, assassin_player_id, target_one_player_id, target_one_role, target_two_player_id, target_two_role, successful)
+            values (${gameId},
+                    ${lobby.playerCollection.getUserIdOfPlayerId(game.state.assassinId)},
+                    ${lobby.playerCollection.getUserIdOfPlayerId(gameResult.assassination.players[0])},
+                    '${gameResult.assassination.role}',
+                    ${lobby.playerCollection.getUserIdOfPlayerId(gameResult.assassination.players[1])},
+                    '${gameResult.assassination.role}',
+                    ${assassinationSuccessful})
+        `;
+      } else {
+        insertAssassinationQuery = `
+          insert into extavalon.game_assassinations(game_id, assassin_player_id, target_one_player_id, target_one_role, successful)
+            values (${gameId},
+                    ${lobby.playerCollection.getUserIdOfPlayerId(game.state.assassinId)},
+                    ${lobby.playerCollection.getUserIdOfPlayerId(gameResult.assassination.players[0])},
+                    '${gameResult.assassination.role}',
+                    ${assassinationSuccessful})
+        `;
+      }
+      await postgres.query(insertAssassinationQuery);
     }
-    console.log('Reached end of processLocalGameResults');
+
+    for (let player of game.state.players) {
+      const insertGamePlayerQuery = `
+        insert into extavalon.game_players(game_id, player_id, role)
+          values(${gameId}, ${lobby.playerCollection.getUserIdOfPlayerId(player.id)}, '${player.role.name}');
+      `;
+      await postgres.query(insertGamePlayerQuery);
+    }
   }
 
   function finishLocalGame(lobby) {
@@ -445,22 +486,17 @@ app.createServer = function() {
   io.on('connection', socket => {
     const code = socket.handshake.query.code;
     const userId = socket.handshake.query.userId;
-    console.log(`Handling request for ${userId}`);
 
     const lobby = lobbyManager.get(code);
     if (lobby) {
-      console.log("Found code");
       lobby.updateTime = Date.now();
       if (!lobby.playerCollection.doesUserIdExist(userId)) {
-        console.log("Adding player...");
         lobby.playerCollection.addPlayer(socket);
       } else {
-        console.log("Updating player...");
         updatePlayer(lobby, socket);
       }
       socket.join(code);
 
-      console.log("Sending player updates...");
       sendUpdatePlayers(lobby);
 
       socket.on('pick-identity', ({identityPickInformation}) => {
@@ -480,9 +516,7 @@ app.createServer = function() {
       });
 
       socket.on('finish-game-local', ({gameResult}) => {
-        console.log('Before processLocalGameResults');
         processLocalGameResults(lobby, gameResult).then(() => {
-          console.log('Before finishLocalGame');
           finishLocalGame(lobby);
         });
       });

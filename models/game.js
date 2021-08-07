@@ -6,7 +6,7 @@ const Proposal = require('./proposal');
 class Game {
     constructor(playerInformation, settings) {
         this.state = new GameState(playerInformation, settings);
-        this.startTime = Date.now();
+        this.startTime = new Date(Date.now());
         this.resultHTML = null;
     }
 
@@ -85,6 +85,51 @@ class Game {
         }
         
         return playerInformation;
+    }
+
+    processLocalGameResult(missions, assassination) {
+        let gameWinner = null;
+        let resistanceWinCount = 0;
+        let spyWinCount = 0;
+        for (let missionWinner of missions) {
+            if (missionWinner === "Resistance") {
+                resistanceWinCount += 1;
+            } else if (missionWinner === "Spies") {
+                spyWinCount += 1;
+            }
+        }
+        gameWinner = spyWinCount === 3 ? "Spies" : "Resistance";
+
+        if (gameWinner === "Resistance") {
+            const firstPlayerRole = this.state.players[assassination.players[0]].role;
+            switch (assassination.role) {
+                case "Lovers":
+                    const secondPlayerRole = this.state.players[assassination.players[1]].role;
+                    if ((firstPlayerRole === Roles.Tristan || firstPlayerRole === Roles.Iseult)
+                        && (secondPlayerRole === Roles.Tristan || secondPlayerRole === Roles.Iseult)) {
+                            gameWinner = "Spies";
+                        }
+                    else if (firstPlayerRole === Roles.Jester || secondPlayerRole === Roles.Jester) {
+                        gameWinner = "Jester";
+                    }
+                    break;
+                case "Merlin":
+                    if (firstPlayerRole === Roles.Merlin) {
+                        gameWinner = "Spies";
+                    } else if (firstPlayerRole === Roles.Jester) {
+                        gameWinner = "Jester";
+                    }
+                    break;
+                case "Arthur":
+                    if (firstPlayerRole === Roles.Arthur) {
+                        gameWinner = "Spies";
+                    } else if (firstPlayerRole === Roles.Jester) {
+                        gameWinner = "Jester";
+                    }
+                    break;
+            }
+        }
+        return gameWinner;
     }
 
     isCurrentLeader(id) {

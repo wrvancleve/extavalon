@@ -1,6 +1,6 @@
 //const ROOT_URL = "https://extavalon.com";
-const ROOT_URL = "http://localhost:25565";
-//const ROOT_URL = "http://192.168.1.107:25565";
+//const ROOT_URL = "http://localhost:25565";
+const ROOT_URL = "http://192.168.1.107:25565";
 
 const ROOT_ID = "root";
 const LOBBY_ID = "lobby";
@@ -290,9 +290,9 @@ document.addEventListener('DOMContentLoaded', function () {
         assassinationRoleDiv.classList.add("setting-item");
         const assassinationRoleLabel = createLabel("assassination-role-select", "Role:");
         const assassinationRoleSelect = createSelect("assassination-role-select", false);
-        assassinationRoleSelect.appendChild(createOption("merlin", "Merlin"));
-        assassinationRoleSelect.appendChild(createOption("arthur", "Arthur"));
-        assassinationRoleSelect.appendChild(createOption("lovers", "Tristan & Iseult"));
+        assassinationRoleSelect.appendChild(createOption("Merlin", "Merlin"));
+        assassinationRoleSelect.appendChild(createOption("Arthur", "Arthur"));
+        assassinationRoleSelect.appendChild(createOption("Lovers", "Tristan & Iseult"));
         assassinationRoleDiv.appendChild(assassinationRoleLabel);
         assassinationRoleDiv.appendChild(assassinationRoleSelect);
 
@@ -322,7 +322,7 @@ document.addEventListener('DOMContentLoaded', function () {
         function handleMissionResultChange(mission, result) {
             currentGameResult.missions[mission] = result;
             const missionsWinner = getMissionsWinner();
-            if (missionsWinner === "spies") {
+            if (missionsWinner === "Spies") {
                 assassinationRoleLabel.style.visibility = "hidden";
                 hideSelect(assassinationRoleSelect);
                 assassinationFirstPlayerLabel.style.visibility = "hidden";
@@ -333,7 +333,7 @@ document.addEventListener('DOMContentLoaded', function () {
                     socket.emit('finish-game-local', {gameResult: currentGameResult});
                 };
                 setButtonDisabled(finishGameButton, false);
-            } else if (missionsWinner === "resistance") {
+            } else if (missionsWinner === "Resistance") {
                 assassinationRoleLabel.style.visibility = "visible";
                 reshowSelect(assassinationRoleSelect);
                 assassinationFirstPlayerLabel.style.visibility = "hidden";
@@ -355,13 +355,13 @@ document.addEventListener('DOMContentLoaded', function () {
             let resistanceWins = 0;
             let spyWins = 0;
             for (let missionWinner of currentGameResult.missions) {
-                if (missionWinner === "resistance") {
+                if (missionWinner === "Resistance") {
                     if (resistanceWins === 3 || spyWins === 3) {
                         return null;
                     } else {
                         resistanceWins += 1;
                     }
-                } else if (missionWinner === "spies") {
+                } else if (missionWinner === "Spies") {
                     if (resistanceWins === 3 || spyWins === 3) {
                         return null;
                     } else {
@@ -371,7 +371,7 @@ document.addEventListener('DOMContentLoaded', function () {
                     return null;
                 }
             }
-            return resistanceWins === 3 ? "resistance" : "spies";
+            return resistanceWins === 3 ? "Resistance" : "Spies";
         }
 
         function handleAssassinationRoleChange() {
@@ -399,12 +399,12 @@ document.addEventListener('DOMContentLoaded', function () {
         }
 
         function handleAssassinationPlayerChange() {
-            if (assassinationRoleSelect.value === "lovers") {
+            if (assassinationRoleSelect.value === "Lovers") {
                 if (assassinationFirstPlayerSelect.selectedIndex !== 0 && assassinationSecondPlayerSelect.selectedIndex !== 0
                         && assassinationFirstPlayerSelect.selectedIndex != assassinationSecondPlayerSelect.selectedIndex) {
                     currentGameResult.assassination = {
-                        role: "lovers",
-                        players: [assassinationFirstPlayerSelect.value, assassinationSecondPlayerSelect.value]
+                        role: "Lovers",
+                        players: [Number(assassinationFirstPlayerSelect.value), Number(assassinationSecondPlayerSelect.value)]
                     };
                     finishGameButton.onclick = function () {
                         socket.emit('finish-game-local', {gameResult: currentGameResult});
@@ -418,7 +418,7 @@ document.addEventListener('DOMContentLoaded', function () {
                 if (assassinationFirstPlayerSelect.selectedIndex !== 0) {
                     currentGameResult.assassination = {
                         role: assassinationRoleSelect.value,
-                        players: [assassinationFirstPlayerSelect.value]
+                        players: [Number(assassinationFirstPlayerSelect.value)]
                     };
                     finishGameButton.onclick = function () {
                         socket.emit('finish-game-local', {gameResult: currentGameResult});
@@ -537,8 +537,8 @@ document.addEventListener('DOMContentLoaded', function () {
 
     function createMissionResultSelect(id, enableNoneOption) {
         const missionResultSelect = createSelect(id, enableNoneOption);
-        missionResultSelect.appendChild(createOption("resistance", "Resistance"));
-        missionResultSelect.appendChild(createOption("spies", "Spies"));
+        missionResultSelect.appendChild(createOption("Resistance", "Resistance"));
+        missionResultSelect.appendChild(createOption("Spies", "Spies"));
         return missionResultSelect;
     }
 
