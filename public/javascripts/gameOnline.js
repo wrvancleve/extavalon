@@ -126,7 +126,7 @@ document.addEventListener('DOMContentLoaded', function () {
     const openIntelModalButton = document.getElementById(OPEN_INTEL_MODAL_BUTTON_ID);
     const closeIntelModalButton = document.getElementById(CLOSE_INTEL_MODAL_BUTTON_ID);
     const startGameButton = document.getElementById(START_GAME_BUTTON_ID);
-    const closeGameButton = document.getElementById(CLOSE_LOBBY_BUTTON_ID);
+    const closeGameButton = document.getElementById(CLOSE_GAME_BUTTON_ID);
     const game = document.getElementById(GAME_ID);
 
     const statusMessage = document.getElementById(STATUS_MESSAGE_ID);

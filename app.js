@@ -18,9 +18,10 @@ const newGameRouter = require('./routes/new');
 const gameLocalRouter = require('./routes/gameLocal');
 const gameOnlineRouter = require('./routes/gameOnline');
 
-const lobbyCollection = require('./models/lobbyCollection');
+const lobbyManager = require('./models/lobbyManager');
 const Game = require('./models/game');
 const GameState = require('./models/gameState');
+const { choice } = require('./utils/random');
 
 const app = express();
 
@@ -65,13 +66,13 @@ app.createServer = function() {
 
   function closeLobby(lobby) {
     const code = lobby.code;
-    lobbyCollection.lobbies.delete(code);
+    lobbyManager.delete(code);
     io.sockets.to(code).emit('close-lobby');
   };
 
   setInterval(function() {
     var time = Date.now();
-    for (let lobby of lobbyCollection.lobbies.values()) {
+    for (let lobby of lobbyManager.lobbies.values()) {
       if (lobby.updateTime < (time - 3600000)) {
         closeLobby(lobby);
       }
@@ -167,14 +168,50 @@ app.createServer = function() {
     sendUpdatePlayers(lobby, lobby.code);
   }
 
-  function startLocalGame(lobby) {
-    const activePlayers = lobby.playerCollection.getActivePlayers();
-    const game = new Game(activePlayers.map(({name}) => ({name})), lobby.settings);
+  function handleStartLocalGame(lobby) {
+    const gamePlayers = lobby.playerCollection.getActivePlayers();
+    const game = new Game(gamePlayers.map(({name}) => ({name})), lobby.settings);
     lobby.game = game;
     lobby.playerCollection.clearPlayerIds();
+    lobby.currentIdentityPicker = getIdentityPickerSessionId(lobby, gamePlayers);
+
+    for (let i = 0; i < gamePlayers.length; i++) {
+      const currentPlayer = gamePlayers[i];
+      lobby.playerCollection.updatePlayerIdBySessionId(currentPlayer.sessionId, i);
+
+      if (currentPlayer.sessionId === lobby.currentIdentityPicker) {
+        sendPickIdentity(lobby.game, currentPlayer);
+      } else {
+        sendLocalGameSetup(currentPlayer);
+      }
+    }
+  }
+
+  function getIdentityPickerSessionId(lobby, gamePlayers) {
+    const possibleIdentityPickers = [];
+    for (let gamePlayer of gamePlayers) {
+      if (!lobby.previousIdentityPickers.includes(gamePlayer.sessionId)) {
+        possibleIdentityPickers.push(gamePlayer.sessionId);
+      }
+    }
+
+    if (possibleIdentityPickers.length === 0) {
+      lobby.previousIdentityPickers = [];
+      Array.prototype.push.apply(possibleIdentityPickers, gamePlayers.map(player => player.sessionId));
+    }
+
+    return choice(possibleIdentityPickers);
+  }
+
+  function handleIdentityPick(lobby, identityPickInformation) {
+    lobby.game.assignRoles([identityPickInformation]);
+
+    lobby.previousIdentityPickers.push(lobby.currentIdentityPicker);
+    lobby.currentIdentityPicker = null;
+
+    const activePlayers = lobby.playerCollection.getActivePlayers();
     for (var i = 0; i < activePlayers.length; i++) {
       const currentPlayer = activePlayers[i];
-      lobby.playerCollection.updatePlayerIdBySessionId(currentPlayer.sessionId, i);
       sendStartLocalGame(lobby.game, currentPlayer);
     }
   }
@@ -191,12 +228,25 @@ app.createServer = function() {
     lobby.game = game;
     lobby.lastGunSlots = null;
     lobby.playerCollection.clearPlayerIds();
+    lobby.game.assignRoles([]);
     for (var i = 0; i < activePlayers.length; i++) {
       const currentPlayer = activePlayers[i];
       lobby.playerCollection.updatePlayerIdBySessionId(currentPlayer.sessionId, i);
       sendStartOnlineGame(lobby.game, currentPlayer);
     }
     startProposal(lobby);
+  }
+
+  function sendPickIdentity(game, receiver) {
+    const possibleRoles = game.getPossibleRoles();
+    io.sockets.to(receiver.socketId).emit('pick-identity', {
+      possibleResistanceRoles: possibleRoles.resistanceRoles,
+      possibleSpyRoles: possibleRoles.spyRoles
+    });
+  }
+
+  function sendLocalGameSetup(receiver) {
+    io.sockets.to(receiver.socketId).emit('setup-game');
   }
 
   function sendStartLocalGame(game, receiver) {
@@ -377,7 +427,7 @@ app.createServer = function() {
     const name = socket.handshake.query.name;
     const sessionId = socket.request.session.id;
 
-    const lobby = lobbyCollection.lobbies.get(code);
+    const lobby = lobbyManager.get(code);
     if (lobby) {
       lobby.updateTime = Date.now();
       if (!lobby.playerCollection.doesSessionIdExist(socket.request.session.id)) {
@@ -389,9 +439,15 @@ app.createServer = function() {
 
       sendUpdatePlayers(lobby, lobby.code);
 
+      socket.on('pick-identity', ({identityPickInformation}) => {
+        lobby.updateTime = Date.now();
+        identityPickInformation.id = lobby.playerCollection.getPlayerIdOfSessionId(sessionId);
+        handleIdentityPick(lobby, identityPickInformation);
+      });
+
       socket.on('start-game-local', () => {
         lobby.updateTime = Date.now();
-        startLocalGame(lobby);
+        handleStartLocalGame(lobby);
       });
 
       socket.on('finish-game-local', () => {

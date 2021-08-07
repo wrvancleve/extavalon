@@ -1,10 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const { check, validationResult } = require('express-validator');
-const lobbyCollection = require('../models/lobbyCollection');
-const PlayerCollection = require('../models/playerCollection');
-
-const code_length = 4;
+const lobbyManager = require('../models/lobbyManager');
 
 /* GET new page. */
 router.get('/', function(req, res) {
@@ -15,22 +12,6 @@ router.get('/', function(req, res) {
   res.render('new', { title: 'New Game', errors: req.session.errors, online: online });
   req.session.errors = null;
 });
-
-function generate_code() {
-    var code = null;
-    do {
-        var result = '';
-        const characters = 'ABCDEFGHJKLMNOPQRSTUVWXYZ';
-        for (var i = 0; i < code_length; i++) {
-            result += characters.charAt(Math.floor(Math.random() * characters.length));
-        }
-
-        if (!lobbyCollection.lobbies.has(code)) {
-            code = result;
-        }
-    } while (code === null);
-    return code;
-}
 
 router.post('/', [check('name', 'Invalid Name').trim().matches("^[ a-zA-z0-9]{2,12}$")], function(req, res) {
     const errors = validationResult(req);
@@ -48,17 +29,7 @@ router.post('/', [check('name', 'Invalid Name').trim().matches("^[ a-zA-z0-9]{2,
 
         const type = req.query.type || 'local';
         const name = req.body.name
-        const code = generate_code();
-        const newLobby = {
-            code: code,
-            host: req.sessionID,
-            type: type,
-            settings: settings,
-            playerCollection: new PlayerCollection(),
-            game: null,
-            updateTime: Date.now()
-        };
-        lobbyCollection.lobbies.set(code, newLobby);
+        const code = lobbyManager.create(req.sessionID, type, settings);
         
         req.session.backURL = `/new?type=${type}`;
         res.redirect(`/game-${type}?code=${code}&name=${name}`);

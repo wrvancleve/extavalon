@@ -18,6 +18,10 @@ class PlayerCollection {
         return this.players.filter(player => player.active);
     }
 
+    getGamePlayers() {
+        return this.playersByPlayerId.values();
+    }
+
     doesSessionIdExist(sessionId) {
         return this.playersBySessionId.has(sessionId);
     }
@@ -107,6 +111,7 @@ class PlayerCollection {
         for (let player of this.players) {
             player.id = null;
         }
+        this.playersByPlayerId.clear();
     }
 
     _updateSocketId(player, socketId) {

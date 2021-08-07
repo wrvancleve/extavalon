@@ -17,6 +17,46 @@ const CLOSE_LOBBY_BUTTON_ID = "close-lobby-button";
 const GAME_INFORMATION_ID = "game-information";
 const GAME_CODE_ID = "game-code";
 
+function createButton(text, styleClasses) {
+    const buttonElement = document.createElement('button');
+    buttonElement.innerText = text;
+    for (let styleClass of styleClasses) {
+        buttonElement.classList.add(styleClass);
+    }
+    return buttonElement;
+}
+
+function createOption(value, text) {
+    const optionElement = document.createElement('option');
+    optionElement.value = value;
+    if (text) {
+        optionElement.innerText = text;
+    }
+    return optionElement;
+}
+
+function addClassToElement(element, className) {
+    if (!element.classList.contains(className)) {
+        element.classList.add(className);
+    }
+}
+
+function removeClassFromElement(element, className) {
+    if (element.classList.contains(className)) {
+        element.classList.remove(className);
+    }
+}
+
+function setButtonDisabled(buttonElement, disabled) {
+    buttonElement.disabled = disabled;
+    if (buttonElement.disabled) {
+        addClassToElement(buttonElement, "future-disabled");
+        buttonElement.removeAttribute("onclick");
+    } else {
+        removeClassFromElement(buttonElement, "future-disabled");
+    }
+}
+
 document.addEventListener('DOMContentLoaded', function () {
     const {name, code} = Qs.parse(location.search, {
         ignoreQueryPrefix: true
@@ -116,6 +156,65 @@ document.addEventListener('DOMContentLoaded', function () {
         }
     }
 
+    function handleSetupGame() {
+        gameInformation.innerHTML = "";
+        removeClassFromElement(gameInformation, "active");
+        const waitingHeader = document.createElement("h2");
+        waitingHeader.innerText = "Waiting for role information...";
+        gameInformation.appendChild(waitingHeader);
+    }
+
+    function handlePickIdentity(possibleResistanceRoles, possibleSpyRoles) {
+        gameInformation.innerHTML = "";
+
+        const identityHeader = document.createElement("h2");
+        identityHeader.innerText = "Congratulations, you may select your role/team for this game!";
+
+        const identitySelect = document.createElement("select");
+        const blankOption = createOption("none");
+        blankOption.selected = true;
+        blankOption.disabled = true;
+        identitySelect.appendChild(blankOption);
+        identitySelect.appendChild(createOption("Resistance", "Resistance"));
+        for (let possibleResistanceRole of possibleResistanceRoles) {
+            identitySelect.appendChild(createOption(possibleResistanceRole, `(Resistance) ${possibleResistanceRole}`));
+        }
+        identitySelect.appendChild(createOption("Spy", "Spy"));
+        for (let possibleSpyRole of possibleSpyRoles) {
+            identitySelect.appendChild(createOption(possibleSpyRole, `(Spy) ${possibleSpyRole}`));
+        }
+
+        const submitIdentitySelectionButton = createButton("Submit", ["future-color", "future-secondary-font", "future-box"]);
+        setButtonDisabled(submitIdentitySelectionButton, true);
+
+        identitySelect.onchange = function () {
+            if (identitySelect.selectedIndex !== 0) {
+                setButtonDisabled(submitIdentitySelectionButton, false);
+                submitIdentitySelectionButton.onclick = function () {
+                    handleSubmitIdentitySelection(identitySelect.value);
+                };
+            } else {
+                setButtonDisabled(submitIdentitySelectionButton, true);
+            }
+        };
+
+        gameInformation.appendChild(identityHeader);
+        gameInformation.appendChild(identitySelect);
+        gameInformation.appendChild(submitIdentitySelectionButton);
+    }
+
+    function handleSubmitIdentitySelection(identitySelection) {
+        const identityPickInformation = {
+            value: identitySelection
+        }
+        if (identitySelection === "Resistance" || identitySelection === "Spy") {
+            identityPickInformation.type = "Team";
+        } else {
+            identityPickInformation.type = "Role";
+        }
+        socket.emit('pick-identity', ({identityPickInformation}));
+    }
+
     function startGame(gameHTML, amFirstPlayer) {
         lobbyInformation.style.display = "none";
 
@@ -131,9 +230,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
         gameInformation.innerHTML = gameHTML;
 
-        if (!gameInformation.classList.contains("active")) {
-            gameInformation.classList.add("active");
-        }
+        addClassToElement(gameInformation, "active");
 
         if (startGameButton) {
             startGameButton.innerHTML = 'New Game';
@@ -169,6 +266,14 @@ document.addEventListener('DOMContentLoaded', function () {
     // Attach Socket functions
     socket.on('update-players', currentPlayers => {
         updateLobby(currentPlayers);
+    });
+
+    socket.on('setup-game', () => {
+        handleSetupGame();
+    });
+
+    socket.on('pick-identity', ({possibleResistanceRoles, possibleSpyRoles}) => {
+        handlePickIdentity(possibleResistanceRoles, possibleSpyRoles);
     });
     
     socket.on('start-game', ({gameHTML, amFirstPlayer}) => {

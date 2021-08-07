@@ -242,12 +242,7 @@ input:checked + .slider:before {
 }
 
 select {
-  width: 100px;
-  height: 34px;
-}
-
-.setting-item select {
-  margin-block-start: 2vh;
+  height: 2em;
 }
 
 /* Game Lobby Page */
@@ -340,6 +335,7 @@ select {
 #game-information {
   text-align: center;
   color: #b6f0fc;
+  align-items: center;
 }
 
 #game-information section {

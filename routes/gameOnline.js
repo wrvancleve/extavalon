@@ -1,7 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const { check, validationResult } = require('express-validator');
-const lobbyCollection = require('../models/lobbyCollection');
+const lobbyManager = require('../models/lobbyManager');
 
 /* GET game page. */
 router.get('/', [check('name', 'Invalid Name').trim().matches("^[ a-zA-z0-9]{2,12}$")],
@@ -15,8 +15,8 @@ router.get('/', [check('name', 'Invalid Name').trim().matches("^[ a-zA-z0-9]{2,1
             res.redirect(redirectURL);
         } else {
             const code = req.query.code;
-            if (lobbyCollection.lobbies.has(code)) {
-                const lobby = lobbyCollection.lobbies.get(code);
+            if (lobbyManager.has(code)) {
+                const lobby = lobbyManager.get(code);
                 const host = lobby.host === req.sessionID;
                 //const lobbyFull = !lobby.playerCollection.doesSocketIdExist() && lobby.playerCollection.getPlayerCount() === 10;
                 const lobbyFull = false;

@@ -1,7 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const { check, validationResult } = require('express-validator');
-const lobbyCollection = require('../models/lobbyCollection');
+const lobbyManager = require('../models/lobbyManager');
 
 /* GET join page. */
 router.get('/', function(req, res) {
@@ -18,11 +18,11 @@ router.post('/', [check('name', 'Invalid Name').trim().matches("^[ a-zA-z0-9]{2,
       const code = req.body.code;
       const name = req.body.name;
 
-      if (!lobbyCollection.lobbies.has(code)) {
+      if (!lobbyManager.has(code)) {
         req.session.errors = [{msg: "Game not found!"}];
         res.redirect(`/join`);
       } else {
-        const lobby = lobbyCollection.lobbies.get(code);
+        const lobby = lobbyManager.get(code);
         req.session.backURL = `/join`;
         res.redirect(`/game-${lobby.type}?code=${code}&name=${name}`);
       }

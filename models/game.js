@@ -7,7 +7,58 @@ const Proposal = require('./proposal');
 class Game {
     constructor(playerInformation, settings) {
         this.state = new GameState(playerInformation, settings);
+        this.startTime = Date.now();
         this.resultHTML = null;
+    }
+
+    getPossibleRoles() {
+        const possibleResistanceRoles = [
+            Roles.Merlin.name,
+            Roles.Percival.name,
+            Roles.Uther.name,
+            Roles.Tristan.name,
+            Roles.Iseult.name,
+            Roles.Arthur.name,
+            Roles.Lancelot.name,
+            Roles.Jester.name
+        ];
+        if (this.state.playerCount > 6) {
+            possibleResistanceRoles.push(Roles.Guinevere.name);
+            possibleResistanceRoles.push(Roles.Puck.name);
+        }
+        if (this.state.settings.galahad) {
+            possibleResistanceRoles.push(Roles.Galahad.name);
+        }
+        if (this.state.playerCount > 8) {
+            if (this.state.settings.bedivere) {
+                possibleResistanceRoles.push(Roles.Bedivere.name);
+            }
+            if (this.state.settings.titania) {
+                possibleResistanceRoles.push(Roles.Titania.name);
+            }
+        }
+
+        const possibleSpyRoles = [
+            Roles.Mordred.name,
+            Roles.Morgana.name,
+            Roles.Maelagant.name,
+            Roles.Colgrevance.name
+        ];
+        if (this.state.settings.accolon && this.state.playerCount > 6) {
+            possibleSpyRoles.push(Roles.Accolon.name);
+        }
+        if (this.state.settings.lucius && this.state.playerCount > 7) {
+            possibleSpyRoles.push(Roles.Lucius.name);
+        }
+
+        return {
+            resistanceRoles: possibleResistanceRoles,
+            spyRoles: possibleSpyRoles
+        };
+    }
+
+    assignRoles(identityPickInformation) {
+        this.state.assignRoles(identityPickInformation);
     }
 
     getPlayerHTML(id) {
