@@ -45,7 +45,7 @@ router.post('/', function(req, res) {
 });
 
 function getPlayerId(firstName, lastName, callback) {
-    const query = `select get_player_id('${firstName}', '${lastName}') as player_id`;
+    const query = `select extavalon.get_player_id('${firstName}', '${lastName}') as player_id`;
     postgres.query(query, (err, result) => {
         if (err) {
             console.log(err.stack)

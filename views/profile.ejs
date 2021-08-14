@@ -1,0 +1,69 @@
+<html lang="en">
+    <head>
+        <%- include('./partials/head.ejs') %>
+        <link rel="stylesheet" type="text/css" href="/stylesheets/profile.css">
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/qs/6.9.4/qs.min.js"
+                integrity="sha512-BHtomM5XDcUy7tDNcrcX1Eh0RogdWiMdXl3wJcKB3PFekXb3l5aDzymaTher61u6vEZySnoC/SAj2Y/p918Y3w=="
+                crossorigin="anonymous">
+        </script>
+    </head>
+    <body>
+        <div class="flex-column" id="root">
+            <h1 class="future-header-box" id="extavalon-title"><a class="future-link" href="/">extavalon</a></h1>
+            <section class="profile-section flex-column future-box">
+                <h2>Profile Information:</h2>
+                <dl class="property-table">
+                    <dt class="property-tag">First Name:</dt>
+                    <dd class="property-value"><%= firstName %></dd>
+                    <dt class="property-tag">Last Name:</dt>
+                    <dd class="property-value"><%= lastName %></dd>
+                </dl>
+            </section>
+            <section class="profile-section flex-column future-box">
+                <h2>Game Logs:</h2>
+                <% if (gameLog) { %>
+                    <% gameLog.forEach(game => { %>
+                        <section class="game-log">
+                            <p>Your Role: <%= game.role %></p>
+                            <p>Winner: <%= game.winning_team %></p>
+                            <div class="mission-results">
+                                <span>Missions:</span>
+                                <% if (game.mission_one_winner) { %>
+                                    <img src="/images/successful-mission.png" alt="Success">
+                                <% } else { %>
+                                    <img src="/images/failed-mission.png" alt="Fail">
+                                <% } %>
+                                <% if (game.mission_two_winner) { %>
+                                    <img src="/images/successful-mission.png" alt="Success">
+                                <% } else { %>
+                                    <img src="/images/failed-mission.png" alt="Fail">
+                                <% } %>
+                                <% if (game.mission_three_winner) { %>
+                                    <img src="/images/successful-mission.png" alt="Success">
+                                <% } else { %>
+                                    <img src="/images/failed-mission.png" alt="Fail">
+                                <% } %>
+                                <% if (game.mission_four_exists) { %>
+                                    <% if (game.mission_four_winner) { %>
+                                        <img src="/images/successful-mission.png" alt="Success">
+                                    <% } else { %>
+                                        <img src="/images/failed-mission.png" alt="Fail">
+                                    <% } %>
+                                <% } %>
+                                <% if (game.mission_five_exists) { %>
+                                    <% if (game.mission_five_winner) { %>
+                                        <img src="/images/successful-mission.png" alt="Success">
+                                    <% } else { %>
+                                        <img src="/images/failed-mission.png" alt="Fail">
+                                    <% } %>
+                                <% } %>
+                            </div>
+                        </section>
+                    <% }) %>
+                <% } else { %>
+                    <h3 style="text-align: center;">No Game History Found</h3>
+                <% } %>
+            </section>
+        </div>
+    </body>
+</html>

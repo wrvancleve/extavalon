@@ -1,0 +1,48 @@
+@import 'main';
+
+a.future-link { 
+    color: inherit;
+}
+
+section.profile-section {
+    padding: 2vh 2vw;
+    width: 75vw;
+    max-width: 75vw;
+    margin: 3vh auto 0vh auto;
+}
+  
+.mission-results {
+    align-items: center;
+    display: flex;
+}
+  
+section.game-log {
+    border: 2px solid #029dbb;
+    box-shadow: 0 0 4px rgba(2,157,187,0.65);
+    padding: 1vh 1vw;
+}
+  
+section.game-log + section.game-log {
+    margin-top: 1vh;
+}
+  
+section.game-log img {
+    width: 2.5vw;
+    margin-left: 0.5vw;
+}
+  
+dl.property-table {
+    margin: 0vh 2vw;
+    line-height: 2em;
+}
+  
+dt.property-tag {
+    float: left;
+    clear: left;
+    width: 10vw;
+    font-weight: bold;
+}
+  
+dd.property-value {
+    float: left;
+}

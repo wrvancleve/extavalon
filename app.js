@@ -6,13 +6,14 @@ const path = require('path');
 const cookieParser = require('cookie-parser');
 const bodyParser = require('body-parser');
 const logger = require('morgan');
-const hbs = require('express-handlebars');
 const expressSession = require('express-session');
 const http = require('http');
+const sassMiddleware = require('node-sass-middleware');
 
 const indexRouter = require('./routes/index');
 const loginRouter = require('./routes/login');
 const profileRouter = require('./routes/profile');
+const statsRouter = require('./routes/stats');
 const gameRouter = require('./routes/game');
 
 const lobbyManager = require('./models/lobbyManager');
@@ -23,10 +24,8 @@ const postgres = require('./models/database');
 
 const app = express();
 
-// view engine setup
-app.engine('hbs', hbs({extname: 'hbs', defaultLayout: 'layout', layoutsDir: __dirname + '/views/layouts/'}))
 app.set('views', path.join(__dirname, 'views'));
-app.set('view engine', 'hbs');
+app.set('view engine', 'ejs');
 
 const sessionMiddleware = expressSession({
   secret: 'extavalon',
@@ -40,11 +39,20 @@ app.use(logger('dev'));
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(cookieParser());
+app.use(
+  sassMiddleware({
+    src: __dirname + '/sass',
+    dest: __dirname + '/public/stylesheets',
+    prefix: '/stylesheets',
+    debug: true,
+  })
+);
 app.use(express.static(path.join(__dirname, 'public')));
 
 app.use('/', indexRouter);
 app.use('/login', loginRouter);
 app.use('/profile', profileRouter);
+app.use('/stats', statsRouter);
 app.use('/game', gameRouter);
 
 app.createServer = function() {
@@ -231,7 +239,7 @@ app.createServer = function() {
     const game = lobby.game;
     const gameWinner = lobby.game.processLocalGameResult(gameResult.missions, gameResult.assassination);
     const createGameQuery = `
-      select create_game('${game.startTime.toISOString()}',
+      select extavalon.create_game('${game.startTime.toISOString()}',
                                    '${new Date(Date.now()).toISOString()}',
                                    ${gameResult.missions[0] ? `'${gameResult.missions[0]}'` : 'null'},
                                    ${gameResult.missions[1] ? `'${gameResult.missions[1]}'` : 'null'},
@@ -247,7 +255,7 @@ app.createServer = function() {
       let insertAssassinationQuery = null;
       if (gameResult.assassination.players.length > 1) {
         insertAssassinationQuery = `
-          insert into game_assassinations(game_id, assassin_player_id, target_one_player_id, target_one_role, target_two_player_id, target_two_role, successful)
+          insert into extavalon.game_assassinations(game_id, assassin_player_id, target_one_player_id, target_one_role, target_two_player_id, target_two_role, successful)
             values (${gameId},
                     ${lobby.playerCollection.getUserIdOfPlayerId(game.state.assassinId)},
                     ${lobby.playerCollection.getUserIdOfPlayerId(gameResult.assassination.players[0])},
@@ -258,7 +266,7 @@ app.createServer = function() {
         `;
       } else {
         insertAssassinationQuery = `
-          insert into game_assassinations(game_id, assassin_player_id, target_one_player_id, target_one_role, successful)
+          insert into extavalon.game_assassinations(game_id, assassin_player_id, target_one_player_id, target_one_role, successful)
             values (${gameId},
                     ${lobby.playerCollection.getUserIdOfPlayerId(game.state.assassinId)},
                     ${lobby.playerCollection.getUserIdOfPlayerId(gameResult.assassination.players[0])},
@@ -271,7 +279,7 @@ app.createServer = function() {
 
     for (let player of game.state.players) {
       const insertGamePlayerQuery = `
-        insert into game_players(game_id, player_id, role)
+        insert into extavalon.game_players(game_id, player_id, role)
           values(${gameId}, ${lobby.playerCollection.getUserIdOfPlayerId(player.id)}, '${player.role.name}');
       `;
       await postgres.query(insertGamePlayerQuery);
@@ -587,7 +595,7 @@ app.use(function(err, req, res, next) {
 
   // render the error page
   res.status(err.status || 500);
-  res.render('error');
+  res.render('error', { title: 'Error', message: err });
 });
 
 process.on('SIGINT', function() {

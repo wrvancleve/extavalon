@@ -1,0 +1,21 @@
+<html lang="en">
+    <head>
+        <%- include('./partials/head.ejs') %>
+        <link rel="stylesheet" type="text/css" href="/stylesheets/main.css">
+        <script src="/javascripts/login.js"></script>
+    </head>
+    <body>
+        <div class="flex-column" id="root">
+            <h1 class="future-header-box" id="extavalon-title">extavalon</h1>
+            <%- include('./partials/error.ejs') %>
+            <form action="/login" method="post" autocomplete="off">
+                <input class="future-input" type="text" placeholder="Enter First Name"
+                       maxlength="16" id="first-name-input" name="firstName" required />
+                <input class="future-input" type="text" placeholder="Enter Last Name"
+                       maxlength="16" id="last-name-input" name="lastName" required />
+                <input class="future-button future-button-disabled" type="submit"
+                       value="Login" id="login-button" disabled />
+            </form>
+        </div>
+    </body>
+</html>

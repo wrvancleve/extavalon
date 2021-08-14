@@ -1,0 +1,131 @@
+body {
+  background-image: url("../images/background-large.jpg");
+  font-family: 'Helvetica', sans-serif;
+  color: #9debfb; }
+
+form {
+  display: flex;
+  flex-direction: column; }
+
+.flex-column {
+  display: flex;
+  flex-direction: column; }
+
+.future-header {
+  font-family: Candara, sans-serif;
+  text-shadow: 0 0 4px rgba(161, 236, 251, 0.65); }
+
+.future-header-box {
+  font-family: Candara, sans-serif;
+  text-shadow: 0 0 4px rgba(161, 236, 251, 0.65);
+  background-color: transparent;
+  border: 2px solid #029dbb;
+  box-shadow: 0 0 4px rgba(2, 157, 187, 0.65); }
+
+button.future-button, input[type=submit].future-button {
+  color: #9debfb;
+  font-family: Candara, sans-serif;
+  font-size: 1.5em;
+  font-weight: 700;
+  text-shadow: 0 0 4px rgba(161, 236, 251, 0.65);
+  background-color: transparent;
+  border: 2px solid #029dbb;
+  box-shadow: 0 0 4px rgba(2, 157, 187, 0.65);
+  align-items: flex-start;
+  display: inline-block;
+  text-align: center;
+  cursor: pointer;
+  outline: none;
+  padding: 1px 6px;
+  width: 80vw;
+  max-width: 400px;
+  height: 20vw;
+  max-height: 70px;
+  margin: auto;
+  margin-top: 2vh;
+  border-radius: 20vw;
+  box-sizing: border-box; }
+
+.future-button-disabled {
+  color: #0790ab;
+  cursor: default !important; }
+
+input:not([type=submit]).future-input {
+  color: #9debfb;
+  font-size: 1.5em;
+  box-sizing: border-box;
+  border-radius: 20vw;
+  border: 2px solid #029dbb;
+  box-shadow: 0 0 4px rgba(2, 157, 187, 0.65);
+  outline: none;
+  padding: 0 20px;
+  width: 80vw;
+  max-width: 400px;
+  height: 20vw;
+  max-height: 70px;
+  margin: auto;
+  margin-top: 2vh;
+  display: inline-block;
+  align-items: flex-start;
+  text-align: start;
+  background-color: transparent; }
+
+input:not([type=submit]).future-input::placeholder {
+  color: #08a5c4;
+  opacity: 1; }
+
+input:not([type=submit]).future-input:-ms-input-placeholder {
+  color: #08a5c4; }
+
+input:not([type=submit]).future-input::-ms-input-placeholder {
+  color: #08a5c4; }
+
+#errors {
+  border: 1px solid;
+  margin: 2vh auto 0px;
+  padding: 1vh 1vw;
+  width: 80vw;
+  max-width: 400px;
+  background-repeat: no-repeat;
+  background-position: 10px center;
+  color: #D8000C;
+  background-color: transparent;
+  text-align: center; }
+
+a.future-link {
+  color: inherit; }
+
+section.profile-section {
+  padding: 2vh 2vw;
+  width: 75vw;
+  max-width: 75vw;
+  margin: 3vh auto 0vh auto; }
+
+.mission-results {
+  align-items: center;
+  display: flex; }
+
+section.game-log {
+  border: 2px solid #029dbb;
+  box-shadow: 0 0 4px rgba(2, 157, 187, 0.65);
+  padding: 1vh 1vw; }
+
+section.game-log + section.game-log {
+  margin-top: 1vh; }
+
+section.game-log img {
+  width: 2.5vw;
+  margin-left: 0.5vw; }
+
+dl.property-table {
+  margin: 0vh 2vw;
+  line-height: 2em; }
+
+dt.property-tag {
+  float: left;
+  clear: left;
+  width: 10vw;
+  font-weight: bold; }
+
+dd.property-value {
+  float: left; }

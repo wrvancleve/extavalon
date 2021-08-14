@@ -5,7 +5,7 @@ const postgres = require('../models/database');
 
 /* GET home page. */
 router.get('/', authenticate, function(req, res) {
-  const gameLogQuery = `select * from get_games(${req.cookies.userId})`;
+  const gameLogQuery = `select * from extavalon.get_games(${req.cookies.userId})`;
   postgres.query(gameLogQuery, (err, result) => {
     let gameLog = null;
     if (err) {

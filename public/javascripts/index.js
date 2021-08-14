@@ -1,5 +1,5 @@
-const ROOT_URL = "https://extavalon.com";
-//const ROOT_URL = "http://192.168.1.107:25565";
+//const ROOT_URL = "https://extavalon.com";
+const ROOT_URL = "http://192.168.1.107:25565";
 
 const ROOT_ID = "root";
 const ERRORS_ID = "errors";
@@ -42,9 +42,7 @@ document.addEventListener('DOMContentLoaded', function () {
         textInput.required = true;
         textInput.placeholder = placeholder;
         textInput.maxLength = maxLength;
-        textInput.classList.add("future-color");
-        textInput.classList.add("future-secondary-font");
-        textInput.classList.add("future-box");
+        textInput.classList.add("future-input");
         return textInput;
     }
 
@@ -52,9 +50,7 @@ document.addEventListener('DOMContentLoaded', function () {
         const submitInput = document.createElement("input");
         submitInput.type = "submit";
         submitInput.value = text;
-        submitInput.classList.add("future-color");
-        submitInput.classList.add("future-secondary-font");
-        submitInput.classList.add("future-box");
+        submitInput.classList.add("future-button");
         return submitInput;
     }
 
@@ -71,11 +67,9 @@ document.addEventListener('DOMContentLoaded', function () {
         button.id = id;
         button.innerText = text;
         button.disabled = disabled;
-        button.classList.add("future-color");
-        button.classList.add("future-secondary-font");
-        button.classList.add("future-box");
+        button.classList.add("future-button");
         if (disabled) {
-            button.classList.add("future-disabled");
+            button.classList.add("future-button-disabled");
         }
         return button;
     }
@@ -107,8 +101,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
         const settingHeader = document.createElement("h3");
         settingHeader.innerText = text;
-        settingHeader.classList.add("future-color");
-        settingHeader.classList.add("future-secondary-font");
+        settingHeader.classList.add("future-header");
 
         const settingSwitch = document.createElement("label");
         settingSwitch.classList.add("switch");

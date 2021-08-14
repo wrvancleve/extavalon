@@ -1,0 +1,7 @@
+<% if (errors) { %>
+    <section id="errors">
+        <% errors.forEach(error => { %>
+            <p><%= error.msg %></p>
+        <% }) %>
+    </section>
+<% } %>

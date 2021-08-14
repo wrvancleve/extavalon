@@ -14,13 +14,13 @@ document.addEventListener('DOMContentLoaded', function () {
         const firstNameCheck = checkRequiredTextInput(firstNameInput, 2, 16, loginButton);
         const lastNameCheck = checkRequiredTextInput(lastNameInput, 2, 16, loginButton);
         if (firstNameCheck && lastNameCheck) {
-            if (loginButton.classList.contains("future-disabled")) {
-                loginButton.classList.remove("future-disabled");
+            if (loginButton.classList.contains("future-button-disabled")) {
+                loginButton.classList.remove("future-button-disabled");
             }
             loginButton.disabled = false;
         } else {
-            if (!loginButton.classList.contains("future-disabled")) {
-                loginButton.classList.add("future-disabled");
+            if (!loginButton.classList.contains("future-button-disabled")) {
+                loginButton.classList.add("future-button-disabled");
             }
             loginButton.disabled = true;
         }
