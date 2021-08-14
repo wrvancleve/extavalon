@@ -396,7 +396,7 @@ select {
   cursor: pointer;
 }
 
-#game-information {
+#game-information, #setup-game {
   text-align: center;
   color: #b6f0fc;
   align-items: center;

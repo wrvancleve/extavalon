@@ -18,6 +18,8 @@ const CLOSE_INTEL_MODAL_BUTTON_ID = "close-intel-modal-button";
 const START_GAME_BUTTON_ID = "start-game-button";
 const CLOSE_GAME_BUTTON_ID = "close-game-button";
 const GAME_ID = "game";
+const ROOT_ID = "root";
+const SETUP_GAME_ID = "setup-game";
 
 const STATUS_MESSAGE_ID = "status-message";
 const BOARD_AREA_ID = "board-area";
@@ -93,6 +95,15 @@ function hideElement(element) {
     element.disable = true;
 }
 
+function createOption(value, text) {
+    const optionElement = document.createElement('option');
+    optionElement.value = value;
+    if (text) {
+        optionElement.innerText = text;
+    }
+    return optionElement;
+}
+
 function createButton(text, styleClasses) {
     const button = document.createElement('button');
     button.innerText = text;
@@ -100,6 +111,15 @@ function createButton(text, styleClasses) {
         button.classList.add(styleClass);
     }
     return button;
+}
+
+function createHeaderTwo(text, styleClasses) {
+    const headerTwoElement = document.createElement('h2');
+    headerTwoElement.innerText = text;
+    for (let styleClass of styleClasses) {
+        headerTwoElement.classList.add(styleClass);
+    }
+    return headerTwoElement;
 }
 
 function createImage(id, src, alt, styleClasses) {
@@ -113,6 +133,24 @@ function createImage(id, src, alt, styleClasses) {
         image.classList.add(styleClass);
     }
     return image;
+}
+
+function clearChildrenFromElement(element) {
+    while (element.children.length > 0) {
+        element.removeChild(element.lastChild);
+    }
+}
+
+function setButtonDisabled(buttonElement, disabled, removeOnClick=true) {
+    buttonElement.disabled = disabled;
+    if (buttonElement.disabled) {
+        addClassToElement(buttonElement, "future-disabled");
+        if (removeOnClick) {
+            buttonElement.removeAttribute("onclick");
+        }
+    } else {
+        removeClassFromElement(buttonElement, "future-disabled");
+    }
 }
 
 document.addEventListener('DOMContentLoaded', function () {
@@ -141,6 +179,7 @@ document.addEventListener('DOMContentLoaded', function () {
     const startGameButton = document.getElementById(START_GAME_BUTTON_ID);
     const closeGameButton = document.getElementById(CLOSE_GAME_BUTTON_ID);
     const game = document.getElementById(GAME_ID);
+    const root = document.getElementById(ROOT_ID);
 
     const statusMessage = document.getElementById(STATUS_MESSAGE_ID);
     const boardArea = document.getElementById(BOARD_AREA_ID);
@@ -202,7 +241,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
     if (startGameButton) {
         startGameButton.onclick = function () {
-            socket.emit('start-game-online');
+            socket.emit('start-game');
         };
         closeGameButton.onclick = function () {
             socket.emit('close-lobby');
@@ -239,13 +278,98 @@ document.addEventListener('DOMContentLoaded', function () {
         }
     }
 
-    function setupGame(gameHTML, players) {
+    function handleSetupGame() {
+        const setupDiv = document.createElement('div');
+        setupDiv.id = SETUP_GAME_ID;
+        setupDiv.classList.add("flex-column");
+        const waitingHeader = createHeaderTwo("Waiting for role information...", ["future-color"]);
+        setupDiv.appendChild(waitingHeader);
+        handleSetupGameDiv(setupDiv);
+    }
+
+    function handlePickIdentity(possibleResistanceRoles, possibleSpyRoles) {
+        const setupDiv = document.createElement('div');
+        setupDiv.id = SETUP_GAME_ID;
+        setupDiv.classList.add("flex-column");
+
+        const identityHeader = createHeaderTwo("Congratulations, you may select your role/team for this game!", ["future-color"]);
+
+        const identitySelect = document.createElement("select");
+        const blankOption = createOption("none");
+        blankOption.selected = true;
+        blankOption.disabled = true;
+        identitySelect.appendChild(blankOption);
+        identitySelect.appendChild(createOption("Resistance", "Resistance"));
+        for (let possibleResistanceRole of possibleResistanceRoles) {
+            identitySelect.appendChild(createOption(possibleResistanceRole, `(Resistance) ${possibleResistanceRole}`));
+        }
+        identitySelect.appendChild(createOption("Spy", "Spy"));
+        for (let possibleSpyRole of possibleSpyRoles) {
+            identitySelect.appendChild(createOption(possibleSpyRole, `(Spy) ${possibleSpyRole}`));
+        }
+
+        const submitIdentitySelectionButton = createButton("Submit", ["future-color", "future-secondary-font", "future-box"]);
+        setButtonDisabled(submitIdentitySelectionButton, true);
+
+        identitySelect.onchange = function () {
+            if (identitySelect.selectedIndex !== 0) {
+                setButtonDisabled(submitIdentitySelectionButton, false);
+                submitIdentitySelectionButton.onclick = function () {
+                    handleSubmitIdentitySelection(identitySelect.value);
+                };
+            } else {
+                setButtonDisabled(submitIdentitySelectionButton, true);
+            }
+        };
+
+        setupDiv.appendChild(identityHeader);
+        setupDiv.appendChild(identitySelect);
+        setupDiv.appendChild(submitIdentitySelectionButton);
+        handleSetupGameDiv(setupDiv);
+    }
+
+    function handleSetupGameDiv(setupDiv) {
+        root.appendChild(setupDiv);
+
+        game.style.display = "none";
+        lobbyInformation.style.display = "none";
+        if (toggleHostInformationButton) {
+            toggleHostInformationButton.style.display = "none";
+        }
+        if (startGameButton) {
+            startGameButton.style.display = "none";
+            closeGameButton.style.display = "none";
+        }
+        openIntelModalButton.style.display = "none";
+        intelModal.style.display = "none";
+        resultsModal.style.display = "none";
+    }
+
+    function handleSubmitIdentitySelection(identitySelection) {
+        const identityPickInformation = {
+            value: identitySelection
+        }
+        if (identitySelection === "Resistance" || identitySelection === "Spy") {
+            identityPickInformation.type = "Team";
+        } else {
+            identityPickInformation.type = "Role";
+        }
+        socket.emit('pick-identity', ({identityPickInformation}));
+    }
+
+    function handleStartGame(gameHTML, players) {
         gamePlayers = [];
         gunSelected = null;
         playersSelected = null;
-        leftPlayerArea.innerHTML = "";
-        topPlayerArea.innerHTML = "";
-        rightPlayerArea.innerHTML = "";
+
+        const setupGameDiv = document.getElementById(SETUP_GAME_ID);
+        if (setupGameDiv) {
+            root.removeChild(setupGameDiv);
+        }
+
+        clearChildrenFromElement(leftPlayerArea);
+        clearChildrenFromElement(topPlayerArea);
+        clearChildrenFromElement(rightPlayerArea);
         lobbyInformation.style.display = "none";
         if (startGameButton) {
             startGameButton.style.display = "none";
@@ -1004,9 +1128,17 @@ document.addEventListener('DOMContentLoaded', function () {
     socket.on('update-players', ({currentPlayers}) => {
         updateLobby(currentPlayers);
     });
+
+    socket.on('setup-game', () => {
+        handleSetupGame();
+    });
+
+    socket.on('pick-identity', ({possibleResistanceRoles, possibleSpyRoles}) => {
+        handlePickIdentity(possibleResistanceRoles, possibleSpyRoles);
+    });
     
     socket.on('start-game', ({gameHTML, players}) => {
-        setupGame(gameHTML, players);
+        handleStartGame(gameHTML, players);
     });
 
     socket.on('close-lobby', () => {

@@ -78,7 +78,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
     if (startGameButton) {
         startGameButton.onclick = function () {
-            socket.emit('start-game-local');
+            socket.emit('start-game');
         };
         finishGameButton.style.display = "none";
         closeLobbyButton.onclick = function () {
