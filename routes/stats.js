@@ -1,45 +1,62 @@
 const express = require('express');
 const router = express.Router();
 const authenticate = require('../middleware/authenticate');
-const postgres = require('../models/database');
+const {
+  getTeamStats,
+  getRoleStats,
+  getRoleAssassinationStats,
+  getTeamPlayerStats,
+  getRolePlayerStats,
+  getPlayerAssassinationStats,
+  getPlayerAssassinatedStats
+} = require('../models/database');
 
-
-  
-  
-  
-
-/* GET home page. */
 router.get('/', authenticate, function(req, res) {
-  const playerTeamStatsQuery = `
-    select
-      players.player_id,
-      players.first_name,
-      players.last_name,
-      COUNT(*) filter (where extavalon.is_resistance_role(game_players.role) and games.winning_team = 'Resistance') as ResistanceWins,
-      COUNT(*) filter (where extavalon.is_resistance_role(game_players.role) and games.winning_team != 'Resistance') as ResistanceLosses,
-      COUNT(*) filter (where extavalon.is_spy_role(game_players.role) and games.winning_team = 'Spies') as SpyWins,
-      COUNT(*) filter (where extavalon.is_spy_role(game_players.role) and games.winning_team != 'Spies') as SpyLosses,
-      COUNT(*) filter (where game_players.role = 'Jester' and games.winning_team = 'Jester') as JesterWins,
-      COUNT(*) filter (where game_players.role = 'Jester' and games.winning_team != 'Jester') as JesterLosses
-    from extavalon.players players
-      inner join extavalon.game_players game_players on (players.player_id = game_players.player_id)
-      inner join extavalon.games games on (games.game_id = game_players.game_id)
-    group by players.player_id
-    order by players.player_id;
-  `;
-  postgres.query(playerTeamStatsQuery, (err, result) => {
-    let playerTeamStats = null;
-    if (err) {
-        console.log(err.stack)
-    } else {
-      playerTeamStats = result.rows;
-    }
+  res.render('stats', {title: 'Stats'});
+});
 
-    res.render('stats', {
-      title: 'Stats',
-      playerTeamStats: playerTeamStats
-    });
+router.post('/team', function(req, res) {
+  getTeamStats((teamStats) => {
+    res.send(teamStats);
   });
 });
+
+router.post('/role', function(req, res) {
+  getRoleStats((roleStats) => {
+    res.send(roleStats);
+  });
+});
+
+router.post('/role-assassinations', function(req, res) {
+  getRoleAssassinationStats((roleAssassinationStats) => {
+    res.send(roleAssassinationStats);
+  });
+});
+
+router.post('/team-player', function(req, res) {
+  getTeamPlayerStats(req.body.team, (teamPlayerStats) => {
+    res.send(teamPlayerStats);
+  });
+});
+
+router.post('/role-player', function(req, res) {
+  getRolePlayerStats(req.body.role, (rolePlayerStats) => {
+    res.send(rolePlayerStats);
+  });
+});
+
+router.post('/player-assassination', function(req, res) {
+  getPlayerAssassinationStats((playerAssassinationStats) => {
+    res.send(playerAssassinationStats);
+  });
+});
+
+router.post('/player-assassinated', function(req, res) {
+  getPlayerAssassinatedStats((playerAssassinatedStats) => {
+    res.send(playerAssassinatedStats);
+  });
+});
+
+
 
 module.exports = router;

@@ -20,7 +20,12 @@ const lobbyManager = require('./models/lobbyManager');
 const Game = require('./models/game');
 const GameState = require('./models/gameState');
 const { choice } = require('./utils/random');
-const postgres = require('./models/database');
+const { 
+  createGame,
+  insertSingleAssassination,
+  insertPairedAssassination,
+  insertGamePlayer
+} = require('./models/database');
 
 const app = express();
 
@@ -86,71 +91,79 @@ app.createServer = function() {
       const currentPlayer = lobby.playerCollection.getPlayerOfUserId(userId);
       if (currentPlayer.id !== null) {
         if (lobby.type === 'online') {
-          sendStartOnlineGame(lobby.game, currentPlayer);
-          const leader = sendUpdateLeader(lobby.game, socketId);
-          sendMissionResults(lobby, socketId);
-          sendUpdateTeam(lobby.lastGunSlots, socketId);
-  
-          if (lobby.game.state.phase >= GameState.PHASE_VOTE_REACT) {
-            sendVoteResult(lobby, socketId);
-          }
-  
-          if (lobby.game.state.phase >= GameState.PHASE_CONDUCT_REACT) {
-            sendMissionResult(lobby, socketId, true);
-          }
-  
-          switch (lobby.game.state.phase) {
-            case GameState.PHASE_PROPOSE:
-              sendStatusMessage(`${leader.name} is proposing team...`, socketId);
-              if (lobby.game.getCurrentLeader().id === currentPlayer.id) {
-                sendProposeTeam(lobby, socketId);
-              }
-              break;
-            case GameState.PHASE_VOTE:
-              const currentProposal = lobby.game.getCurrentProposal();
-              let playerVote = null;
-              for (let [playerId, vote] of currentProposal.getVotes()) {
-                sendPlayerVoted(playerId, socketId);
-                if (playerId === currentPlayer.id) {
-                  playerVote = vote;
+          if (lobby.currentIdentityPicker) {
+            if (currentPlayer.userId === lobby.currentIdentityPicker) {
+              sendPickIdentity(lobby.game, currentPlayer);
+            } else {
+              sendGameSetup(currentPlayer);
+            }
+          } else {
+            sendStartOnlineGame(lobby.game, currentPlayer);
+            const leader = sendUpdateLeader(lobby.game, socketId);
+            sendMissionResults(lobby, socketId);
+            sendUpdateTeam(lobby.lastGunSlots, socketId);
+
+            if (lobby.game.state.phase >= GameState.PHASE_VOTE_REACT) {
+              sendVoteResult(lobby, socketId);
+            }
+
+            if (lobby.game.state.phase >= GameState.PHASE_CONDUCT_REACT) {
+              sendMissionResult(lobby, socketId, true);
+            }
+
+            switch (lobby.game.state.phase) {
+              case GameState.PHASE_PROPOSE:
+                sendStatusMessage(`${leader.name} is proposing team...`, socketId);
+                if (lobby.game.getCurrentLeader().id === currentPlayer.id) {
+                  sendProposeTeam(lobby, socketId);
                 }
-              }
-              sendVoteTeam(playerVote, socketId);
-              break;
-            case GameState.PHASE_VOTE_REACT:
-              if (currentPlayer.id === 0) {
-                sendReact(socketId);
-              }
-              break;
-            case GameState.PHASE_CONDUCT:
-              const currentMission = lobby.game.getCurrentMission();
-              if (currentMission.getMissionTeam().includes(currentPlayer.id) && !currentMission.hasConducted(currentPlayer.id)) {
-                sendConductMission(lobby.game, currentPlayer);
-              }
-              sendStatusMessage("Conducting mission...", socketId);
-              break;
-            case GameState.PHASE_CONDUCT_REACT:
-              if (currentPlayer.id === 0) {
-                sendReact(socketId);
-              }
-              break;
-            case GameState.PHASE_ASSASSINATION:
-              const assassin = lobby.playerCollection.getPlayerOfPlayerId(lobby.game.state.assassinId);
-              if (currentPlayer.id === assassin.id) {
-                sendConductAssassination(socketId);
-              }
-              sendStatusMessage(`${assassin.name} is choosing who to assassinate...`, socketId);
-              break;
-            case GameState.PHASE_DONE:
-              sendGameResult(lobby, socketId);
-              break;
+                break;
+              case GameState.PHASE_VOTE:
+                const currentProposal = lobby.game.getCurrentProposal();
+                let playerVote = null;
+                for (let [playerId, vote] of currentProposal.getVotes()) {
+                  sendPlayerVoted(playerId, socketId);
+                  if (playerId === currentPlayer.id) {
+                    playerVote = vote;
+                  }
+                }
+                sendVoteTeam(playerVote, socketId);
+                break;
+              case GameState.PHASE_VOTE_REACT:
+                if (currentPlayer.id === 0) {
+                  sendReact(socketId);
+                }
+                break;
+              case GameState.PHASE_CONDUCT:
+                const currentMission = lobby.game.getCurrentMission();
+                if (currentMission.getMissionTeam().includes(currentPlayer.id) && !currentMission.hasConducted(currentPlayer.id)) {
+                  sendConductMission(lobby.game, currentPlayer);
+                }
+                sendStatusMessage("Conducting mission...", socketId);
+                break;
+              case GameState.PHASE_CONDUCT_REACT:
+                if (currentPlayer.id === 0) {
+                  sendReact(socketId);
+                }
+                break;
+              case GameState.PHASE_ASSASSINATION:
+                const assassin = lobby.playerCollection.getPlayerOfPlayerId(lobby.game.state.assassinId);
+                if (currentPlayer.id === assassin.id) {
+                  sendConductAssassination(socketId);
+                }
+                sendStatusMessage(`${assassin.displayName} is choosing who to assassinate...`, socketId);
+                break;
+              case GameState.PHASE_DONE:
+                sendGameResult(lobby, socketId);
+                break;
+            }
           }
         } else {
           if (lobby.currentIdentityPicker) {
             if (currentPlayer.userId === lobby.currentIdentityPicker) {
               sendPickIdentity(lobby.game, currentPlayer);
             } else {
-              sendLocalGameSetup(currentPlayer);
+              sendGameSetup(currentPlayer);
             }
           } else {
             sendStartLocalGame(lobby.game, currentPlayer);
@@ -188,10 +201,11 @@ app.createServer = function() {
     sendUpdatePlayers(lobby);
   }
 
-  function handleStartLocalGame(lobby) {
+  function handleStartGame(lobby) {
     const players = lobby.playerCollection.getPlayers();
     const game = new Game(players.map(({ displayName }) => ({name: displayName})), lobby.settings);
     lobby.game = game;
+    lobby.lastGunSlots = null;
     lobby.playerCollection.clearPlayerIds();
     lobby.currentIdentityPicker = getIdentityPickerUserId(lobby, players);
 
@@ -201,7 +215,7 @@ app.createServer = function() {
       if (currentPlayer.userId === lobby.currentIdentityPicker) {
         sendPickIdentity(lobby.game, currentPlayer);
       } else {
-        sendLocalGameSetup(currentPlayer);
+        sendGameSetup(currentPlayer);
       }
     }
   }
@@ -229,60 +243,46 @@ app.createServer = function() {
     lobby.currentIdentityPicker = null;
 
     const players = lobby.playerCollection.getPlayers();
+    const onlineGame = lobby.type === 'online';
     for (var i = 0; i < players.length; i++) {
       const currentPlayer = players[i];
-      sendStartLocalGame(lobby.game, currentPlayer);
+      if (onlineGame) {
+        sendStartOnlineGame(lobby.game, currentPlayer);
+      } else {
+        sendStartLocalGame(lobby.game, currentPlayer);
+      }
+    }
+
+    if (onlineGame) {
+      startProposal(lobby);
     }
   }
 
   async function processLocalGameResults(lobby, gameResult) {
     const game = lobby.game;
     const gameWinner = lobby.game.processLocalGameResult(gameResult.missions, gameResult.assassination);
-    const createGameQuery = `
-      select extavalon.create_game('${game.startTime.toISOString()}',
-                                   '${new Date(Date.now()).toISOString()}',
-                                   ${gameResult.missions[0] ? `'${gameResult.missions[0]}'` : 'null'},
-                                   ${gameResult.missions[1] ? `'${gameResult.missions[1]}'` : 'null'},
-                                   ${gameResult.missions[2] ? `'${gameResult.missions[2]}'` : 'null'},
-                                   ${gameResult.missions[3] ? `'${gameResult.missions[3]}'` : 'null'},
-                                   ${gameResult.missions[4] ? `'${gameResult.missions[4]}'` : 'null'},
-                                   '${gameWinner}') as game_id
-    `;
-    const createGameQueryResult = await postgres.query(createGameQuery);
-    const gameId = createGameQueryResult.rows[0].game_id;
+    const gameId = await createGame(game, gameResult, gameWinner);
     if (gameResult.assassination) {
       const assassinationSuccessful = gameWinner === "Spies";
-      let insertAssassinationQuery = null;
       if (gameResult.assassination.players.length > 1) {
-        insertAssassinationQuery = `
-          insert into extavalon.game_assassinations(game_id, assassin_player_id, target_one_player_id, target_one_role, target_two_player_id, target_two_role, successful)
-            values (${gameId},
-                    ${lobby.playerCollection.getUserIdOfPlayerId(game.state.assassinId)},
-                    ${lobby.playerCollection.getUserIdOfPlayerId(gameResult.assassination.players[0])},
-                    '${gameResult.assassination.role}',
-                    ${lobby.playerCollection.getUserIdOfPlayerId(gameResult.assassination.players[1])},
-                    '${gameResult.assassination.role}',
-                    ${assassinationSuccessful})
-        `;
+        await insertPairedAssassination(gameId,
+                                  lobby.playerCollection.getUserIdOfPlayerId(game.state.assassinId),
+                                  lobby.playerCollection.getUserIdOfPlayerId(gameResult.assassination.players[0]),
+                                  gameResult.assassination.role,
+                                  lobby.playerCollection.getUserIdOfPlayerId(gameResult.assassination.players[1]),
+                                  gameResult.assassination.role,
+                                  assassinationSuccessful);
       } else {
-        insertAssassinationQuery = `
-          insert into extavalon.game_assassinations(game_id, assassin_player_id, target_one_player_id, target_one_role, successful)
-            values (${gameId},
-                    ${lobby.playerCollection.getUserIdOfPlayerId(game.state.assassinId)},
-                    ${lobby.playerCollection.getUserIdOfPlayerId(gameResult.assassination.players[0])},
-                    '${gameResult.assassination.role}',
-                    ${assassinationSuccessful})
-        `;
+        await insertSingleAssassination(gameId,
+                                  lobby.playerCollection.getUserIdOfPlayerId(game.state.assassinId),
+                                  lobby.playerCollection.getUserIdOfPlayerId(gameResult.assassination.players[0]),
+                                  gameResult.assassination.role,
+                                  assassinationSuccessful);
       }
-      await postgres.query(insertAssassinationQuery);
     }
 
     for (let player of game.state.players) {
-      const insertGamePlayerQuery = `
-        insert into extavalon.game_players(game_id, player_id, role)
-          values(${gameId}, ${lobby.playerCollection.getUserIdOfPlayerId(player.id)}, '${player.role.name}');
-      `;
-      await postgres.query(insertGamePlayerQuery);
+      await insertGamePlayer(gameId, lobby.playerCollection.getUserIdOfPlayerId(player.id), player.role.name);
     }
   }
 
@@ -290,21 +290,6 @@ app.createServer = function() {
     const resistancePlayers = lobby.game.getResistancePlayers();
     const spyPlayers = lobby.game.getSpyPlayers();
     io.sockets.to(lobby.code).emit('finish-game-local', {resistancePlayers, spyPlayers});
-  }
-
-  function startOnlineGame(lobby) {
-    const players = lobby.playerCollection.getPlayers();
-    const game = new Game(players.map(({displayName}) => ({name: displayName})), lobby.settings);
-    lobby.game = game;
-    lobby.lastGunSlots = null;
-    lobby.playerCollection.clearPlayerIds();
-    lobby.game.assignRoles([]);
-    for (var i = 0; i < players.length; i++) {
-      const currentPlayer = players[i];
-      lobby.playerCollection.updatePlayerIdByUserId(currentPlayer.userId, i);
-      sendStartOnlineGame(lobby.game, currentPlayer);
-    }
-    startProposal(lobby);
   }
 
   function sendPickIdentity(game, receiver) {
@@ -315,7 +300,7 @@ app.createServer = function() {
     });
   }
 
-  function sendLocalGameSetup(receiver) {
+  function sendGameSetup(receiver) {
     io.sockets.to(receiver.socketId).emit('setup-game');
   }
 
@@ -467,7 +452,7 @@ app.createServer = function() {
       if (lobby.game.getCurrentPhase() === GameState.PHASE_ASSASSINATION) {
         const assassin = lobby.playerCollection.getPlayerOfPlayerId(lobby.game.state.assassinId);
         sendConductAssassination(assassin.socketId);
-        sendStatusMessage(`${assassin.name} is choosing who to assassinate...`, lobby.code);
+        sendStatusMessage(`${assassin.displayName} is choosing who to assassinate...`, lobby.code);
       } else if (lobby.game.isGameOver()) {
         sendGameResult(lobby, lobby.code);
       } else {
@@ -514,9 +499,9 @@ app.createServer = function() {
         handleIdentityPick(lobby, identityPickInformation);
       });
 
-      socket.on('start-game-local', () => {
+      socket.on('start-game', () => {
         lobby.updateTime = Date.now();
-        handleStartLocalGame(lobby);
+        handleStartGame(lobby);
       });
 
       socket.on('setup-finish-game-local', () => {
@@ -528,11 +513,6 @@ app.createServer = function() {
         processLocalGameResults(lobby, gameResult).then(() => {
           finishLocalGame(lobby);
         });
-      });
-
-      socket.on('start-game-online', () => {
-        lobby.updateTime = Date.now();
-        startOnlineGame(lobby);
       });
 
       socket.on('update-team', ({gunSlots}) => {

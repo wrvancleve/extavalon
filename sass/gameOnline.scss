@@ -1,0 +1,257 @@
+@import 'game';
+
+.suspicious {
+    color: #F7FE2E !important;
+  }
+  
+.unknown {
+    @extend %future-color;
+}
+
+#propose-team {
+    display: none;
+    margin: auto;
+    max-width: 400px;
+    @extend %future-color;
+    width: 35vw;
+    @extend %future-box-transparent;
+    text-align: center;
+}
+  
+.clickable {
+    cursor: pointer;
+}
+  
+.online-modal {
+    max-height: 96vh;
+    box-sizing: border-box;
+    top: 2vh;
+    padding: 2vh 2vw;
+    overflow: auto;
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    z-index: 5;
+}
+  
+#open-intel-modal-button {
+    @extend %future-color;
+    @extend %future-box-transparent;
+    border-radius: 50%;
+    -webkit-border-radius: 50%;
+    width: 1.5em;
+    height: 1.5em;
+    font-size: 1.5em;
+    top: 10px;
+    right: calc(13px + 1.5em);
+    margin-top: 0px;
+    position: absolute;
+    z-index: 5;
+    cursor: pointer;
+}
+  
+#toggle-host-information-button {
+    border-radius: 50%;
+    -webkit-border-radius: 50%;
+    width: 1.5em;
+    height: 1.5em;
+    font-size: 1.5em;
+    top: 10px;
+    right: calc(16px + 3em);
+    margin-top: 0px;
+    position: absolute;
+    z-index: 5;
+    cursor: pointer;
+    @extend %future-color;
+    @extend %future-box-transparent;
+}
+
+#proposal-submit-button {
+    width: 25vw;
+}
+  
+#results-area, #intel-modal-area, #assassination-area {
+    align-items: center;
+    justify-content: center;
+    @extend %flex-column;
+    margin: auto;
+    text-align: center;
+}
+  
+#results-area p {
+    margin: 0px;
+}
+  
+#results-area section {
+    margin: 0.67em 0em;
+}
+  
+#intel-modal-area section {
+    margin: 0.67em 0em;
+}
+  
+#intel-modal-area p {
+    margin: 0px;
+}
+  
+#assassination-area h3 {
+    margin-top: 1vh;
+    margin-bottom: 1vh;
+}
+  
+#intel-modal {
+    color: #b6f0fc;
+    display: none;
+    background-color: rgb(0, 26, 26);
+    @extend %future-box;
+    font-family: 'Helvetica', sans-serif;
+    min-width: 30vw;
+    min-height: 30vh;
+    z-index: 7;
+}
+  
+#results-modal {
+    color: #b6f0fc;
+    display: none;
+    background-color: rgb(0, 26, 26);
+    @extend %future-box;
+    font-family: 'Helvetica', sans-serif;
+    min-width: 30vw;
+    min-height: 30vh;
+    z-index: 8;
+}
+  
+#assassination-modal {
+    color: #b6f0fc;
+    display: none;
+    background-color: rgb(0, 26, 26);
+    @extend %future-box;
+    font-family: 'Helvetica', sans-serif;
+    min-width: 30vw;
+    min-height: 30vh;
+}
+  
+#status-message {
+    display: block;
+    position: absolute;
+    left: 50%;
+    margin-top: 0px;
+    top: 10px;
+    transform: translate(-50%);
+    @extend %future-color;
+    text-align: center;
+}
+  
+.vertical-player-area {
+    display: flex;
+    justify-content: space-around;
+    width: 40vw;
+    margin: auto;
+    padding-top: 4vh;
+}
+  
+.vertical-player {
+    text-align: center;
+}
+  
+.vertical-player h3 {
+    margin: 0.5vh 0.5vw;
+}
+  
+#center-area {
+    display: flex;
+}
+  
+#game-board {
+    width: 43vw;
+    height: 43vh;
+    z-index: 0;
+}
+  
+#board-area {
+    position: relative;
+}
+  
+.result-image {
+    z-index: 1;
+    position: absolute;
+    height: 9vh;
+    width: 7vw;
+}
+  
+.horizontal-player-area {
+    height: 35vh;
+    width: 25vw;
+    @extend %flex-column;
+    justify-content: space-between;
+    margin: auto;
+}
+  
+.horizontal-player {
+    display: flex;
+    align-items: center;
+}
+  
+.horizontal-player h2 {
+    margin: 0.5vh 0.5vw;
+}
+  
+#left-player-area .horizontal-player {
+    justify-content: flex-end;
+}
+  
+#right-player-area .horizontal-player {
+    justify-content: flex-start;
+}
+  
+.current-leader {
+    text-decoration: underline;
+}
+  
+.gun-image {
+    height: 6vh;
+    width: 10vw;
+    min-height: 6vh;
+    min-width: 10vw;
+    border: 2px solid transparent;
+}
+  
+.vote-image {
+    height: 10vh;
+    width: 6vw;
+    min-height: 10vh;
+    min-width: 6vw;
+    border: 2px solid transparent;
+}
+  
+.action-image {
+    height: 16vh;
+    width: 12vw;
+    min-height: 16vh;
+    min-width: 12vw;
+    border: 2px solid transparent;
+}
+  
+.selected-image {
+    border: 2px solid rgb(0, 248, 248) !important;
+    box-shadow: 0 0 4px rgba(2,157,187,0.65);
+}
+  
+#action-area {
+    margin: auto;
+    @extend %future-color;
+    justify-content: center;
+    align-items: center;
+}
+  
+img + img {
+    margin-left: 0.5vw;
+}
+  
+#reset-assassination-button, #confirm-assassination-button {
+    width: 20vw;
+    height: 5vh;
+    margin-top: 1vh;
+    font-size: 1.25em;
+}

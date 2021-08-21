@@ -1,5 +1,5 @@
-//const ROOT_URL = "https://extavalon.com";
-const ROOT_URL = "http://192.168.1.107:25565";
+const ROOT_URL = "https://extavalon.com";
+//const ROOT_URL = "http://192.168.1.107:25565";
 
 const ROOT_ID = "root";
 const ERRORS_ID = "errors";
@@ -9,6 +9,8 @@ const BACK_BUTTON_TEXT = "Back";
 const NEW_LOCAL_GAME_FORM_ACTION = "";
 const PROFILE_BUTTON_ID = "profile-button";
 const PROFILE_BUTTON_TEXT = "Profile"
+const STATS_BUTTON_ID = "stats-button";
+const STATS_BUTTON_TEXT = "Stats"
 const SIGNOUT_BUTTON_ID = "signout-button";
 const SIGNOUT_BUTTON_TEXT = "Sign Out";
 
@@ -22,6 +24,98 @@ const CREATE_GAME_BUTTON_TEXT = "Create Game";
 const GAME_CODE_INPUT_NAME = "code";
 const GAME_CODE_INPUT_PLACEHOLDER = "Enter Game Code";
 
+function createTextInput(id, name, placeholder, maxLength) {
+    const textInput = document.createElement("input");
+    if (id) {
+        textInput.id = id;
+    }
+    if (name) {
+        textInput.name = name;
+    }
+    textInput.type = "text";
+    textInput.required = true;
+    textInput.placeholder = placeholder;
+    textInput.maxLength = maxLength;
+    textInput.classList.add("future-input");
+    return textInput;
+}
+
+function createSubmitInput(text) {
+    const submitInput = document.createElement("input");
+    submitInput.type = "submit";
+    submitInput.value = text;
+    submitInput.classList.add("future-button");
+    return submitInput;
+}
+
+function createHiddenInput(name, value) {
+    const hiddenInput = document.createElement("input");
+    hiddenInput.type = "hidden";
+    hiddenInput.name = name;
+    hiddenInput.value = value;
+    return hiddenInput;
+}
+
+function createButton(id, text, disabled) {
+    const button = document.createElement('button');
+    button.id = id;
+    button.innerText = text;
+    button.disabled = disabled;
+    button.classList.add("future-button");
+    if (disabled) {
+        button.classList.add("future-button-disabled");
+    }
+    return button;
+}
+
+function createForm(method, type) {
+    const form = document.createElement("form");
+    form.method = method;
+    form.action = "/game";
+    form.autocomplete = "off";
+    form.addEventListener('submit', (event) => {
+        if (type) {
+            form.appendChild(createHiddenInput("type", type));
+        }
+        form.submit();
+    });
+    return form;
+}
+
+function createDiv(styleClasses) {
+    const div = document.createElement("div");
+    for (let styleClass of styleClasses) {
+        div.classList.add(styleClass);
+    }
+    return div;
+}
+
+function createGameSettingItem(text, name) {
+    const settingItem = createDiv(["center-flex-row"]);
+
+    const settingHeader = document.createElement("label");
+    settingHeader.innerText = text;
+    settingHeader.classList.add("future-label");
+
+    const settingSwitch = document.createElement("label");
+    settingSwitch.classList.add("switch");
+
+    const settingInputCheckbox = document.createElement("input");
+    settingInputCheckbox.type = "checkbox";
+    settingInputCheckbox.name = name;
+    settingInputCheckbox.checked = true;
+
+    const settingSpanSlider = document.createElement("span");
+    settingSpanSlider.classList.add("slider");
+
+    settingSwitch.appendChild(settingInputCheckbox);
+    settingSwitch.appendChild(settingSpanSlider);
+    settingItem.appendChild(settingHeader);
+    settingItem.appendChild(settingSwitch);
+
+    return settingItem;
+}
+
 document.addEventListener('DOMContentLoaded', function () {
     const root = document.getElementById(ROOT_ID);
     const main = document.getElementById(MAIN_ID);
@@ -29,98 +123,6 @@ document.addEventListener('DOMContentLoaded', function () {
     var {menu} = Qs.parse(location.search, {
         ignoreQueryPrefix: true
     });
-
-    function createTextInput(id, name, placeholder, maxLength) {
-        const textInput = document.createElement("input");
-        if (id) {
-            textInput.id = id;
-        }
-        if (name) {
-            textInput.name = name;
-        }
-        textInput.type = "text";
-        textInput.required = true;
-        textInput.placeholder = placeholder;
-        textInput.maxLength = maxLength;
-        textInput.classList.add("future-input");
-        return textInput;
-    }
-
-    function createSubmitInput(text) {
-        const submitInput = document.createElement("input");
-        submitInput.type = "submit";
-        submitInput.value = text;
-        submitInput.classList.add("future-button");
-        return submitInput;
-    }
-
-    function createHiddenInput(name, value) {
-        const hiddenInput = document.createElement("input");
-        hiddenInput.type = "hidden";
-        hiddenInput.name = name;
-        hiddenInput.value = value;
-        return hiddenInput;
-    }
-
-    function createButton(id, text, disabled) {
-        const button = document.createElement('button');
-        button.id = id;
-        button.innerText = text;
-        button.disabled = disabled;
-        button.classList.add("future-button");
-        if (disabled) {
-            button.classList.add("future-button-disabled");
-        }
-        return button;
-    }
-
-    function createForm(method, type) {
-        const form = document.createElement("form");
-        form.method = method;
-        form.action = "/game";
-        form.autocomplete = "off";
-        form.addEventListener('submit', (event) => {
-            if (type) {
-                form.appendChild(createHiddenInput("type", type));
-            }
-            form.submit();
-        });
-        return form;
-    }
-
-    function createDiv(styleClasses) {
-        const div = document.createElement("div");
-        for (let styleClass of styleClasses) {
-            div.classList.add(styleClass);
-        }
-        return div;
-    }
-
-    function createGameSettingItem(text, name) {
-        const settingItem = createDiv(["setting-item"]);
-
-        const settingHeader = document.createElement("h3");
-        settingHeader.innerText = text;
-        settingHeader.classList.add("future-header");
-
-        const settingSwitch = document.createElement("label");
-        settingSwitch.classList.add("switch");
-
-        const settingInputCheckbox = document.createElement("input");
-        settingInputCheckbox.type = "checkbox";
-        settingInputCheckbox.name = name;
-        settingInputCheckbox.checked = true;
-
-        const settingSpanSlider = document.createElement("span");
-        settingSpanSlider.classList.add("slider");
-
-        settingSwitch.appendChild(settingInputCheckbox);
-        settingSwitch.appendChild(settingSpanSlider);
-        settingItem.appendChild(settingHeader);
-        settingItem.appendChild(settingSwitch);
-
-        return settingItem;
-    }
 
     function clearMain(clearErrors) {
         if (clearErrors) {
@@ -143,6 +145,7 @@ document.addEventListener('DOMContentLoaded', function () {
         clearMain(clearErrors);
 
         const profileButton = createButton(PROFILE_BUTTON_ID, PROFILE_BUTTON_TEXT, false);
+        const statsButton = createButton(STATS_BUTTON_ID, STATS_BUTTON_TEXT, false);
         const newLocalGameButton = createButton(NEW_LOCAL_GAME_BUTTON_ID, NEW_LOCAL_GAME_BUTTON_TEXT, false);
         const newOnlineGameButton = createButton(NEW_ONLINE_GAME_BUTTON_ID, NEW_ONLINE_GAME_BUTTON_TEXT, false);
         const joinGameButton = createButton(JOIN_GAME_BUTTON_ID, JOIN_GAME_BUTTON_TEXT, false);
@@ -150,6 +153,9 @@ document.addEventListener('DOMContentLoaded', function () {
 
         profileButton.onclick = function () {
             location.assign(`${ROOT_URL}/profile`);
+        };
+        statsButton.onclick = function () {
+            location.assign(`${ROOT_URL}/stats`);
         };
         newLocalGameButton.onclick = function () {
             handleNewGameButtonClick("local");
@@ -163,6 +169,7 @@ document.addEventListener('DOMContentLoaded', function () {
         };
 
         main.appendChild(profileButton);
+        main.appendChild(statsButton);
         main.appendChild(newLocalGameButton);
         main.appendChild(newOnlineGameButton);
         main.appendChild(joinGameButton);
@@ -173,7 +180,7 @@ document.addEventListener('DOMContentLoaded', function () {
         clearMain(clearErrors);
 
         const newGameForm = createForm("post", type)
-        const settingContainer = createDiv(["setting-container"]);
+        const settingContainer = createDiv(["center-flex-column"]);
         const bedivereSetting = createGameSettingItem("Bedivere:", "bedivere");
         const galahadSetting = createGameSettingItem("Galahad:", "galahad");
         const titaniaSetting = createGameSettingItem("Titania:", "titania");

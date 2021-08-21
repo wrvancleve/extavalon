@@ -9,9 +9,9 @@
     </head>
     <body>
         <div class="flex-column" id="root">
-            <h1 class="future-header-box" id="extavalon-title"><a class="future-link" href="/">extavalon</a></h1>
-            <section class="profile-section flex-column future-box">
-                <h2>Profile Information:</h2>
+            <h1 class="future-title-box"><a class="future-link" href="/">extavalon</a></h1>
+            <section class="future-section-boxed flex-column">
+                <h1 class="future-header">Profile Information:</h1>
                 <dl class="property-table">
                     <dt class="property-tag">First Name:</dt>
                     <dd class="property-value"><%= firstName %></dd>
@@ -19,8 +19,8 @@
                     <dd class="property-value"><%= lastName %></dd>
                 </dl>
             </section>
-            <section class="profile-section flex-column future-box">
-                <h2>Game Logs:</h2>
+            <section class="future-section-boxed flex-column">
+                <h1 class="future-header">Game Logs:</h1>
                 <% if (gameLog) { %>
                     <% gameLog.forEach(game => { %>
                         <section class="game-log">
@@ -61,7 +61,7 @@
                         </section>
                     <% }) %>
                 <% } else { %>
-                    <h3 style="text-align: center;">No Game History Found</h3>
+                    <h2 class="future-header" style="text-align: center;">No Game History Found</h2>
                 <% } %>
             </section>
         </div>

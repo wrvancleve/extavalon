@@ -1,0 +1,126 @@
+@import 'main';
+
+.player-active {
+    color: #228B22;
+}
+  
+.player-inactive {
+    color: #b3b3b3;
+}
+
+// Change to class
+#lobby-players {
+    margin: auto;
+    width: 80vw;
+    max-width: 400px;
+    border-bottom: 20px solid #029dbb;
+    box-shadow: 0 0 4px rgba(0,157,187,0);
+    @extend %future-color;
+    background: transparent;
+    border-bottom-left-radius: 10px;
+    border-bottom-right-radius: 10px;
+    margin-block-start: 2vh;
+}
+  
+#lobby-players h2 {
+    padding: 10px 20px;
+    margin: 0px;
+    font-size: 1.5em;
+    border-top-left-radius: 10px;
+    border-top-right-radius: 10px;
+    border: 1px solid #029dbb;
+    box-shadow: 0 0 4px rgba(2,157,187,0.65);
+}
+  
+#lobby-players ul, #propose-team ul {
+    position: relative;
+    padding-inline-start: 10px;
+    margin-block-start: 0px;
+    margin-block-end: 0px;
+    text-align: left;
+    border: 1px solid #029dbb;
+    box-shadow: 0 0 4px rgba(2,157,187,0.65);
+}
+  
+#lobby-player-list li, #proposal-player-list li {
+    list-style: none;
+    padding: 10px;
+    font-size: 1.25em;
+}
+  
+.remove-player-button {
+    font-size: 1.25em;
+    font-weight: 700;
+    @extend %future-color;
+    position: absolute;
+    right: 20px;
+}
+  
+.remove-player-button:hover,
+.remove-player-button:focus {
+    text-decoration: none;
+    cursor: pointer;
+    color: #08a5c4;
+}
+  
+.remove-player-button span {
+    display: block;
+    position: absolute;
+    top:0;
+    left:0;
+}
+
+.close-modal-button {
+    font-size: 1.75em;
+    font-weight: bold;
+    width: .75em;
+    height: 1em;
+    padding: 0px 0px;
+    margin: 0px 0px;
+    justify-content: center;
+    align-items: center;
+    display: flex;
+    background-color: transparent;
+    @extend %future-color;
+    border: none;
+    position: absolute;
+    right: 1em;
+}
+  
+.close-modal-button:hover,
+.close-modal-button:focus {
+    text-decoration: none;
+    cursor: pointer;
+    color: #08a5c4;
+}
+
+.open-modal-button {
+    border-radius: 50%;
+    -webkit-border-radius: 50%;
+    width: 1.5em;
+    height: 1.5em;
+    font-size: 1.5em;
+    top: 10px;
+    right: 10px;
+    margin-top: 0px;
+    position: absolute;
+    z-index: 5;
+    cursor: pointer;
+}
+
+#open-roles-modal-button {
+    @extend %future-color;
+    @extend %future-box-transparent;
+}
+
+#roles-modal {
+    display: none;
+    color: #b6f0fc;
+    @extend %future-box-transparent;
+    font-family: 'Helvetica', sans-serif;
+    z-index: 6;
+}
+
+#roles-modal h1 {
+    margin-inline-start: 10px;
+}

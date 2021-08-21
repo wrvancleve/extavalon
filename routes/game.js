@@ -3,7 +3,6 @@ const router = express.Router();
 const authenticate = require('../middleware/authenticate');
 const lobbyManager = require('../models/lobbyManager');
 
-/* GET game page. */
 router.get('/', authenticate, function(req, res) {
     const redirectURL = req.session.backURL || `/?menu=join`;
     const code = req.query.code;

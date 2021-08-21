@@ -1,7 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const { check, validationResult } = require('express-validator');
-const postgres = require('../models/database');
+const { getPlayerId } = require('../models/database');
 
 function titleCase (str) {
     if ((str===null) || (str===''))
@@ -12,7 +12,6 @@ function titleCase (str) {
    return str.replace(/\w\S*/g, function(txt){return txt.charAt(0).toUpperCase() + txt.substr(1).toLowerCase();});
   }
 
-/* GET home page. */
 router.get('/', function(req, res) {
     res.cookie('userId', {expires: Date.now()});
     res.cookie('firstName', {expires: Date.now()});
@@ -43,17 +42,5 @@ router.post('/', function(req, res) {
         });
     }
 });
-
-function getPlayerId(firstName, lastName, callback) {
-    const query = `select extavalon.get_player_id('${firstName}', '${lastName}') as player_id`;
-    postgres.query(query, (err, result) => {
-        if (err) {
-            console.log(err.stack)
-            callback(err, null);
-        } else {
-            callback(null, result.rows[0].player_id);
-        }
-    });
-}
 
 module.exports = router;

@@ -1,15 +1,4 @@
 @import 'main';
-
-a.future-link { 
-    color: inherit;
-}
-
-section.profile-section {
-    padding: 2vh 2vw;
-    width: 75vw;
-    max-width: 75vw;
-    margin: 3vh auto 0vh auto;
-}
   
 .mission-results {
     align-items: center;
@@ -17,8 +6,7 @@ section.profile-section {
 }
   
 section.game-log {
-    border: 2px solid #029dbb;
-    box-shadow: 0 0 4px rgba(2,157,187,0.65);
+    @extend %future-box;
     padding: 1vh 1vw;
 }
   

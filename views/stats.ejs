@@ -1,41 +1,30 @@
 <html lang="en">
     <head>
         <%- include('./partials/head.ejs') %>
-        <link rel="stylesheet" type="text/css" href="/stylesheets/stats.css">
         <link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/1.10.25/css/jquery.dataTables.css"></link>
+        <link rel="stylesheet" type="text/css" href="/stylesheets/stats.css">
         <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
         <script type="text/javascript" charset="utf8" src="https://cdn.datatables.net/1.10.25/js/jquery.dataTables.js"></script>
         <script src="/javascripts/stats.js"></script>
     </head>
     <body>
         <div class="flex-column" id="root">
-            <table class="future-color" id="player-team-stats" style="width:100%">
-                <thead>
-                    <tr>
-                        <th>First Name</th>
-                        <th>Last Name</th>
-                        <th>Resistance Wins</th>
-                        <th>Resistance Losses</th>
-                        <th>Spy Wins</th>
-                        <th>Spy Losses</th>
-                        <th>Jester Wins</th>
-                        <th>Jester Losses</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <% playerTeamStats.forEach(playerStats => { %>
-                        <tr>
-                            <td><%= playerStats.first_name %></td>
-                            <td><%=playerStats.last_name %></td>
-                            <td><%= playerStats.resistancewins %></td>
-                            <td><%= playerStats.resistancelosses %></td>
-                            <td><%= playerStats.spywins %></td>
-                            <td><%= playerStats.spylosses %></td>
-                            <td><%= playerStats.jesterwins %></td>
-                            <td><%= playerStats.jesterlosses %></td>
-                        </tr>
-                    <% }) %>
-                </tbody>
+            <h1 class="future-title-box"><a class="future-link" href="/">extavalon</a></h1>
+            <div id="stat-filters">
+                <div>
+                    <label class="future-header">Stat:</label>
+                    <select id="stat-name-filter-select"></select>
+                </div>
+                <div>
+                    <label class="future-header">For:</label>
+                    <select id="stat-for-filter-select"></select>
+                </div>
+                <div>
+                    <label class="future-header">By:</label>
+                    <select id="stat-by-filter-select"></select>
+                </div>
+            </div>
+            <table id="stat-table" class="compact cell-border">
             </table>
         </div>
     </body>

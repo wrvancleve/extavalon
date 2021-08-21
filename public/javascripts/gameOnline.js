@@ -1,5 +1,5 @@
-//const ROOT_URL = "https://extavalon.com";
-const ROOT_URL = "http://192.168.1.107:25565";
+const ROOT_URL = "https://extavalon.com";
+//const ROOT_URL = "http://192.168.1.107:25565";
 
 const LOBBY_INFORMATION_ID = "lobby-information";
 const TOGGLE_HOST_INFORMATION_BUTTON_ID = "toggle-host-information-button";
@@ -18,6 +18,8 @@ const CLOSE_INTEL_MODAL_BUTTON_ID = "close-intel-modal-button";
 const START_GAME_BUTTON_ID = "start-game-button";
 const CLOSE_GAME_BUTTON_ID = "close-game-button";
 const GAME_ID = "game";
+const ROOT_ID = "root";
+const SETUP_GAME_ID = "setup-game";
 
 const STATUS_MESSAGE_ID = "status-message";
 const BOARD_AREA_ID = "board-area";
@@ -93,26 +95,100 @@ function hideElement(element) {
     element.disable = true;
 }
 
-function createButton(text, styleClasses) {
-    const button = document.createElement('button');
-    button.innerText = text;
-    for (let styleClass of styleClasses) {
-        button.classList.add(styleClass);
+function createDiv(id, styleClasses) {
+    const divElement = document.createElement('div');
+    if (id) {
+        divElement.id = id;
     }
-    return button;
+    if (styleClasses) {
+        for (let styleClass of styleClasses) {
+            divElement.classList.add(styleClass);
+        }
+    }
+    return divElement;
+}
+
+function createSelect(id, enableNoneOption) {
+    const selectElement = document.createElement('select');
+    if (id) {
+        selectElement.id = id;
+    }
+    const noneResultOption = createOption("none");
+    noneResultOption.selected = true;
+    if (!enableNoneOption) {
+        noneResultOption.disabled = true;
+    }
+    selectElement.appendChild(noneResultOption);
+    return selectElement;
+}
+
+function createOption(value, text) {
+    const optionElement = document.createElement('option');
+    optionElement.value = value;
+    if (text) {
+        optionElement.innerText = text;
+    }
+    return optionElement;
+}
+
+function createButton(text, styleClasses) {
+    const buttonElement = document.createElement('button');
+    buttonElement.innerText = text;
+    if (styleClasses) {
+        for (let styleClass of styleClasses) {
+            buttonElement.classList.add(styleClass);
+        }
+    }
+    return buttonElement;
+}
+
+function createHeaderTwo(text, styleClasses) {
+    const headerTwoElement = document.createElement('h2');
+    headerTwoElement.innerText = text;
+    if (styleClasses) {
+        for (let styleClass of styleClasses) {
+            headerTwoElement.classList.add(styleClass);
+        }
+    }
+    return headerTwoElement;
 }
 
 function createImage(id, src, alt, styleClasses) {
-    const image = document.createElement('img');
+    const imageElement = document.createElement('img');
     if (id) {
-        image.id = id;
+        imageElement.id = id;
     }
-    image.src = src;
-    image.alt = alt;
-    for (let styleClass of styleClasses) {
-        image.classList.add(styleClass);
+    imageElement.src = src;
+    imageElement.alt = alt;
+    if (styleClasses) {
+        for (let styleClass of styleClasses) {
+            imageElement.classList.add(styleClass);
+        }
     }
-    return image;
+    return imageElement;
+}
+
+function clearChildrenFromElement(element) {
+    while (element.children.length > 0) {
+        element.removeChild(element.lastChild);
+    }
+}
+
+function setButtonDisabled(buttonElement, disabled, removeOnClick=true) {
+    buttonElement.disabled = disabled;
+    if (buttonElement.disabled) {
+        addClassToElement(buttonElement, "future-button-disabled");
+        if (removeOnClick) {
+            buttonElement.removeAttribute("onclick");
+        }
+    } else {
+        removeClassFromElement(buttonElement, "future-button-disabled");
+    }
+}
+
+function removeClickable(element) {
+    removeClassFromElement(element, "clickable");
+    element.removeAttribute("onclick");
 }
 
 document.addEventListener('DOMContentLoaded', function () {
@@ -141,6 +217,7 @@ document.addEventListener('DOMContentLoaded', function () {
     const startGameButton = document.getElementById(START_GAME_BUTTON_ID);
     const closeGameButton = document.getElementById(CLOSE_GAME_BUTTON_ID);
     const game = document.getElementById(GAME_ID);
+    const root = document.getElementById(ROOT_ID);
 
     const statusMessage = document.getElementById(STATUS_MESSAGE_ID);
     const boardArea = document.getElementById(BOARD_AREA_ID);
@@ -202,7 +279,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
     if (startGameButton) {
         startGameButton.onclick = function () {
-            socket.emit('start-game-online');
+            socket.emit('start-game');
         };
         closeGameButton.onclick = function () {
             socket.emit('close-lobby');
@@ -226,26 +303,121 @@ document.addEventListener('DOMContentLoaded', function () {
     function updateLobby(players) {
         const activePlayerCount = players.filter(p => p.active).length;
         document.getElementById(LOBBY_PLAYER_COUNT_ID).innerHTML = `Players [${activePlayerCount}]`;
-        document.getElementById(LOBBY_PLAYER_LIST_ID).innerHTML = `
-            ${players.map(player => `<li class="${player.active ? 'player-active' : 'player-inactive'}">${player.name}</li>`).join('')}
-        `;
-        if (startGameButton) {
-            startGameButton.disabled = activePlayerCount < 5;
-            if (startGameButton.disabled) {
-                startGameButton.classList.add("future-disabled");
-            } else {
-                startGameButton.classList.remove("future-disabled");
+        const lobbyPlayerList = document.getElementById(LOBBY_PLAYER_LIST_ID);
+
+        clearChildrenFromElement(lobbyPlayerList);
+        
+        for (let i = 0; i < players.length; i++) {
+            const player = players[i];
+            const playerListElement = document.createElement('li');
+            const playerNameElement = document.createElement('span');
+
+            playerNameElement.classList.add(player.active ? 'player-active' : 'player-inactive');
+            playerNameElement.innerHTML = player.name;
+            playerListElement.appendChild(playerNameElement);
+
+            if (startGameButton && !player.active) {
+                const playerKickElement = document.createElement('span');
+                playerKickElement.innerHTML = "&times;";
+                playerKickElement.classList.add('remove-player-button');
+                playerKickElement.onclick = function() {
+                    socket.emit('kick-player', i);
+                }
+                playerListElement.appendChild(playerKickElement);
             }
+
+            lobbyPlayerList.appendChild(playerListElement);
+        }
+
+        if (startGameButton) {
+            setButtonDisabled(startGameButton, activePlayerCount < 5, false);
         }
     }
 
-    function setupGame(gameHTML, players) {
+    function handleSetupGame() {
+        const setupDiv = createDiv(SETUP_GAME_ID, ["center-flex-column"]);
+        const waitingHeader = createHeaderTwo("Waiting for role information...", ["future-header"]);
+        setupDiv.appendChild(waitingHeader);
+        handleSetupGameDiv(setupDiv);
+    }
+
+    function handlePickIdentity(possibleResistanceRoles, possibleSpyRoles) {
+        const setupDiv = createDiv(SETUP_GAME_ID, ["center-flex-column"]);
+
+        const identityHeader = createHeaderTwo("Congratulations, you may select your role/team for this game!", ["future-header"]);
+
+        const identitySelect = createSelect(null, false);
+        identitySelect.appendChild(createOption("Resistance", "Resistance"));
+        for (let possibleResistanceRole of possibleResistanceRoles) {
+            identitySelect.appendChild(createOption(possibleResistanceRole, `(Resistance) ${possibleResistanceRole}`));
+        }
+        identitySelect.appendChild(createOption("Spy", "Spy"));
+        for (let possibleSpyRole of possibleSpyRoles) {
+            identitySelect.appendChild(createOption(possibleSpyRole, `(Spy) ${possibleSpyRole}`));
+        }
+
+        const submitIdentitySelectionButton = createButton("Submit", ["future-button"]);
+        setButtonDisabled(submitIdentitySelectionButton, true);
+
+        identitySelect.onchange = function () {
+            if (identitySelect.selectedIndex !== 0) {
+                setButtonDisabled(submitIdentitySelectionButton, false);
+                submitIdentitySelectionButton.onclick = function () {
+                    handleSubmitIdentitySelection(identitySelect.value);
+                };
+            } else {
+                setButtonDisabled(submitIdentitySelectionButton, true);
+            }
+        };
+
+        setupDiv.appendChild(identityHeader);
+        setupDiv.appendChild(identitySelect);
+        setupDiv.appendChild(submitIdentitySelectionButton);
+        handleSetupGameDiv(setupDiv);
+    }
+
+    function handleSetupGameDiv(setupDiv) {
+        root.appendChild(setupDiv);
+
+        game.style.display = "none";
+        lobbyInformation.style.display = "none";
+        if (toggleHostInformationButton) {
+            toggleHostInformationButton.style.display = "none";
+        }
+        if (startGameButton) {
+            startGameButton.style.display = "none";
+            closeGameButton.style.display = "none";
+        }
+        openIntelModalButton.style.display = "none";
+        intelModal.style.display = "none";
+        resultsModal.style.display = "none";
+    }
+
+    function handleSubmitIdentitySelection(identitySelection) {
+        const identityPickInformation = {
+            value: identitySelection
+        }
+        if (identitySelection === "Resistance" || identitySelection === "Spy") {
+            identityPickInformation.type = "Team";
+        } else {
+            identityPickInformation.type = "Role";
+        }
+        socket.emit('pick-identity', ({identityPickInformation}));
+    }
+
+    function handleStartGame(gameHTML, players) {
         gamePlayers = [];
         gunSelected = null;
         playersSelected = null;
-        leftPlayerArea.innerHTML = "";
-        topPlayerArea.innerHTML = "";
-        rightPlayerArea.innerHTML = "";
+
+        const setupGameDiv = document.getElementById(SETUP_GAME_ID);
+        if (setupGameDiv) {
+            root.removeChild(setupGameDiv);
+        }
+
+        clearChildrenFromElement(leftPlayerArea);
+        clearChildrenFromElement(topPlayerArea);
+        clearChildrenFromElement(rightPlayerArea);
         lobbyInformation.style.display = "none";
         if (startGameButton) {
             startGameButton.style.display = "none";
@@ -348,7 +520,7 @@ document.addEventListener('DOMContentLoaded', function () {
                 leftPlayerArea.innerHTML += `
                     <div class="horizontal-player">
                         <img class="gun-image" id="${elementPrefix}-gun-slot" src="${DEFAULT_GUN_SLOT_IMG_SRC}" alt="${DEFAULT_GUN_SLOT_IMG_ALT}" style="visibility:hidden"></img>
-                        <h3 class="${status}" id="${elementPrefix}-name">${name}</h3>
+                        <h2 class="future-header ${status}" id="${elementPrefix}-name">${name}</h2>
                         <img class="vote-image" id="${elementPrefix}-vote-slot" alt="${DEFAULT_VOTE_SLOT_IMG_ALT}" style="visibility:hidden"></img>
                     </div>
                 `; 
@@ -357,7 +529,7 @@ document.addEventListener('DOMContentLoaded', function () {
                 topPlayerArea.innerHTML += `
                     <div class="vertical-player">
                         <img class="gun-image" id="${elementPrefix}-gun-slot" src="${DEFAULT_GUN_SLOT_IMG_SRC}" alt="${DEFAULT_GUN_SLOT_IMG_ALT}" style="visibility:hidden"></img>
-                        <h3 class="${status}" id="${elementPrefix}-name">${name}</h3>
+                        <h2 class="future-header ${status}" id="${elementPrefix}-name">${name}</h2>
                         <img class="vote-image" id="${elementPrefix}-vote-slot" alt="${DEFAULT_VOTE_SLOT_IMG_ALT}" style="visibility:hidden"></img>
                     </div>
                 `; 
@@ -366,7 +538,7 @@ document.addEventListener('DOMContentLoaded', function () {
                 rightPlayerArea.innerHTML += `
                     <div class="horizontal-player">
                         <img class="vote-image" id="${elementPrefix}-vote-slot" alt="${DEFAULT_VOTE_SLOT_IMG_ALT}" style="visibility:hidden"></img>
-                        <h3 class="${status}" id="${elementPrefix}-name">${name}</h3>
+                        <h2 class="future-header ${status}" id="${elementPrefix}-name">${name}</h2>
                         <img class="gun-image" id="${elementPrefix}-gun-slot" src="${DEFAULT_GUN_SLOT_IMG_SRC}" alt="${DEFAULT_GUN_SLOT_IMG_ALT}" style="visibility:hidden"></img>
                     </div>
                 `; 
@@ -399,18 +571,18 @@ document.addEventListener('DOMContentLoaded', function () {
             playerGunSlot.alt = DEFAULT_GUN_SLOT_IMG_ALT;
 
             if (id === previousLeaderId) {
-                document.getElementById(player.nameId).classList.remove("current-leader");
+                removeClassFromElement(document.getElementById(player.nameId), "current-leader");
             } else if (id === leaderId) {
-                document.getElementById(player.nameId).classList.add("current-leader");
+                addClassToElement(document.getElementById(player.nameId), "current-leader");
             }
         }
 
-        actionArea.innerHTML = "";
+        clearChildrenFromElement(actionArea);
         gunSelected = null;
     }
 
     function showButton(text, handleClick) {
-        const button = createButton(text, ["future-color", "future-secondary-font", "future-box"]);
+        const button = createButton(text, ["future-button"]);
         button.onclick = handleClick;
         actionArea.appendChild(button);
     }
@@ -418,7 +590,7 @@ document.addEventListener('DOMContentLoaded', function () {
     function showConfirmProposal() {
         if (actionArea.getElementsByTagName("button").length === 0) {
             showButton("Confirm", function () {
-                actionArea.innerHTML = "";
+                clearChildrenFromElement(actionArea);
                 submitProposal();
             });
         }
@@ -427,14 +599,14 @@ document.addEventListener('DOMContentLoaded', function () {
     function showAdvance() {
         if (actionArea.getElementsByTagName("button").length === 0) {
             showButton("Advance", function () {
-                actionArea.innerHTML = "";
+                clearChildrenFromElement(actionArea);
                 socket.emit('advance-mission');
             });
         }
     }
 
     function setupProposal(gunSlots) {
-        actionArea.innerHTML = "";
+        clearChildrenFromElement(actionArea);
 
         // Set click events for guns already attached to players
         for (let i = 0; i < gamePlayers.length; i++) {
@@ -449,8 +621,7 @@ document.addEventListener('DOMContentLoaded', function () {
         }
 
         if (gunSlots.length) {
-            const gunArea = document.createElement('div');
-            gunArea.id = SELECT_GUN_AREA_ID;
+            const gunArea = createDiv(SELECT_GUN_AREA_ID);
             actionArea.appendChild(gunArea);
             for (let i = 0; i < gunSlots.length; i++) {
                 const gunSlot = gunSlots[i];
@@ -512,9 +683,8 @@ document.addEventListener('DOMContentLoaded', function () {
                 } else {
                     gunSelected.src = DEFAULT_GUN_SLOT_IMG_SRC;
                     gunSelected.alt = DEFAULT_GUN_SLOT_IMG_ALT;
-                    gunSelected.classList.remove("clickable");
                     gunSelected.classList.remove("selected-image");
-                    gunSelected.onclick = "";
+                    removeClickable(gunSelected);
                     gunSelected.style.visibility = "hidden";
                 }
             } else {
@@ -531,8 +701,7 @@ document.addEventListener('DOMContentLoaded', function () {
     function removeNameClicks() {
         for (let i = 0; i < gamePlayers.length; i++) {
             const playerName = document.getElementById(gamePlayers[i].nameId);
-            playerName.classList.remove("clickable");
-            playerName.onclick = "";
+            removeClickable(playerName);
         }
     }
 
@@ -572,13 +741,11 @@ document.addEventListener('DOMContentLoaded', function () {
             const gunSlot = document.getElementById(gamePlayers[i].gunSlotId);
             if (gunSlot.style.visibility === "visible") {
                 selectedIds.push(i);
-                removeClassFromElement(gunSlot, "clickable");
-                gunSlot.onclick = "";
+                removeClickable(gunSlot);
             }
 
             const playerName = document.getElementById(gamePlayers[i].nameId);
-            removeClassFromElement(playerName, "clickable");
-            playerName.onclick = "";
+            removeClickable(playerName);
         }
 
         updateGunSelected(null);
@@ -589,8 +756,7 @@ document.addEventListener('DOMContentLoaded', function () {
     function setupVote(selectedVote) {
         statusMessage.innerHTML = "Voting on team...";
 
-        const selectVoteArea = document.createElement('div');
-        selectVoteArea.id = SELECT_VOTE_AREA_ID;
+        const selectVoteArea = createDiv(SELECT_VOTE_AREA_ID);
         actionArea.appendChild(selectVoteArea);
 
         const approveTeamImage = createImage(null, APPROVE_VOTE_IMG_SRC, APPROVE_VOTE_IMG_ALT, ['vote-image', 'clickable']);
@@ -650,8 +816,7 @@ document.addEventListener('DOMContentLoaded', function () {
     }
 
     function setupMission(failAllowed, reverseAllowed) {
-        const selectMissionActionContainer = document.createElement('div');
-        selectMissionActionContainer.id = SELECT_MISSION_ACTION_CONTAINER_ID;
+        const selectMissionActionContainer = createDiv(SELECT_MISSION_ACTION_CONTAINER_ID);
         actionArea.appendChild(selectMissionActionContainer);
 
         const successMissionActionImage = createImage(null, SUCCEED_MISSION_IMG_SRC, SUCCEED_MISSION_IMG_ALT, ['action-image', 'clickable']);
@@ -693,21 +858,20 @@ document.addEventListener('DOMContentLoaded', function () {
         if (actionAreaButtons.length === 0) {
             showButton("Confirm", function () {
                 socket.emit('conduct-mission', {action: action});
-                actionArea.innerHTML = "";
+                clearChildrenFromElement(actionArea);
             });
         } else {
             actionAreaButtons[0].onclick = function () {
                 socket.emit('conduct-mission', {action: action});
-                actionArea.innerHTML = "";
+                clearChildrenFromElement(actionArea);
             };
         }
     }
 
     function showMissionResult(result, showActions) {
         if (showActions) {
-            actionArea.innerHTML = "";
-            const actionResultArea = document.createElement('div');
-            actionResultArea.id = ACTION_RESULTS_AREA_ID;
+            clearChildrenFromElement(actionArea);
+            const actionResultArea = createDiv(ACTION_RESULTS_AREA_ID);
             actionArea.appendChild(actionResultArea);
             for (let i = 0; i < result.successCount; i++) {
                 actionResultArea.appendChild(createImage(null, SUCCEED_MISSION_IMG_SRC, SUCCEED_MISSION_IMG_ALT, ["action-image"]));
@@ -881,16 +1045,16 @@ document.addEventListener('DOMContentLoaded', function () {
         playersSelected = [];
         assassinationModal.style.display = "flex";
         assassinationArea.innerHTML = `
-            <h3 id="${ASSASSINATION_HEADER_ID}">Select Player(s) To Assassinate</h3>
+            <h3 class="future-header" id="${ASSASSINATION_HEADER_ID}">Select Player(s) To Assassinate</h3>
             <select id="${ASSASSINATION_ROLES_SELECT_ID}">
                 <option value=""></option>
                 <option value="Merlin">Merlin</option>
                 <option value="Arthur">Arthur</option>
                 <option value="Lovers">Lovers</option>
             </select>
-            <button class="future-color future-secondary-font future-box" type="button"
+            <button class="future-button" type="button"
                 id="${RESET_ASSASSINATION_BUTTON_ID}">Reset Assassination</button>
-            <button class="future-color future-secondary-font future-disabled future-box" type="button"
+            <button class="future-button future-button-disabled" type="button"
                 id="${CONFIRM_ASSASSINATION_BUTTON_ID}" disabled>Confirm Assassination</button>
         `;
 
@@ -913,7 +1077,7 @@ document.addEventListener('DOMContentLoaded', function () {
                 <option value="Arthur">Arthur</option>
                 <option value="Lovers">Lovers</option>
             `;
-            disableAssassinationConfirm();
+            setButtonDisabled(document.getElementById(CONFIRM_ASSASSINATION_BUTTON_ID), true);
         };
     }
 
@@ -930,10 +1094,10 @@ document.addEventListener('DOMContentLoaded', function () {
 
         if (playersSelected.length === 0) {
             assassinationHeader.innerHTML = "Select Player(s) To Assassinate";
-            disableAssassinationConfirm();
+            setButtonDisabled(document.getElementById(CONFIRM_ASSASSINATION_BUTTON_ID), true);
         } else if (playersSelected.length > 2) {
             assassinationHeader.innerHTML = "Too Many Players Selected! Please Reset";
-            disableAssassinationConfirm();
+            setButtonDisabled(document.getElementById(CONFIRM_ASSASSINATION_BUTTON_ID), true);
         } else {
             assassinationHeader.innerHTML = `
                 Assassinate ${playersSelected.map(i => document.getElementById(gamePlayers[i].nameId).innerHTML).join(' and ')} as:
@@ -943,13 +1107,13 @@ document.addEventListener('DOMContentLoaded', function () {
             assassinationRolesSelect.onchange = function() {
                 if (assassinationRolesSelect.value && correctPlayersSelected(assassinationRolesSelect.value)) {
                     confirmAssassinationButton.disabled = false;
-                    confirmAssassinationButton.classList.remove("future-disabled");
+                    confirmAssassinationButton.classList.remove("future-button-disabled");
                     confirmAssassinationButton.onclick = function () {
                         socket.emit('conduct-assassination', {ids: playersSelected, role: assassinationRolesSelect.value});
                         assassinationModal.style.display = "none";
                     };
                 } else {
-                    disableAssassinationConfirm();
+                    setButtonDisabled(document.getElementById(CONFIRM_ASSASSINATION_BUTTON_ID), true);
                 }
             }
             
@@ -965,7 +1129,7 @@ document.addEventListener('DOMContentLoaded', function () {
                     <option value="Arthur">Arthur</option>
                 `;
             }
-            disableAssassinationConfirm();
+            setButtonDisabled(document.getElementById(CONFIRM_ASSASSINATION_BUTTON_ID), true);
         }
     }
 
@@ -979,13 +1143,6 @@ document.addEventListener('DOMContentLoaded', function () {
             default:
                 return playersSelected.length === 1 || playersSelected.length === 2;
         }
-    }
-
-    function disableAssassinationConfirm() {
-        const confirmAssassinationButton = document.getElementById(CONFIRM_ASSASSINATION_BUTTON_ID);
-        confirmAssassinationButton.disabled = true;
-        confirmAssassinationButton.classList.add("future-disabled");
-        confirmAssassinationButton.onclick = "";
     }
 
     function showGameResult(winner, message) {
@@ -1004,9 +1161,17 @@ document.addEventListener('DOMContentLoaded', function () {
     socket.on('update-players', ({currentPlayers}) => {
         updateLobby(currentPlayers);
     });
+
+    socket.on('setup-game', () => {
+        handleSetupGame();
+    });
+
+    socket.on('pick-identity', ({possibleResistanceRoles, possibleSpyRoles}) => {
+        handlePickIdentity(possibleResistanceRoles, possibleSpyRoles);
+    });
     
     socket.on('start-game', ({gameHTML, players}) => {
-        setupGame(gameHTML, players);
+        handleStartGame(gameHTML, players);
     });
 
     socket.on('close-lobby', () => {

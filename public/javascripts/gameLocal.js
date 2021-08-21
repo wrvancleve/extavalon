@@ -1,5 +1,5 @@
-//const ROOT_URL = "https://extavalon.com";
-const ROOT_URL = "http://192.168.1.107:25565";
+const ROOT_URL = "https://extavalon.com";
+//const ROOT_URL = "http://192.168.1.107:25565";
 
 const ROOT_ID = "root";
 const LOBBY_ID = "lobby";
@@ -15,7 +15,6 @@ const START_GAME_BUTTON_ID = "start-game-button";
 const FINISH_GAME_BUTTON_ID = "finish-game-button";
 const CLOSE_LOBBY_BUTTON_ID = "close-lobby-button";
 const GAME_INFORMATION_ID = "game-information";
-const HOST_INFORMATION_ID = "host-information";
 const SUBMIT_RESULTS_MODAL_ID = "submit-results-modal";
 
 function parseCookie(str) {
@@ -24,6 +23,120 @@ function parseCookie(str) {
       return acc;
     }, {});
 };
+
+function createButton(text, styleClasses) {
+    const buttonElement = document.createElement('button');
+    buttonElement.innerText = text;
+    if (styleClasses) {
+        for (let styleClass of styleClasses) {
+            buttonElement.classList.add(styleClass);
+        }
+    }
+    return buttonElement;
+}
+
+function createDiv(id, styleClasses) {
+    const divElement = document.createElement('div');
+    if (id) {
+        divElement.id = id;
+    }
+    if (styleClasses) {
+        for (let styleClass of styleClasses) {
+            divElement.classList.add(styleClass);
+        }
+    }
+    return divElement;
+}
+
+function createHeaderTwo(text, styleClasses) {
+    const headerTwoElement = document.createElement('h2');
+    headerTwoElement.innerText = text;
+    if (styleClasses) {
+        for (let styleClass of styleClasses) {
+            headerTwoElement.classList.add(styleClass);
+        }
+    }
+    return headerTwoElement;
+}
+
+function createLabel(idFor, text) {
+    const labelElement = document.createElement('label');
+    labelElement.for = idFor;
+    labelElement.innerText = text;
+    return labelElement;
+}
+
+function createOption(value, text) {
+    const optionElement = document.createElement('option');
+    optionElement.value = value;
+    if (text) {
+        optionElement.innerText = text;
+    }
+    return optionElement;
+}
+
+function createSelect(id, enableNoneOption) {
+    const selectElement = document.createElement('select');
+    if (id) {
+        selectElement.id = id;
+    }
+    const noneResultOption = createOption("none");
+    noneResultOption.selected = true;
+    if (!enableNoneOption) {
+        noneResultOption.disabled = true;
+    }
+    selectElement.appendChild(noneResultOption);
+    return selectElement;
+}
+
+function createMissionResultSelect(id, enableNoneOption) {
+    const missionResultSelect = createSelect(id, enableNoneOption);
+    missionResultSelect.appendChild(createOption("Resistance", "Resistance"));
+    missionResultSelect.appendChild(createOption("Spies", "Spies"));
+    return missionResultSelect;
+}
+
+function addClassToElement(element, className) {
+    if (!element.classList.contains(className)) {
+        element.classList.add(className);
+    }
+}
+
+function removeClassFromElement(element, className) {
+    if (element.classList.contains(className)) {
+        element.classList.remove(className);
+    }
+}
+
+function clearChildrenFromElement(element) {
+    while (element.children.length > 0) {
+        element.removeChild(element.lastChild);
+    }
+}
+
+function setButtonDisabled(buttonElement, disabled, removeOnClick=true) {
+    buttonElement.disabled = disabled;
+    if (buttonElement.disabled) {
+        addClassToElement(buttonElement, "future-button-disabled");
+        if (removeOnClick) {
+            buttonElement.removeAttribute("onclick");
+        }
+    } else {
+        removeClassFromElement(buttonElement, "future-button-disabled");
+    }
+}
+
+function hideSelect(selectElement) {
+    selectElement.selectedIndex = 0;
+    selectElement.disabled = true;
+    selectElement.style.visibility = "hidden";
+}
+
+function reshowSelect(selectElement) {
+    selectElement.selectedIndex = 0;
+    selectElement.disabled = false;
+    selectElement.style.visibility = "visible";
+}
 
 document.addEventListener('DOMContentLoaded', function () {
     const {code} = Qs.parse(location.search, {
@@ -51,7 +164,6 @@ document.addEventListener('DOMContentLoaded', function () {
     const finishGameButton = document.getElementById(FINISH_GAME_BUTTON_ID);
     const closeLobbyButton = document.getElementById(CLOSE_LOBBY_BUTTON_ID);
     const gameInformation = document.getElementById(GAME_INFORMATION_ID);
-    const hostInformation = document.getElementById(HOST_INFORMATION_ID);
 
     // Setup Page
     toggleLobbyButton.onclick = function() {
@@ -78,7 +190,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
     if (startGameButton) {
         startGameButton.onclick = function () {
-            socket.emit('start-game-local');
+            socket.emit('start-game');
         };
         finishGameButton.style.display = "none";
         closeLobbyButton.onclick = function () {
@@ -156,22 +268,15 @@ document.addEventListener('DOMContentLoaded', function () {
     function handleSetupGame() {
         clearChildrenFromElement(gameInformation);
         removeClassFromElement(gameInformation, "active");
-        const waitingHeader = document.createElement("h2");
-        waitingHeader.innerText = "Waiting for role information...";
-        gameInformation.appendChild(waitingHeader);
+        gameInformation.appendChild(createHeaderTwo("Waiting for role information...", ["future-header"]));
     }
 
     function handlePickIdentity(possibleResistanceRoles, possibleSpyRoles) {
         clearChildrenFromElement(gameInformation);
 
-        const identityHeader = document.createElement("h2");
-        identityHeader.innerText = "Congratulations, you may select your role/team for this game!";
+        const identityHeader = createHeaderTwo("Congratulations, you may select your role/team for this game!", ["future-header"]);
 
-        const identitySelect = document.createElement("select");
-        const blankOption = createOption("none");
-        blankOption.selected = true;
-        blankOption.disabled = true;
-        identitySelect.appendChild(blankOption);
+        const identitySelect = createSelect(null, false);
         identitySelect.appendChild(createOption("Resistance", "Resistance"));
         for (let possibleResistanceRole of possibleResistanceRoles) {
             identitySelect.appendChild(createOption(possibleResistanceRole, `(Resistance) ${possibleResistanceRole}`));
@@ -181,7 +286,7 @@ document.addEventListener('DOMContentLoaded', function () {
             identitySelect.appendChild(createOption(possibleSpyRole, `(Spy) ${possibleSpyRole}`));
         }
 
-        const submitIdentitySelectionButton = createButton("Submit", ["future-color", "future-secondary-font", "future-box"]);
+        const submitIdentitySelectionButton = createButton("Submit", ["future-button"]);
         setButtonDisabled(submitIdentitySelectionButton, true);
 
         identitySelect.onchange = function () {
@@ -250,43 +355,37 @@ document.addEventListener('DOMContentLoaded', function () {
     function setupFinishGame(assassinatablePlayers) {
         clearChildrenFromElement(gameInformation);
 
-        const missionOneDiv = document.createElement('div');
-        missionOneDiv.classList.add("setting-item");
+        const missionOneDiv = createDiv(null, ["center-flex-row"]);
         const missionOneLabel = createLabel("mission-one-result-select", "Mission 1 Winner:");
         const missionOneSelect = createMissionResultSelect("mission-one-result-select", false);
         missionOneDiv.appendChild(missionOneLabel);
         missionOneDiv.appendChild(missionOneSelect);
 
-        const missionTwoDiv = document.createElement('div');
-        missionTwoDiv.classList.add("setting-item");
+        const missionTwoDiv = createDiv(null, ["center-flex-row"]);
         const missionTwoLabel = createLabel("mission-two-result-select", "Mission 2 Winner:");
         const missionTwoSelect = createMissionResultSelect("mission-two-result-select", false);
         missionTwoDiv.appendChild(missionTwoLabel);
         missionTwoDiv.appendChild(missionTwoSelect);
 
-        const missionThreeDiv = document.createElement('div');
-        missionThreeDiv.classList.add("setting-item");
+        const missionThreeDiv = createDiv(null, ["center-flex-row"]);
         const missionThreeLabel = createLabel("mission-three-result-select", "Mission 3 Winner:");
         const missionThreeSelect = createMissionResultSelect("mission-three-result-select", false);
         missionThreeDiv.appendChild(missionThreeLabel);
         missionThreeDiv.appendChild(missionThreeSelect);
 
-        const missionFourDiv = document.createElement('div');
-        missionFourDiv.classList.add("setting-item");
+        const missionFourDiv = createDiv(null, ["center-flex-row"]);
         const missionFourLabel = createLabel("mission-four-result-select", "Mission 4 Winner:");
         const missionFourSelect = createMissionResultSelect("mission-four-result-select", true);
         missionFourDiv.appendChild(missionFourLabel);
         missionFourDiv.appendChild(missionFourSelect);
 
-        const missionFiveDiv = document.createElement('div');
-        missionFiveDiv.classList.add("setting-item");
+        const missionFiveDiv = createDiv(null, ["center-flex-row"]);
         const missionFiveLabel = createLabel("mission-five-result-select", "Mission 5 Winner:");
         const missionFiveSelect = createMissionResultSelect("mission-five-result-select", true);
         missionFiveDiv.appendChild(missionFiveLabel);
         missionFiveDiv.appendChild(missionFiveSelect);
         
-        const assassinationRoleDiv = document.createElement('div');
-        assassinationRoleDiv.classList.add("setting-item");
+        const assassinationRoleDiv = createDiv(null, ["center-flex-row"]);
         const assassinationRoleLabel = createLabel("assassination-role-select", "Role:");
         const assassinationRoleSelect = createSelect("assassination-role-select", false);
         assassinationRoleSelect.appendChild(createOption("Merlin", "Merlin"));
@@ -295,15 +394,13 @@ document.addEventListener('DOMContentLoaded', function () {
         assassinationRoleDiv.appendChild(assassinationRoleLabel);
         assassinationRoleDiv.appendChild(assassinationRoleSelect);
 
-        const assassinationFirstPlayerDiv = document.createElement('div');
-        assassinationFirstPlayerDiv.classList.add("setting-item");
+        const assassinationFirstPlayerDiv = createDiv(null, ["center-flex-row"]);
         const assassinationFirstPlayerLabel = createLabel("assassination-first-player-select", "Player:");
         const assassinationFirstPlayerSelect = createSelect("assassination-first-player-select", false);
         assassinationFirstPlayerDiv.appendChild(assassinationFirstPlayerLabel);
         assassinationFirstPlayerDiv.appendChild(assassinationFirstPlayerSelect);
 
-        const assassinationSecondPlayerDiv = document.createElement('div');
-        assassinationSecondPlayerDiv.classList.add("setting-item");
+        const assassinationSecondPlayerDiv = createDiv(null, ["center-flex-row"]);
         const assassinationSecondPlayerLabel = createLabel("assassination-second-player-select", "Player:");
         const assassinationSecondPlayerSelect = createSelect("assassination-second-player-select", false);
         for (let player of assassinatablePlayers) {
@@ -470,116 +567,18 @@ document.addEventListener('DOMContentLoaded', function () {
     function showTeams(resistancePlayers, spyPlayers) {
         if (finishGameButton) {
             finishGameButton.style.display = "none";
-            finishGameButton.classList.add("future-disabled");
-            finishGameButton.disabled = true;
-            finishGameButton.onclick = "";
+            setButtonDisabled(finishGameButton, true);
         }
 
         gameInformation.innerHTML = `
-            <h2 class="resistance">Resistance</h2>
+            <h2 class="future-header resistance">Resistance</h2>
             <section>
             ${resistancePlayers.map(player => `<p>(<span class="resistance">${player.role}</span>): ${player.name}</p>`).join('')}
             </section>
-            <h2 class="spy">Spies</h2>
+            <h2 class="future-header spy">Spies</h2>
             <section>
             ${spyPlayers.map(player => `<p>(<span class="spy">${player.role}</span>): ${player.name}</p>`).join('')}
             </section>
         `;
-    }
-
-    // Helper Functions
-    function createButton(text, styleClasses) {
-        const buttonElement = document.createElement('button');
-        buttonElement.innerText = text;
-        for (let styleClass of styleClasses) {
-            buttonElement.classList.add(styleClass);
-        }
-        return buttonElement;
-    }
-
-    function createDiv(id, styleClasses) {
-        const divElement = document.createElement('div');
-        divElement.id = id;
-        for (let styleClass of styleClasses) {
-            divElement.classList.add(styleClass);
-        }
-        return divElement;
-    }
-
-    function createLabel(idFor, text) {
-        const labelElement = document.createElement('label');
-        labelElement.for = idFor;
-        labelElement.innerText = text;
-        return labelElement;
-    }
-
-    function createOption(value, text) {
-        const optionElement = document.createElement('option');
-        optionElement.value = value;
-        if (text) {
-            optionElement.innerText = text;
-        }
-        return optionElement;
-    }
-
-    function createSelect(id, enableNoneOption) {
-        const selectElement = document.createElement('select');
-        selectElement.id = id;
-        const noneResultOption = createOption("none");
-        noneResultOption.selected = true;
-        if (!enableNoneOption) {
-            noneResultOption.disabled = true;
-        }
-        selectElement.appendChild(noneResultOption);
-        return selectElement;
-    }
-
-    function createMissionResultSelect(id, enableNoneOption) {
-        const missionResultSelect = createSelect(id, enableNoneOption);
-        missionResultSelect.appendChild(createOption("Resistance", "Resistance"));
-        missionResultSelect.appendChild(createOption("Spies", "Spies"));
-        return missionResultSelect;
-    }
-
-    function addClassToElement(element, className) {
-        if (!element.classList.contains(className)) {
-            element.classList.add(className);
-        }
-    }
-    
-    function removeClassFromElement(element, className) {
-        if (element.classList.contains(className)) {
-            element.classList.remove(className);
-        }
-    }
-
-    function clearChildrenFromElement(element) {
-        while (element.children.length > 0) {
-            element.removeChild(element.lastChild);
-        }
-    }
-
-    function setButtonDisabled(buttonElement, disabled, removeOnClick=true) {
-        buttonElement.disabled = disabled;
-        if (buttonElement.disabled) {
-            addClassToElement(buttonElement, "future-disabled");
-            if (removeOnClick) {
-                buttonElement.removeAttribute("onclick");
-            }
-        } else {
-            removeClassFromElement(buttonElement, "future-disabled");
-        }
-    }
-
-    function hideSelect(selectElement) {
-        selectElement.selectedIndex = 0;
-        selectElement.disabled = true;
-        selectElement.style.visibility = "hidden";
-    }
-
-    function reshowSelect(selectElement) {
-        selectElement.selectedIndex = 0;
-        selectElement.disabled = false;
-        selectElement.style.visibility = "visible";
     }
 });
