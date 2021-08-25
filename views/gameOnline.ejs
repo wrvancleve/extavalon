@@ -37,19 +37,19 @@
             <% if (host) { %>
                 <button class="open-modal-button" id="toggle-host-information-button" title="Open Host Information"> $ </button>
             <% } %>
-            <div class="online-modal" id="intel-modal">
+            <div class="future-modal" id="intel-modal">
                 <button class="close-modal-button" id="close-intel-modal-button" title="Close Game Information">&times;</button>
                 <div id="intel-modal-area">
                     <h2>Waiting for role information...</h2>
                 </div>
             </div>
-            <div class="online-modal" id="roles-modal" style="background-color: black;">
+            <div class="future-modal" id="roles-modal">
                 <%- include('./partials/roles.ejs') %>
             </div>
-            <div class="online-modal" id="assassination-modal">
+            <div class="future-modal" id="assassination-modal">
                 <div id="assassination-area"></div>
             </div>
-            <div class="online-modal" id="results-modal">
+            <div class="future-modal" id="results-modal">
                 <button class="close-modal-button" id="close-results-modal-button" title="Close Results">&times;</button>
                 <div id="results-area"></div>
             </div>

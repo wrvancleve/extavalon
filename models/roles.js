@@ -208,6 +208,11 @@ function generateRoles(resistanceCount, spyCount, settings, identityPickInformat
             const nextAssassinatableRoles = getNextAssassinatableRoles(possibleAssassinatableRoles, usedAssassinatableRoles);
             Array.prototype.push.apply(usedResistanceRoles, nextAssassinatableRoles);
         }
+        if (playerCount === 8 && usedResistanceRoles.includes(Puck)) {
+            const nextAssassinatableRoles = getNextAssassinatableRoles(possibleAssassinatableRoles, usedAssassinatableRoles);
+
+            Array.prototype.push.apply(usedResistanceRoles, nextAssassinatableRoles);
+        }
         if (playerCount > 8) {
             const nextAssassinatableRoles = getNextAssassinatableRoles(possibleAssassinatableRoles, usedAssassinatableRoles);
             Array.prototype.push.apply(usedResistanceRoles, nextAssassinatableRoles);
@@ -324,7 +329,11 @@ function generateRoles(resistanceCount, spyCount, settings, identityPickInformat
 
         const containsMerlin = usedResistanceRoles.includes(Merlin);
         if (containsMerlin && !requiredSpyRoles.includes(Mordred)) {
-            possibleSpyRoles.push(Mordred);
+            if (settings.mordred) {
+                usedSpyRoles.push(Mordred);
+            } else {
+                possibleSpyRoles.push(Mordred);
+            }
         }
         if (usedResistanceRoles.includes(Percival) && !requiredSpyRoles.includes(Morgana)) {
             if (!containsMerlin) {

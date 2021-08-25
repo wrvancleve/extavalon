@@ -6,32 +6,36 @@ const Proposal = require('./proposal');
 const { shuffle, choice } = require('../utils/random');
 
 class GameState {
-    static get PHASE_PROPOSE() {
+    static get PHASE_SETUP() {
         return 0;
     }
 
-    static get PHASE_VOTE() {
+    static get PHASE_PROPOSE() {
         return 1;
     }
 
-    static get PHASE_VOTE_REACT() {
+    static get PHASE_VOTE() {
         return 2;
     }
 
-    static get PHASE_CONDUCT() {
+    static get PHASE_VOTE_REACT() {
         return 3;
     }
 
-    static get PHASE_CONDUCT_REACT() {
+    static get PHASE_CONDUCT() {
         return 4;
     }
 
-    static get PHASE_ASSASSINATION() {
+    static get PHASE_CONDUCT_REACT() {
         return 5;
     }
 
-    static get PHASE_DONE() {
+    static get PHASE_ASSASSINATION() {
         return 6;
+    }
+
+    static get PHASE_DONE() {
+        return 7;
     }
 
     static get NUM_WINS() {
@@ -42,17 +46,42 @@ class GameState {
         return 5;
     }
 
-    constructor(playerInformation, settings) {
+    constructor(playerInformation, firstLeaderId, settings) {
         this.resistanceWins = 0;
         this.spyWins = 0;
         this.playersByRole = new Map();
         this.resistance = [];
         this.spys = [];
         this.settings = settings;
-        this._createPlayers(playerInformation);
+        this._createPlayers(playerInformation, firstLeaderId);
         this._createMissions();
-        this.phase = GameState.PHASE_PROPOSE;
+        this.phase = GameState.PHASE_SETUP;
         this.winner = null;
+    }
+
+    _createPlayers(playerInformation, firstLeaderId) {
+        this.currentLeaderId = firstLeaderId;
+        this.playerCount = playerInformation.length;
+        this.spyPlayerCount = this._getSpyCount();
+        this.resistancePlayerCount = this.playerCount - this.spyPlayerCount;
+        this.players = [];
+
+        for (let id = 0; id < this.playerCount; id++) {
+            const player = new Player(this, id, playerInformation[id].name);
+            this.players.push(player);
+        }
+    }
+
+    _getSpyCount() {
+        if (this.playerCount < 7) {
+            return 2;
+        }
+        else if (this.playerCount < 10) {
+            return 3;
+        }
+        else {
+            return 4;
+        }
     }
 
     assignRoles(identityPickInformation) {
@@ -77,7 +106,6 @@ class GameState {
 
         // Set Assassin
         this.assassinId = choice(this.spys).id;
-        console.debug(`Assassin Id: ${this.assassinId}`);
 
         this._addResistanceRoleIntel();
         if (this.playersByRole.has(Roles.Accolon)) {
@@ -88,34 +116,8 @@ class GameState {
         if (this.playersByRole.has(Roles.Titania)) {
             this._performTitaniaSabotage();
         }
-    }
 
-    _createPlayers(playerInformation) {
-        this.playerCount = playerInformation.length;
-        this.spyPlayerCount = this._getSpyCount();
-        this.resistancePlayerCount = this.playerCount - this.spyPlayerCount;
-        this.players = [];
-
-        for (let id = 0; id < this.playerCount; id++) {
-            const player = new Player(this, id, playerInformation[id].name);
-            this.players.push(player);
-        }
-
-        // Set First Leader
-        this.currentLeaderId = Math.floor(Math.random() * this.playerCount);
-        console.debug(`First Leader Id: ${this.currentLeaderId}`);
-    }
-
-    _getSpyCount() {
-        if (this.playerCount < 7) {
-            return 2;
-        }
-        else if (this.playerCount < 10) {
-            return 3;
-        }
-        else {
-            return 4;
-        }
+        this.phase = GameState.PHASE_PROPOSE;
     }
 
     _performAccolonSabotage() {

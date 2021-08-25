@@ -13,7 +13,7 @@
     margin: auto;
     width: 80vw;
     max-width: 400px;
-    border-bottom: 20px solid #029dbb;
+    border-bottom: 20px solid rgb(0, 248, 248);
     box-shadow: 0 0 4px rgba(0,157,187,0);
     @extend %future-color;
     background: transparent;
@@ -28,7 +28,7 @@
     font-size: 1.5em;
     border-top-left-radius: 10px;
     border-top-right-radius: 10px;
-    border: 1px solid #029dbb;
+    border: 1px solid rgb(0, 248, 248);
     box-shadow: 0 0 4px rgba(2,157,187,0.65);
 }
   
@@ -38,7 +38,7 @@
     margin-block-start: 0px;
     margin-block-end: 0px;
     text-align: left;
-    border: 1px solid #029dbb;
+    border: 1px solid rgb(0, 248, 248);
     box-shadow: 0 0 4px rgba(2,157,187,0.65);
 }
   
@@ -68,6 +68,25 @@
     position: absolute;
     top:0;
     left:0;
+}
+
+div.future-modal {
+    color: #b6f0fc;
+    max-height: 96vh;
+    max-width: 96vw;
+    box-sizing: border-box;
+    padding: 2vh 2vw;
+    overflow: auto;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    position: fixed;
+    background-color: #001a1a !important;
+
+    @media only screen and (max-width: 640px) {
+        width: 96vw;
+        height: 96vh;
+    }
 }
 
 .close-modal-button {

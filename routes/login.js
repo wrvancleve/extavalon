@@ -3,24 +3,26 @@ const router = express.Router();
 const { check, validationResult } = require('express-validator');
 const { getPlayerId } = require('../models/database');
 
-function titleCase (str) {
-    if ((str===null) || (str===''))
-         return false;
+function titleCase(str) {
+    if ((str === null) || (str === ''))
+        return false;
     else
-     str = str.toString();
-  
-   return str.replace(/\w\S*/g, function(txt){return txt.charAt(0).toUpperCase() + txt.substr(1).toLowerCase();});
-  }
+        str = str.toString();
 
-router.get('/', function(req, res) {
-    res.cookie('userId', {expires: Date.now()});
-    res.cookie('firstName', {expires: Date.now()});
-    res.cookie('lastName', {expires: Date.now()});
-    res.render('login', { title: 'Login', errors: req.session.errors });
+    return str.replace(/\w\S*/g, function (txt) { return txt.charAt(0).toUpperCase() + txt.substr(1).toLowerCase(); });
+}
+
+router.get('/', function (req, res) {
+    res.cookie('userId', { expires: Date.now() });
+    res.cookie('firstName', { expires: Date.now() });
+    res.cookie('lastName', { expires: Date.now() });
+    const errors = req.session.errors;
     req.session.errors = null;
+    res.render('login', { title: 'Login', errors: errors });
+
 });
 
-router.post('/', function(req, res) {
+router.post('/', function (req, res) {
     check('firstName', 'Invalid First Name').trim().matches("^[ a-zA-z0-9]{2,16}$");
     check('lastName', 'Invalid Last Name').trim().matches("^[ a-zA-z0-9]{2,16}$");
     const errors = validationResult(req);

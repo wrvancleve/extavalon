@@ -90,7 +90,7 @@ function createDiv(styleClasses) {
     return div;
 }
 
-function createGameSettingItem(text, name) {
+function createGameSettingItem(text, name, checked=true) {
     const settingItem = createDiv(["center-flex-row"]);
 
     const settingHeader = document.createElement("label");
@@ -103,7 +103,7 @@ function createGameSettingItem(text, name) {
     const settingInputCheckbox = document.createElement("input");
     settingInputCheckbox.type = "checkbox";
     settingInputCheckbox.name = name;
-    settingInputCheckbox.checked = true;
+    settingInputCheckbox.checked = checked;
 
     const settingSpanSlider = document.createElement("span");
     settingSpanSlider.classList.add("slider");
@@ -116,13 +116,26 @@ function createGameSettingItem(text, name) {
     return settingItem;
 }
 
+function parseCookie(str) {
+    return str.split(';').map(v => v.split('=')).reduce((acc, v) => {
+      acc[decodeURIComponent(v[0].trim())] = decodeURIComponent(v[1].trim());
+      return acc;
+    }, {});
+};
+
 document.addEventListener('DOMContentLoaded', function () {
     const root = document.getElementById(ROOT_ID);
     const main = document.getElementById(MAIN_ID);
 
-    var {menu} = Qs.parse(location.search, {
+    let {menu} = Qs.parse(location.search, {
         ignoreQueryPrefix: true
     });
+
+    let lastGameCode = null;
+    const parsedCookie = parseCookie(document.cookie);
+    if (parsedCookie.lastGameCode) {
+        lastGameCode = parsedCookie.lastGameCode;
+    }
 
     function clearMain(clearErrors) {
         if (clearErrors) {
@@ -183,9 +196,10 @@ document.addEventListener('DOMContentLoaded', function () {
         const settingContainer = createDiv(["center-flex-column"]);
         const bedivereSetting = createGameSettingItem("Bedivere:", "bedivere");
         const galahadSetting = createGameSettingItem("Galahad:", "galahad");
-        const titaniaSetting = createGameSettingItem("Titania:", "titania");
+        const titaniaSetting = createGameSettingItem("Titania:", "titania", false);
         const luciusSetting = createGameSettingItem("Lucius:", "lucius");
         const accolonSetting = createGameSettingItem("Accolon:", "accolon");
+        const mordredSetting = createGameSettingItem("Force Mordred:", "mordred", false);
         const createGameButton = createSubmitInput(CREATE_GAME_BUTTON_TEXT);
         const backButton = createButton(BACK_BUTTON_ID, BACK_BUTTON_TEXT, false);
 
@@ -196,6 +210,7 @@ document.addEventListener('DOMContentLoaded', function () {
         settingContainer.appendChild(titaniaSetting);
         settingContainer.appendChild(luciusSetting);
         settingContainer.appendChild(accolonSetting);
+        settingContainer.appendChild(mordredSetting);
         newGameForm.appendChild(settingContainer);
         newGameForm.appendChild(createGameButton);
         main.appendChild(newGameForm);
@@ -210,6 +225,9 @@ document.addEventListener('DOMContentLoaded', function () {
         const joinButton = createSubmitInput(JOIN_GAME_BUTTON_TEXT);
         const backButton = createButton(BACK_BUTTON_ID, BACK_BUTTON_TEXT, false);
 
+        if (parsedCookie.lastGameCode) {
+            gameCodeInput.value = parsedCookie.lastGameCode;
+        }
         gameCodeInput.oninput = function () {
             let p=this.selectionStart;
             this.value=this.value.toUpperCase();

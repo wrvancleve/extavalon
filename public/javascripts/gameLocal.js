@@ -169,35 +169,43 @@ document.addEventListener('DOMContentLoaded', function () {
     toggleLobbyButton.onclick = function() {
         if (lobbyInformation.style.display === "none") {
             lobbyInformation.style.display = "block";
+            if (startGameButton) {
+                startGameButton.style.display = 'block';
+                if (!finishGameButton.disabled) {
+                    finishGameButton.style.display = "block";
+                }
+                closeLobbyButton.style.display = "block";
+            }
         } else {
             lobbyInformation.style.display = "none";
+            if (startGameButton) {
+                startGameButton.style.display = 'none';
+                finishGameButton.style.display = "none";
+                closeLobbyButton.style.display = "none";
+            }
         }
     }
 
     openRolesModalButton.onclick = function() {
-        lobby.style.display = "none";
-        openRolesModalButton.style.display = "none";
-        toggleLobbyButton.style.display = "none";
         rolesModal.style.display = "block";
     }
 
     closeRolesModalButton.onclick = function() {
         rolesModal.style.display = "none";
-        lobby.style.display = "flex";
-        openRolesModalButton.style.display = "block";
-        toggleLobbyButton.style.display = "block";
     }
 
     if (startGameButton) {
         startGameButton.onclick = function () {
+            startGameButton.style.display = 'none';
+            setButtonDisabled(finishGameButton, true);
+            finishGameButton.style.display = "none";
+            closeLobbyButton.style.display = "none";
             socket.emit('start-game');
         };
         finishGameButton.style.display = "none";
         closeLobbyButton.onclick = function () {
             socket.emit('close-lobby');
         };
-    } else {
-        lobbyInformation.style.display = "none";
     }
 
     // Socket Handlers
@@ -207,10 +215,12 @@ document.addEventListener('DOMContentLoaded', function () {
     });
 
     socket.on('setup-game', () => {
+        removeClassFromElement(playerName, "first-player");
         handleSetupGame();
     });
 
     socket.on('pick-identity', ({possibleResistanceRoles, possibleSpyRoles}) => {
+        removeClassFromElement(playerName, "first-player");
         handlePickIdentity(possibleResistanceRoles, possibleSpyRoles);
     });
     
@@ -266,12 +276,14 @@ document.addEventListener('DOMContentLoaded', function () {
     }
 
     function handleSetupGame() {
+        lobbyInformation.style.display = "none";
         clearChildrenFromElement(gameInformation);
         removeClassFromElement(gameInformation, "active");
         gameInformation.appendChild(createHeaderTwo("Waiting for role information...", ["future-header"]));
     }
 
     function handlePickIdentity(possibleResistanceRoles, possibleSpyRoles) {
+        lobbyInformation.style.display = "none";
         clearChildrenFromElement(gameInformation);
 
         const identityHeader = createHeaderTwo("Congratulations, you may select your role/team for this game!", ["future-header"]);
@@ -344,7 +356,6 @@ document.addEventListener('DOMContentLoaded', function () {
             }
 
             startGameButton.innerHTML = 'New Game';
-            finishGameButton.style.display = "block";
             setButtonDisabled(finishGameButton, false);
             finishGameButton.onclick = function () {
                 socket.emit('setup-finish-game-local');

@@ -4,8 +4,8 @@ const Roles = require('./roles');
 const Proposal = require('./proposal');
 
 class Game {
-    constructor(playerInformation, settings) {
-        this.state = new GameState(playerInformation, settings);
+    constructor(playerInformation, firstLeaderId, settings) {
+        this.state = new GameState(playerInformation, firstLeaderId, settings);
         this.startTime = new Date(Date.now());
         this.resultHTML = null;
     }

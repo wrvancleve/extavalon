@@ -14,11 +14,7 @@
             <div class="flex-column" id="lobby">
                 <h1 class="future-header" id="name"></h1>
                 <%- include('./partials/lobby.ejs') %>
-                <div id="game-information" class="center-flex-column">
-                    <% if (!host) { %>
-                        <h2 class="future-header">Waiting for role information...</h2>
-                    <% } %> 
-                </div>
+                <div id="game-information" class="center-flex-column"></div>
                 <% if (host) { %>
                     <div id="host-information" class="center-flex-column">
                         <button class="future-button future-button-disabled" type="button"
@@ -31,7 +27,7 @@
             </div>
             <button id="toggle-lobby-button" title="Toggle Lobby Information"> # </button>
             <button class="open-modal-button" id="open-roles-modal-button" title="Open Role Information"> ? </button>
-            <div class="modal" id="roles-modal">
+            <div class="future-modal" id="roles-modal">
                 <%- include('./partials/roles.ejs') %>
             </div>
         </div>

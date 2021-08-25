@@ -145,7 +145,7 @@ section.future-section-boxed {
   margin: auto;
   width: 80vw;
   max-width: 400px;
-  border-bottom: 20px solid #029dbb;
+  border-bottom: 20px solid #00f8f8;
   box-shadow: 0 0 4px rgba(0, 157, 187, 0);
   background: transparent;
   border-bottom-left-radius: 10px;
@@ -158,7 +158,7 @@ section.future-section-boxed {
   font-size: 1.5em;
   border-top-left-radius: 10px;
   border-top-right-radius: 10px;
-  border: 1px solid #029dbb;
+  border: 1px solid #00f8f8;
   box-shadow: 0 0 4px rgba(2, 157, 187, 0.65); }
 
 #lobby-players ul, #propose-team ul {
@@ -167,7 +167,7 @@ section.future-section-boxed {
   margin-block-start: 0px;
   margin-block-end: 0px;
   text-align: left;
-  border: 1px solid #029dbb;
+  border: 1px solid #00f8f8;
   box-shadow: 0 0 4px rgba(2, 157, 187, 0.65); }
 
 #lobby-player-list li, #proposal-player-list li {
@@ -192,6 +192,23 @@ section.future-section-boxed {
   position: absolute;
   top: 0;
   left: 0; }
+
+div.future-modal {
+  color: #b6f0fc;
+  max-height: 96vh;
+  max-width: 96vw;
+  box-sizing: border-box;
+  padding: 2vh 2vw;
+  overflow: auto;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  position: fixed;
+  background-color: #001a1a !important; }
+  @media only screen and (max-width: 640px) {
+    div.future-modal {
+      width: 96vw;
+      height: 96vh; } }
 
 .close-modal-button {
   font-size: 1.75em;
@@ -251,13 +268,6 @@ section.future-section-boxed {
 
 #game-information p {
   margin: 0px; }
-
-.modal {
-  max-height: 96vh;
-  box-sizing: border-box;
-  top: 2vh;
-  padding: 2vh 2vw;
-  overflow: auto; }
 
 #toggle-lobby-button {
   border-radius: 50%;

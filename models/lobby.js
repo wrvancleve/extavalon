@@ -10,6 +10,8 @@ function Lobby(code, host, type, settings) {
     this.updateTime = Date.now();
     this.currentIdentityPicker = null;
     this.previousIdentityPickers = [];
+    this.currentStartingPlayerInformation = null;
+    this.previousStartingPlayers = [];
 }
 
 module.exports = Lobby;
