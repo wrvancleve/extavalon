@@ -6,22 +6,22 @@
     "start": "node ./bin/www"
   },
   "dependencies": {
-    "body-parser": "^1.19.0",
-    "bootstrap": "^5.1.0",
-    "cookie-parser": "~1.4.4",
-    "debug": "~2.6.9",
-    "dotenv": "^8.2.0",
-    "ejs": "^3.1.6",
-    "express": "~4.16.1",
-    "express-session": "^1.17.1",
-    "express-validator": "^6.6.1",
-    "http-errors": "~1.6.3",
-    "morgan": "~1.9.1",
-    "node-sass-middleware": "^0.11.0",
-    "pg": "^8.6.0",
-    "socket.io": "^2.3.0"
+    "body-parser": "latest",
+    "bootstrap": "latest",
+    "cookie-parser": "latest",
+    "debug": "latest",
+    "dotenv": "latest",
+    "ejs": "latest",
+    "express": "latest",
+    "express-session": "latest",
+    "express-validator": "latest",
+    "http-errors": "latest",
+    "morgan": "latest",
+    "node-sass-middleware": "latest",
+    "pg": "latest",
+    "socket.io": "latest"
   },
   "engines": {
-    "node": "12.x"
+    "node": "16.x"
   }
 }

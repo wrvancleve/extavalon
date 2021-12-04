@@ -17,11 +17,7 @@ router.get('/', authenticate, function (req, res) {
             req.session.errors = [{ msg: "Game full!" }]
             res.redirect(req.session.backURL);
         } else {
-            if (lobby.type === 'online') {
-                res.render('gameOnline', { title: 'Extavalon: Online Game', code: code, host: host, settings: lobby.settings });
-            } else {
-                res.render('gameLocal', { title: 'Extavalon: Local Game', code: code, host: host, settings: lobby.settings });
-            }
+            res.render('game', { title: 'Extavalon', code: code, host: host, settings: lobby.settings });
         }
     } else {
         req.session.errors = [{ msg: "Game not found!" }]
@@ -30,7 +26,6 @@ router.get('/', authenticate, function (req, res) {
 });
 
 router.post('/', authenticate, function (req, res) {
-    const type = req.body.type;
     const settings = {
         galahad: req.body.galahad === 'on',
         titania: req.body.titania === 'on',
@@ -39,7 +34,7 @@ router.post('/', authenticate, function (req, res) {
         accolon: req.body.accolon === 'on',
         mordred: req.body.mordred === 'on'
     };
-    const code = lobbyManager.create(req.cookies.userId, type, settings);
+    const code = lobbyManager.create(req.cookies.userId, settings);
 
     res.redirect(`/game?code=${code}`);
 });

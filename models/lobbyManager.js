@@ -4,7 +4,7 @@ function LobbyManager() {
     this.lobbies = new Map();
 }
 
-LobbyManager.prototype.create = function(host, type, settings) {
+LobbyManager.prototype.create = function(host, settings) {
     let code = null;
     do {
         var result = '';
@@ -17,7 +17,7 @@ LobbyManager.prototype.create = function(host, type, settings) {
             code = result;
         }
     } while (code === null);
-    const newLobby = new Lobby(code, host, type, settings);
+    const newLobby = new Lobby(code, host, settings);
     this.lobbies.set(code, newLobby);
     return code;
 }

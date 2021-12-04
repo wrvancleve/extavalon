@@ -1,508 +1,682 @@
 const Roles = require('./roles');
 
-class Player {
-    constructor(gameState, id, name) {
-        this.gameState = gameState;
-        this.id = id;
-        this.name = name;
-        this.role = null;
-        this.isSpy = null;
-        this.intel = [];
-        this.intelSabotaged = false;
+function Player(id, name) {
+    this.id = id;
+    this.name = name;
+    this.role = null;
+    this.isSpy = null;
+    this.intel = [];
+    this.intelSabotaged = false;
+}
+
+Player.prototype.assignRole = function(role) {
+    this.role = role;
+    this.isSpy = role.team === 'Spies';
+    this.isAssassin = false;
+}
+
+Player.prototype.setIsAssassin = function() {
+    this.isAssassin = true;
+}
+
+Player.prototype.addIntel = function(intel) {
+    this.intel.push(intel);
+}
+
+Player.prototype.performSabotage = function(newIntel) {
+    this.intel.splice(0, 1, newIntel);
+    this.intelSabotaged = true;
+}
+
+Player.prototype.getPlayerInformation = function(playerInformationFields) {
+    let includeId = true;
+    let includeName = true;
+    let includeRole = false;
+    let includeTeam = false;
+    let includeIntel = false;
+    if (playerInformationFields) {
+        includeId = playerInformationFields.includes('id');
+        includeName = playerInformationFields.includes('name');
+        includeRole = playerInformationFields.includes('role');
+        includeTeam = playerInformationFields.includes('team');
+        includeIntel = playerInformationFields.includes('intel');
     }
 
-    assignRole(role) {
-        this.role = role;
-        this.isSpy = role.team === 'Spies';
+    const playerInformation = {};
+    if (includeId) {
+        playerInformation.id = this.id;
     }
-
-    addIntel(intel) {
-        this.intel.push(intel);
+    if (includeName) {
+        playerInformation.name = this.name;
     }
-
-    performSabotage(newIntel) {
-        this.intel.splice(0, 1, newIntel);
-        this.intelSabotaged = true;
+    if (includeRole) {
+        playerInformation.role = this.role.name;
     }
-
-    getPlayerObject() {
-        return {
-            id: this.id,
-            name: this.name,
-            role: this.role.name,
-            team: this.role.team
-        };
+    if (includeTeam) {
+        playerInformation.team = this.role.team;
     }
+    if (includeIntel) {
+        playerInformation.intel = this.intel;
+    }
+    return playerInformation;
+}
 
-    getStatus(otherPlayer) {
-        if (this.isSpy) {
-            const consideredSpy = this.intel[0].filter(spy => spy.id === otherPlayer.id).length > 0;
-            return consideredSpy ? "spy" : "resistance";
+Player.prototype.getPlayerHTML = function() {
+    switch (this.role) {
+        case Roles.Merlin:
+            return this._getMerlinHTML();
+        case Roles.Percival:
+            return this._getPercivalHTML();
+        case Roles.Uther:
+            return this._getUtherHTML();
+        case Roles.Lancelot:
+            return this._getLancelotHTML();
+        case Roles.Tristan:
+            return this._getTristanHTML();
+        case Roles.Iseult:
+            return this._getIseultHTML();
+        case Roles.Puck:
+            return this._getPuckHTML();
+        case Roles.Arthur:
+            return this._getArthurHTML();
+        case Roles.Guinevere:
+            return this._getGuinevereHTML();
+        case Roles.Bedivere:
+            return this._getBedivereHTML();
+        case Roles.Jester:
+            return this._getJesterHTML();
+        case Roles.Galahad:
+            return this._getGalahadHTML();
+        case Roles.Titania:
+            return this._getTitaniaHTML();
+        case Roles.Ector:
+            return this._getEctorHTML();
+        case Roles.Kay:
+            return this._getKayHTML();
+        case Roles.SirRobin:
+            return this._getSirRobinHTML();
+        case Roles.Gaheris:
+            return this._getGaherisHTML();
+        case Roles.Geraint:
+            return this._getGeraintHTML();
+        case Roles.Mordred:
+            return this._getMordredHTML();
+        case Roles.Morgana:
+            return this._getMorganaHTML();
+        case Roles.Maelagant:
+            return this._getMaelagantHTML();
+        case Roles.Colgrevance:
+            return this._getColgrevanceHTML();
+        case Roles.Lucius:
+            return this._getLuciusHTML();
+        case Roles.Accolon:
+            return this._getAccolonHTML();
+        case Roles.Cerdic:
+            return this._getCerdicHTML();
+        case Roles.Cynric:
+            return this._getCynricHTML();
+        default:
+            return null;
+    }
+}
+
+Player.prototype._getMerlinHTML = function() {
+    let merlinHTML = `<h2 class="future-header resistance">Merlin</h2><section>`;
+    if (this.intelSabotaged) {
+        merlinHTML += `
+            <p>Your vision has been sabotaged by <span class="spy">Accolon</span></p>
+            <p>One of the players you see is not a <span class="spy">spy</span> or <span class="resistance">Puck</span></p>
+        `;
+    }
+    merlinHTML += `<p>You see:</p></section><section>`;
+
+    const seenPlayers = this.intel[0];
+    for (let i = 0; i < seenPlayers.length; i++) {
+        merlinHTML += `
+            <p>${seenPlayers[i].name} is <span class="spy">evil</span>
+            or <span class="resistance">Puck</span></p>
+        `;
+    }
+    merlinHTML += `
+        </section>
+        <section>
+            <p>Keep your identity and knowledge a secret; you can be assassinated.</p>
+        </section>
+    `;
+
+    return merlinHTML;
+}
+
+Player.prototype._getPercivalHTML = function() {
+    let percivalHTML = `
+        <h2 class="future-header resistance">Percival</h2><section>
+    `;
+    if (this.intelSabotaged) {
+        percivalHTML += `
+            <p>Your vision has been sabotaged by <span class="spy">Accolon</span></p>
+            <p>One of the players you see is not <span class="resistance">Merlin</span> or <span class="spy">Morgana</span></p>
+        `;
+    }
+    percivalHTML += `<p>You see:</p></section><section>`;
+
+    const seenPlayers = this.intel[0];
+    for (let i = 0; i < seenPlayers.length; i++) {
+        percivalHTML += `
+            <p>${seenPlayers[i].name} is <span class="resistance">Merlin</span> or
+            <span class="spy">Morgana</span></p>
+        `;
+    }
+    percivalHTML += `
+        </section>
+        <section>
+            <p>Keep your knowledge a secret; <span class="resistance">Merlin</span> can be assassinated.</p>
+        </section>
+    `;
+
+    return percivalHTML;
+}
+
+Player.prototype._getTristanHTML = function() {
+    let tristanHTML = `
+        <h2 class="future-header resistance">Tristan</h2><section>
+    `;
+    if (this.intelSabotaged) {
+        tristanHTML += `
+            <p>Your vision has been sabotaged by <span class="spy">Accolon</span></p>
+            <p>One of the players you see is not <span class="resistance">Iseult</span></p>
+        `;
+    }
+    tristanHTML += `<p>You see:</p></section><section>`;
+
+    const seenPlayers = this.intel[0];
+    for (let i = 0; i < seenPlayers.length; i++) {
+        tristanHTML += `<p>${seenPlayers[i].name} is <span class="resistance">Iseult</span></p>`;
+    }
+    tristanHTML += `
+        </section>
+        <section>
+            <p>Keep your identity and knowledge a secret; you and <span class="resistance">Iseult</span> can be assassinated together.</p>
+        </section>
+    `;
+
+    return tristanHTML;
+}
+
+Player.prototype._getIseultHTML = function() {
+    let iseultHTML = `
+        <h2 class="future-header resistance">Iseult</h2><section>
+    `;
+    if (this.intelSabotaged) {
+        iseultHTML += `
+            <p>Your vision has been sabotaged by <span class="spy">Accolon</span></p>
+            <p>One of the players you see is not <span class="resistance">Tristan</span></p>
+        `;
+    }
+    iseultHTML += `<p>You see:</p></section><section>`;
+
+    const seenPlayers = this.intel[0];
+    for (let i = 0; i < seenPlayers.length; i++) {
+        iseultHTML += `<p>${seenPlayers[i].name} is <span class="resistance">Tristan</span></p>`;
+    }
+    iseultHTML += `
+        </section>
+        <section>
+            <p>Keep your identity and knowledge a secret; you and <span class="resistance">Tristan</span> can be assassinated together.</p>
+        </section>
+    `;
+
+    return iseultHTML;
+}
+
+Player.prototype._getUtherHTML = function() {
+    let utherHTML = `
+        <h2 class="future-header resistance">Uther</h2><section>
+    `;
+    if (this.intelSabotaged) {
+        utherHTML += `
+            <p>Your vision has been sabotaged by <span class="spy">Accolon</span></p>
+            <p>One of the players you see may or may not be <span class="resistance">good</span></p>
+        `;
+    }
+    utherHTML += `<p>You see:</p></section><section>`;
+
+    const seenPlayers = this.intel[0];
+    for (let i = 0; i < seenPlayers.length; i++) {
+        utherHTML += `<p>${seenPlayers[i].name} is <span class="resistance">good</span></p>`;
+    }
+    utherHTML += `</section>`;
+
+    return utherHTML;
+}
+
+Player.prototype._getArthurHTML = function() {
+    let arthurHTML = `
+        <h2 class="future-header resistance">Arthur</h2><section>
+    `;
+    if (this.intelSabotaged) {
+        arthurHTML += `
+            <p>Your vision has been sabotaged by <span class="spy">Accolon</span></p>
+        `;
+    }
+    arthurHTML += `<p>You see:</p></section><section>`;
+
+    const seenRoles = this.intel[0];
+    for (let i = 0; i < seenRoles.length; i++) {
+        const seenRole = seenRoles[i];
+        if (seenRole) {
+            arthurHTML += `<p><span class="resistance">${seenRole}</span> is in the game</p>`;
         } else {
-            let status = "unknown";
-            let isInIntel = false;
-            switch (this.role) {
-                case Roles.Merlin:
-                case Roles.Percival:
-                case Roles.Guinevere:
-                    isInIntel = this.intel[0].filter(player => player.id === otherPlayer.id).length > 0;
-                    return isInIntel ? "suspicious" : "unknown";
-                case Roles.Tristan:
-                case Roles.Iseult:
-                case Roles.Uther:
-                case Roles.Galahad:
-                    isInIntel = this.intel[0].filter(player => player.id === otherPlayer.id).length > 0;
-                    return (isInIntel && !this.intelSabotaged) ? "resistance" : "unknown";
-            }
-
-            return status;
+            arthurHTML += `<p>??? is in the game</p>`;
         }
     }
+    arthurHTML += `
+        </section>
+        <section>
+            <p>Keep your identity and knowledge a secret; you can be assassinated.</p>
+        </section>
+    `;
 
-    getPlayerHTML() {
-        switch (this.role) {
-            case Roles.Merlin:
-                return this._getMerlinHTML();
-            case Roles.Percival:
-                return this._getPercivalHTML();
-            case Roles.Uther:
-                return this._getUtherHTML();
-            case Roles.Lancelot:
-                return this._getLancelotHTML();
-            case Roles.Tristan:
-                return this._getTristanHTML();
-            case Roles.Iseult:
-                return this._getIseultHTML();
-            case Roles.Puck:
-                return this._getPuckHTML();
-            case Roles.Arthur:
-                return this._getArthurHTML();
-            case Roles.Guinevere:
-                return this._getGuinevereHTML();
-            case Roles.Bedivere:
-                return this._getBedivereHTML();
-            case Roles.Jester:
-                return this._getJesterHTML();
-            case Roles.Galahad:
-                return this._getGalahadHTML();
-            case Roles.Titania:
-                return this._getTitaniaHTML();
-            case Roles.Mordred:
-                return this._getMordredHTML();
-            case Roles.Morgana:
-                return this._getMorganaHTML();
-            case Roles.Maelagant:
-                return this._getMaelagantHTML();
-            case Roles.Colgrevance:
-                return this._getColgrevanceHTML();
-            case Roles.Lucius:
-                return this._getLuciusHTML();
-            case Roles.Accolon:
-                return this._getAccolonHTML();
-            default:
-                return null;
-        }
+    if (this.intel.length > 1) {
+        arthurHTML += this._getResistanceEctorHTML();
     }
 
-    _getMerlinHTML() {
-        let merlinHTML = `<h2 class="resistance">Merlin</h2><section>`;
-        if (this.intelSabotaged) {
-            merlinHTML += `
-                <p>Your vision has been sabotaged by <span class="spy">Accolon</span></p>
-                <p>One of the players you see is not a <span class="spy">spy</span> or <span class="resistance">Puck</span></p>
-            `;
-        }
-        merlinHTML += `<p>You see:</p></section><section>`;
+    return arthurHTML;
+}
 
-        const seenPlayers = this.intel[0];
-        for (let i = 0; i < seenPlayers.length; i++) {
-            merlinHTML += `
-                <p>${seenPlayers[i].name} is <span class="spy">evil</span>
-                or <span class="resistance">Puck</span></p>
-            `;
-        }
-        merlinHTML += `</section>`;
+Player.prototype._getEctorHTML = function () {
+    return `
+        <h2 class="future-header resistance">Ector</h2>
+        <section>
+            <p>All <span class="resistance">resistance</span> members see you as <span class="resistance">Ector</span>.</p>
+            <p>Unfortunately, you need to identify your fellow <span class="resistance">resistance</span> members.</p>
+        </section>
+        <section>
+            <p>Keep your identity a secret; you can be assassinated.</p>
+        </section>
+    `;
+}
 
-        return merlinHTML;
+Player.prototype._getLancelotHTML = function() {
+    let lancelotHTML = `
+        <h2 class="future-header resistance">Lancelot</h2>
+        <section><p>You may play reverse cards while on missions.</p></section>
+    `;
+
+    if (this.intel.length > 1) {
+        lancelotHTML += this._getResistanceEctorHTML();
     }
 
-    _getPercivalHTML() {
-        let percivalHTML = `
-            <h2 class="resistance">Percival</h2><section>
-        `;
-        if (this.intelSabotaged) {
-            percivalHTML += `
-                <p>Your vision has been sabotaged by <span class="spy">Accolon</span></p>
-                <p>One of the players you see is not <span class="resistance">Merlin</span> or <span class="spy">Morgana</span></p>
-            `;
-        }
-        percivalHTML += `<p>You see:</p></section><section>`;
+    return lancelotHTML;
+}
 
-        const seenPlayers = this.intel[0];
-        for (let i = 0; i < seenPlayers.length; i++) {
-            percivalHTML += `
-                <p>${seenPlayers[i].name} is <span class="resistance">Merlin</span> or
-                <span class="spy">Morgana</span></p>
-            `;
-        }
-        percivalHTML += `</section>`;
+Player.prototype._getPuckHTML = function() {
+    let puckHTML = `
+        <h2 class="future-header resistance">Puck</h2>
+        <section>
+            <p>You only win if the <span class="resistance">Resistance</span> wins on mission 5.</p>
+            <p>You may play fail cards while on missions.</p>
+            <p>
+                If <span class="resistance">Merlin</span> is in the game, you are seen by
+                <span class="resistance">Merlin</span> as a possible <span class="spy">spy</span>.
+            </p>
+        </section>
+    `;
 
-        return percivalHTML;
+    if (this.intel.length > 1) {
+        puckHTML += this._getResistanceEctorHTML();
     }
 
-    _getTristanHTML() {
-        let tristanHTML = `
-            <h2 class="resistance">Tristan</h2><section>
-        `;
-        if (this.intelSabotaged) {
-            tristanHTML += `
-                <p>Your vision has been sabotaged by <span class="spy">Accolon</span></p>
-                <p>One of the players you see is not <span class="resistance">Iseult</span></p>
-            `;
-        }
-        tristanHTML += `<p>You see:</p></section><section>`;
+    return puckHTML;
+}
 
-        const seenPlayers = this.intel[0];
-        for (let i = 0; i < seenPlayers.length; i++) {
-            tristanHTML += `<p>${seenPlayers[i].name} is <span class="resistance">Iseult</span></p>`;
-        }
-        tristanHTML += `</section>`;
+Player.prototype._getJesterHTML = function() {
+    const seenRoles = this.intel[0];
 
-        return tristanHTML;
-    }
+    let jesterHTML = `
+        <h2 class="future-header resistance">Jester</h2>
+        <section><p>You only win if you get assassinated by the assassin.</p></section><section>
+    `;
+    if (!this.intelSabotaged) {
+        jesterHTML += `<p>You see:</p></section><section>`;
 
-    _getIseultHTML() {
-        let iseultHTML = `
-            <h2 class="resistance">Iseult</h2><section>
-        `;
-        if (this.intelSabotaged) {
-            iseultHTML += `
-                <p>Your vision has been sabotaged by <span class="spy">Accolon</span></p>
-                <p>One of the players you see is not <span class="resistance">Tristan</span></p>
-            `;
-        }
-        iseultHTML += `<p>You see:</p></section><section>`;
-
-        const seenPlayers = this.intel[0];
-        for (let i = 0; i < seenPlayers.length; i++) {
-            iseultHTML += `<p>${seenPlayers[i].name} is <span class="resistance">Tristan</span></p>`;
-        }
-        iseultHTML += `</section>`;
-
-        return iseultHTML;
-    }
-
-    _getUtherHTML() {
-        let utherHTML = `
-            <h2 class="resistance">Uther</h2><section>
-        `;
-        if (this.intelSabotaged) {
-            utherHTML += `
-                <p>Your vision has been sabotaged by <span class="spy">Accolon</span></p>
-                <p>One of the players you see may or may not be <span class="resistance">good</span></p>
-            `;
-        }
-        utherHTML += `<p>You see:</p></section><section>`;
-
-        const seenPlayers = this.intel[0];
-        for (let i = 0; i < seenPlayers.length; i++) {
-            utherHTML += `<p>${seenPlayers[i].name} is <span class="resistance">good</span></p>`;
-        }
-        utherHTML += `</section>`;
-
-        return utherHTML;
-    }
-
-    _getArthurHTML() {
-        let arthurHTML = `
-            <h2 class="resistance">Arthur</h2><section>
-        `;
-        if (this.intelSabotaged) {
-            arthurHTML += `
-                <p>Your vision has been sabotaged by <span class="spy">Accolon</span></p>
-            `;
-        }
-        arthurHTML += `<p>You see:</p></section><section>`;
-
-        const seenRoles = this.intel[0];
         for (let i = 0; i < seenRoles.length; i++) {
-            const seenRole = seenRoles[i];
-            if (seenRole) {
-                arthurHTML += `<p><span class="resistance">${seenRole}</span> is in the game</p>`;
-            } else {
-                arthurHTML += `<p>??? is in the game</p>`;
-            }
+            jesterHTML += `<p><span class="resistance">${seenRoles[i]}</span> is in the game</p>`;
         }
-        arthurHTML += `</section>`;
-
-        if (this.intel.length > 1) {
-            arthurHTML += this._getResistanceEctorHTML();
-        }
-
-        return arthurHTML;
-    }
-
-    _getLancelotHTML() {
-        let lancelotHTML = `
-            <h2 class="resistance">Lancelot</h2>
-            <section><p>You may play reverse cards while on missions.</p></section>
+    } else {
+        jesterHTML += `
+            <p>Your vision has been sabotaged by <span class="spy">Accolon</span></p>
+            <p>You see:</p></section><section>
         `;
 
-        if (this.intel.length > 1) {
-            lancelotHTML += this._getResistanceEctorHTML();
-        }
-
-        return lancelotHTML;
-    }
-
-    _getPuckHTML() {
-        let puckHTML = `
-            <h2 class="resistance">Puck</h2>
-            <section>
-                <p>You only win if the <span class="resistance">Resistance</span> wins on mission 5.</p>
-                <p>You may play fail cards while on missions.</p>
-                <p>
-                    If <span class="resistance">Merlin</span> is in the game, you are seen by
-                    <span class="resistance">Merlin</span> as a possible <span class="spy">spy</span>.
-                </p>
-            </section>
-        `;
-
-        if (this.intel.length > 1) {
-            puckHTML += this._getResistanceEctorHTML();
-        }
-
-        return puckHTML;
-    }
-
-    _getJesterHTML() {
-        const seenRoles = this.intel[0];
-
-        let jesterHTML = `
-            <h2 class="resistance">Jester</h2>
-            <section><p>You only win if you get assassinated by the assassin.</p></section><section>
-        `;
-        if (!this.intelSabotaged) {
-            jesterHTML += `<p>You see:</p></section><section>`;
-
-            for (let i = 0; i < seenRoles.length; i++) {
-                jesterHTML += `<p><span class="resistance">${seenRoles[i]}</span> is in the game</p>`;
-            }
+        if (seenRoles === 1) {
+            jesterHTML += `<p>${seenRoles} assassinable role is in the game</p>`;
         } else {
-            jesterHTML += `
-                <p>Your vision has been sabotaged by <span class="spy">Accolon</span></p>
-                <p>You see:</p></section><section>
-            `;
-
-            if (seenRoles === 1) {
-                jesterHTML += `<p>${seenRoles} assassinable role is in the game</p>`;
-            } else {
-                jesterHTML += `<p>${seenRoles} assassinable roles are in the game</p>`;
-            }
+            jesterHTML += `<p>${seenRoles} assassinable roles are in the game</p>`;
         }
-        jesterHTML += `</section>`;
+    }
+    jesterHTML += `</section>`;
 
-        if (this.intel.length > 1) {
-            jesterHTML += this._getResistanceEctorHTML();
-        }
-
-        return jesterHTML;
+    if (this.intel.length > 1) {
+        jesterHTML += this._getResistanceEctorHTML();
     }
 
-    _getGuinevereHTML() {
-        let guinevereHTML = `
-            <h2 class="resistance">Guinevere</h2><section>
+    return jesterHTML;
+}
+
+Player.prototype._getGuinevereHTML = function() {
+    let guinevereHTML = `
+        <h2 class="future-header resistance">Guinevere</h2><section>
+    `;
+    if (this.intelSabotaged) {
+        guinevereHTML += `
+            <p>Your vision has been sabotaged by <span class="spy">Accolon</span></p>
+            <p>One of the players you see is not <span class="resistance">Lancelot</span> or <span class="spy">Maelagant</span></p>
         `;
-        if (this.intelSabotaged) {
-            guinevereHTML += `
-                <p>Your vision has been sabotaged by <span class="spy">Accolon</span></p>
-                <p>One of the players you see is not <span class="resistance">Lancelot</span> or <span class="spy">Maelagant</span></p>
-            `;
-        }
-        guinevereHTML += `<p>You see:</p></section><section>`;
-
-        const seenPlayers = this.intel[0];
-        for (let i = 0; i < seenPlayers.length; i++) {
-            const seenPlayer = seenPlayers[i];
-            guinevereHTML += `
-                <p>${seenPlayer.name} is <span class="resistance">Lancelot</span> or
-                <span class="spy">Maelagant</span></p>
-            `;
-        }
-        guinevereHTML += `</section>`;
-
-        if (this.intel.length > 1) {
-            guinevereHTML += this._getResistanceEctorHTML();
-        }
-
-        return guinevereHTML;
     }
+    guinevereHTML += `<p>You see:</p></section><section>`;
 
-    _getBedivereHTML() {
-        let bedivereHTML = `
-            <h2 class="resistance">Bedivere</h2><section>
+    const seenPlayers = this.intel[0];
+    for (let i = 0; i < seenPlayers.length; i++) {
+        const seenPlayer = seenPlayers[i];
+        guinevereHTML += `
+            <p>${seenPlayer.name} is <span class="resistance">Lancelot</span> or
+            <span class="spy">Maelagant</span></p>
         `;
-        if (this.intelSabotaged) {
-            bedivereHTML += `
-                <p>Your vision has been sabotaged by <span class="spy">Accolon</span></p>
-            `;
-        }
-        bedivereHTML += `<p>You see:</p></section><section>`;
+    }
+    guinevereHTML += `</section>`;
 
-        const seenRoles = this.intel[0];
-        for (let i = 0; i < seenRoles.length; i++) {
-            const seenRole = seenRoles[i];
-            if (seenRole) {
-                bedivereHTML += `<p><span class="spy">${seenRole}</span> is in the game</p>`;
-            } else {
-                bedivereHTML += `<p>??? is in the game</p>`;
-            }
-        }
-        bedivereHTML += `</section>`;
-
-        if (this.intel.length > 1) {
-            bedivereHTML += this._getResistanceEctorHTML();
-        }
-
-        return bedivereHTML;
+    if (this.intel.length > 1) {
+        guinevereHTML += this._getResistanceEctorHTML();
     }
 
-    _getGalahadHTML() {
-        let galahadHTML = `
-            <h2 class="resistance">Galahad</h2><section>
+    return guinevereHTML;
+}
+
+Player.prototype._getBedivereHTML = function() {
+    let bedivereHTML = `
+        <h2 class="future-header resistance">Bedivere</h2><section>
+    `;
+    if (this.intelSabotaged) {
+        bedivereHTML += `
+            <p>Your vision has been sabotaged by <span class="spy">Accolon</span></p>
         `;
-        if (this.intelSabotaged) {
-            galahadHTML += `
-                <p>Your vision has been sabotaged by <span class="spy">Accolon</span></p>
-                <p>One of the players you see is not <span class="resistance">Arthur</span></p>
-            `;
+    }
+    bedivereHTML += `<p>You see:</p></section><section>`;
+
+    const seenRoles = this.intel[0];
+    for (let i = 0; i < seenRoles.length; i++) {
+        const seenRole = seenRoles[i];
+        if (seenRole) {
+            bedivereHTML += `<p><span class="spy">${seenRole}</span> is in the game</p>`;
+        } else {
+            bedivereHTML += `<p>??? is in the game</p>`;
         }
-        galahadHTML += `<p>You see:</p></section><section>`;
+    }
+    bedivereHTML += `</section>`;
 
-        const seenPlayers = this.intel[0];
-        for (let i = 0; i < seenPlayers.length; i++) {
-            galahadHTML += `<p>${seenPlayers[i].name} is <span class="resistance">Arthur</span></p>`;
-        }
-        galahadHTML += `</section>`;
-
-        return galahadHTML;
+    if (this.intel.length > 1) {
+        bedivereHTML += this._getResistanceEctorHTML();
     }
 
-    _getTitaniaHTML() {
-        let titaniaHTML = `
-            <h2 class="resistance">Titania</h2>
-            <section>
-                <p>You sabotaged a member of the <span class="spy">spies</span>.</p>
-                <p>That member sees you as a possible <span class="spy">spy</span>.</p>
-            </section>
+    return bedivereHTML;
+}
+
+Player.prototype._getGalahadHTML = function() {
+    let galahadHTML = `
+        <h2 class="future-header resistance">Galahad</h2><section>
+    `;
+    if (this.intelSabotaged) {
+        galahadHTML += `
+            <p>Your vision has been sabotaged by <span class="spy">Accolon</span></p>
+            <p>One of the players you see is not <span class="resistance">Arthur</span></p>
         `;
+    }
+    galahadHTML += `<p>You see:</p></section><section>`;
 
-        if (this.intel.length > 1) {
-            titaniaHTML += this._getResistanceEctorHTML();
-        }
+    const seenPlayers = this.intel[0];
+    for (let i = 0; i < seenPlayers.length; i++) {
+        galahadHTML += `<p>${seenPlayers[i].name} is <span class="resistance">Arthur</span></p>`;
+    }
+    galahadHTML += `
+        </section>
+        <section>
+            <p>Keep your knowledge a secret; <span class="resistance">Arthur</span> can be assassinated.</p>
+        </section>
+    `;
 
-        return titaniaHTML;
+    return galahadHTML;
+}
+
+Player.prototype._getTitaniaHTML = function() {
+    let titaniaHTML = `
+        <h2 class="future-header resistance">Titania</h2>
+        <section>
+            <p>You sabotaged a member of the <span class="spy">spies</span>.</p>
+            <p>That member sees you as a possible <span class="spy">spy</span>.</p>
+        </section>
+    `;
+
+    if (this.intel.length > 1) {
+        titaniaHTML += this._getResistanceEctorHTML();
     }
 
-    _getMordredHTML() {
-        let mordredHTML = `
-            <h2 class="spy">Mordred</h2>
-            <section><p>You are not seen by <span class="resistance">Merlin</span>.</p></section>
+    return titaniaHTML;
+}
+
+Player.prototype._getKayHTML = function () {
+    return `
+        <h2 class="future-header resistance">Kay</h2>
+        <section>
+            <p>If the <span class="spy">spies</span> win 3 missions,</p>
+            <p>you are given the opportunity to redeem the <span class="resistance">Resistance</span>.</p>
+            <p>Correctly name all <span class="spy">spies</span> and the game will progress as if the <span class="resistance">Resistance</span> had won 3 missions.</p>
+        </section>
+    `;
+}
+
+Player.prototype._getSirRobinHTML = function () {
+    let sirRobinHTML = `
+        <h2 class="future-header resistance">Sir Robin</h2>
+        <section>
+            <p>Complete the quest below to recieve its reward.</p>
+        </section>
+        <section>
+            <p>Quest: {}</p>
+        </section>
+        <section>
+            <p>Reward: Privately inspect the total number of spies on a single previous mission.</p>
+        </section>
+    `;
+
+    if (this.intel.length > 1) {
+        sirRobinHTML += this._getResistanceEctorHTML();
+    }
+
+    return sirRobinHTML;
+}
+
+Player.prototype._getGaherisHTML = function () {
+    let gaherisHTML = `
+        <h2 class="future-header resistance">Gaheris</h2>
+        <section>
+            <p>While voting for a team, you may mark one player for a <span class="resistance">Resistance</span> bind.</p>
+            <p>A <span class="resistance">Resistance</span> bound player must play a success mission card for that mission unless the player is <span class="spy">Morgana</span>.</p>
+            <p>If the team is approved, your bind is attempted against the marked player and you may no longer mark another player for a <span class="resistance">Resistance</span> bind.</p>
+            <p>If your bind is attempted against a player marked as protected from <span class="resistance">Resistance</span> binds then your bind is blocked.</p>
+            <p>If your bind is attempted against a player not marked as protected from <span class="resistance">Resistance</span> binds then your bind is applied to the player.</p>
+            <p>On later missions that can result in the game ending, no binds or protections can occur.</p>
+        </section>
+    `;
+
+    if (this.intel.length > 1) {
+        gaherisHTML += this._getResistanceEctorHTML();
+    }
+
+    return gaherisHTML;
+}
+
+Player.prototype._getGeraintHTML = function () {
+    let geraintHTML = `
+        <h2 class="future-header resistance">Geraint</h2>
+        <section>
+            <p>While voting for a team, you may mark one player to be protected from a <span class="spy">Spy</span> bind.</p>
+            <p>A <span class="spy">Spy</span> bound player must play a fail mission card for that mission.</p>
+            <p>If the team is approved, the protection is applied to the marked player.</p>
+            <p>If a <span class="spy">Spy</span> bind occurs against the protected player, the bind is blocked and no future <span class="spy">Spy</span> binds may occur.</p>
+            <p>If a <span class="spy">Spy</span> bind occurs against a different player, the bind is applied to the unprotected player and no future <span class="spy">Spy</span> binds may occur.</p>
+            <p>If no <span class="spy">Spy</span> bind is attempted, you may again mark a player to be protected from a <span class="spy">Spy</span> bind.</p>
+            <p>On later missions that can result in the game ending, no binds or protections can occur.</p>
+        </section>
+    `;
+
+    if (this.intel.length > 1) {
+        geraintHTML += this._getResistanceEctorHTML();
+    }
+
+    return geraintHTML;
+}
+
+Player.prototype._getResistanceEctorHTML = function () {
+    return `
+        <section>
+            <p>You and fellow <span class="resistance">resistance</span> members have been blessed by the presense of <span class="resistance">Ector</span>.</p>
+            <p>${this.intel[1].name} is <span class="resistance">Ector</span>.</p>
+            <p>Keep this information a secret; <span class="resistance">Ector</span> can be assassinated.</p>
+        </section>
+    `;
+}
+
+Player.prototype._getMordredHTML = function() {
+    let mordredHTML = `
+        <h2 class="future-header spy">Mordred</h2>
+        <section><p>You are not seen by <span class="resistance">Merlin</span>.</p></section>
+    `;
+
+    mordredHTML += this._getSpyHTML();
+    return mordredHTML;
+}
+
+Player.prototype._getMorganaHTML = function() {
+    let morganaHTML = `
+        <h2 class="future-header spy">Morgana</h2>
+        <section><p>You are seen by <span class="resistance">Percival</span> as a possible <span class="resistance">Merlin</span>.</p></section>
+    `;
+
+    morganaHTML += this._getSpyHTML();
+    return morganaHTML;
+}
+
+Player.prototype._getMaelagantHTML = function() {
+    let maelagantHTML = `
+        <h2 class="future-header spy">Maelagant</h2>
+        <section><p>You may play reverse cards while on missions.</p></section>
+    `;
+
+    maelagantHTML += this._getSpyHTML();
+    return maelagantHTML;
+}
+
+Player.prototype._getColgrevanceHTML = function() {
+    let colgrevanceHTML = `<h2 class="future-header spy">Colgrevance</h2>`;
+    colgrevanceHTML += this._getSpyHTML();
+    return colgrevanceHTML;
+}
+
+Player.prototype._getAccolonHTML = function() {
+    let accolonHTML = `
+        <h2 class="future-header spy">Accolon</h2>
+        <section>
+            <p>You sabotaged the vision of a <span class="resistance">resistance</span> player.</p>
+        </section>
+    `;
+    accolonHTML += this._getSpyHTML();
+    return accolonHTML;
+}
+
+Player.prototype._getLuciusHTML = function() {
+    let luciusHTML = `
+        <h2 class="future-header spy">Lucius</h2>
+        <section>
+            <p>You hijacked some <span class="resistance">resistance</span> roles:</p>
+        </section><section>
+    `;
+
+    const seenRoles = this.intel[1];
+    for (let i = 0; i < seenRoles.length; i++) {
+        const seenRole = seenRoles[i];
+        luciusHTML += `<p><span class="resistance">${seenRole}</span> is in the game</p>`;
+    }
+    luciusHTML += `</section>`;
+
+    luciusHTML += this._getSpyHTML();
+    return luciusHTML;
+}
+
+Player.prototype._getCerdicHTML = function() {
+    let cerdicHTML = `
+        <h2 class="future-header spy">Cerdic</h2>
+        <section>
+            <p>While voting for a team, you may mark one player for a <span class="spy">Spy</span> bind.</p>
+            <p>A <span class="spy">Spy</span> bound player must play a fail mission card for that mission.</p>
+            <p>If the team is approved, your bind is attempted against the marked player and you may no longer mark another player for a <span class="spy">Spy</span> bind.</p>
+            <p>If your bind is attempted against a player marked as protected from <span class="spy">Spy</span> binds then your bind is blocked.</p>
+            <p>If your bind is attempted against a player not marked as protected from <span class="spy">Spy</span> binds then your bind is applied to the player.</p>
+            <p>On later missions that can result in the game ending, no binds or protections can occur.</p>
+        </section>
+    `;
+    cerdicHTML += this._getSpyHTML();
+    return cerdicHTML;
+}
+
+Player.prototype._getCynricHTML = function() {
+    let cynricHTML = `
+        <h2 class="future-header spy">Cynric</h2>
+        <section>
+            <p>While voting for a team, you may mark one player to be protected from a <span class="resistance">Resistance</span> bind.</p>
+            <p>A <span class="resistance">Resistance</span> bound player must play a success mission card for that mission unless the player is <span class="spy">Morgana</span>.</p>
+            <p>If the team is approved, the protection is applied to the marked player.</p>
+            <p>If a <span class="resistance">Resistance</span> bind occurs against the protected player, the bind is blocked and no future <span class="resistance">Resistance</span> binds may occur.</p>
+            <p>If a <span class="resistance">Resistance</span> bind occurs against a different player, the bind is applied to the unprotected player and no future <span class="resistance">Resistance</span> binds may occur.</p>
+            <p>If no <span class="resistance">Resistance</span> bind is attempted, you may again mark a player to be protected from a <span class="resistance">Resistance</span> bind.</p>
+            <p>On later missions that can result in the game ending, no binds or protections can occur.</p>
+        </section>
+    `;
+    cynricHTML += this._getSpyHTML();
+    return cynricHTML;
+}
+
+Player.prototype._getSpyHTML = function() {
+    let spyHTML = "";
+    if (this.isAssassin) {
+        spyHTML += `<section><p>You are also the assassin.</p></section>`;
+    }
+
+    if (this.intelSabotaged) {
+        spyHTML += `
+            <section><p>Your vision has been sabotaged by <span class="resistance">Titania</span></p>
+            <p>One of the players you see is not a <span class="spy">spy</span></p>
+            <p>You see:</p></section><section>
         `;
-
-        mordredHTML += this._getSpyHTML();
-        return mordredHTML;
+    } else {
+        spyHTML += `<section><p>You see:</p></section><section>`;
     }
 
-    _getMorganaHTML() {
-        let morganaHTML = `
-            <h2 class="spy">Morgana</h2>
-            <section><p>You are seen by <span class="resistance">Percival</span> as a possible <span class="resistance">Merlin</span>.</p></section>
-        `;
-
-        morganaHTML += this._getSpyHTML();
-        return morganaHTML;
-    }
-
-    _getMaelagantHTML() {
-        let maelagantHTML = `
-            <h2 class="spy">Maelagant</h2>
-            <section><p>You may play reverse cards while on missions.</p></section>
-        `;
-
-        maelagantHTML += this._getSpyHTML();
-        return maelagantHTML;
-    }
-
-    _getColgrevanceHTML() {
-        let colgrevanceHTML = `<h2 class="spy">Colgrevance</h2>`;
-        colgrevanceHTML += this._getSpyHTML();
-        return colgrevanceHTML;
-    }
-
-    _getAccolonHTML() {
-        let accolonHTML = `
-            <h2 class="spy">Accolon</h2>
-            <section>
-                <p>You sabotaged the vision of a <span class="resistance">resistance</span> player.</p>
-            </section>
-        `;
-        accolonHTML += this._getSpyHTML();
-        return accolonHTML;
-    }
-
-    _getLuciusHTML() {
-        let luciusHTML = `
-            <h2 class="spy">Lucius</h2>
-            <section>
-                <p>You hijacked some <span class="resistance">resistance</span> roles:</p>
-            </section><section>
-        `;
-
-        const seenRoles = this.intel[1];
-        for (let i = 0; i < seenRoles.length; i++) {
-            const seenRole = seenRoles[i];
-            luciusHTML += `<p><span class="resistance">${seenRole}</span> is in the game</p>`;
-        }
-        luciusHTML += `</section>`;
-
-        luciusHTML += this._getSpyHTML();
-        return luciusHTML;
-    }
-
-    _getSpyHTML() {
-        let spyHTML = "";
-        if (this.gameState.assassinId === this.id) {
-            spyHTML += `<section><p>You are also the assassin.</p></section>`;
-        }
-
-        if (this.intelSabotaged) {
+    const seenSpies = this.intel[0];
+    for (let i = 0; i < seenSpies.length; i++) {
+        const seenSpy = seenSpies[i];
+        if ('role' in seenSpy) {
             spyHTML += `
-                <section><p>Your vision has been sabotaged by <span class="resistance">Titania</span></p>
-                <p>One of the players you see is not a <span class="spy">spy</span></p>
-                <p>You see:</p></section><section>
+                <p>
+                    ${i + 1}) ${seenSpy.name} is <span class="spy">${seenSpy.role}</span>
+                </p>
             `;
         } else {
-            spyHTML += `<section><p>You see:</p></section><section>`;
+            spyHTML += `<p>${i + 1}) ${seenSpy.name} is <span class="spy">evil</span></p>`;
         }
-
-        const seenSpies = this.intel[0];
-        for (let i = 0; i < seenSpies.length; i++) {
-            const seenSpy = seenSpies[i];
-            if ('role' in seenSpy) {
-                spyHTML += `
-                    <p>
-                        ${i + 1}) ${seenSpy.name} is <span class="spy">${seenSpy.role}</span>
-                    </p>
-                `;
-            } else {
-                spyHTML += `<p>${i + 1}) ${seenSpy.name} is <span class="spy">evil</span></p>`;
-            }
-        }
-        spyHTML += `</section>`;
-
-        return spyHTML;
     }
+    spyHTML += `</section>`;
+
+    return spyHTML;
 }
 
 module.exports = Player

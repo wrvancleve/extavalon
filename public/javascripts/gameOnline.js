@@ -1,8 +1,9 @@
-const ROOT_URL = "https://extavalon.com";
-//const ROOT_URL = "http://192.168.1.107:25565";
+//const ROOT_URL = "https://extavalon.com";
+const ROOT_URL = "http://192.168.1.107:25565";
 
 const LOBBY_INFORMATION_ID = "lobby-information";
-const TOGGLE_HOST_INFORMATION_BUTTON_ID = "toggle-host-information-button";
+const TOGGLE_LOBBY_INFORMATION_BUTTON_ID = "toggle-lobby-information-button";
+const LOBBY_PLAYERS_ID = "lobby-players";
 const LOBBY_PLAYER_COUNT_ID = "lobby-player-count";
 const LOBBY_PLAYER_LIST_ID = "lobby-player-list";
 
@@ -206,7 +207,8 @@ document.addEventListener('DOMContentLoaded', function () {
 
     // Get Elements
     const lobbyInformation = document.getElementById(LOBBY_INFORMATION_ID);
-    const toggleHostInformationButton = document.getElementById(TOGGLE_HOST_INFORMATION_BUTTON_ID);
+    const toggleLobbyInformationButton = document.getElementById(TOGGLE_LOBBY_INFORMATION_BUTTON_ID);
+    const lobbyPlayers = document.getElementById(LOBBY_PLAYERS_ID);
     const rolesModal = document.getElementById(ROLES_MODAL_ID);
     const openRolesModalButton = document.getElementById(OPEN_ROLES_MODAL_BUTTON_ID);
     const closeRolesModalButton = document.getElementById(CLOSE_ROLES_MODAL_BUTTON_ID);
@@ -239,6 +241,8 @@ document.addEventListener('DOMContentLoaded', function () {
     const resultsArea = document.getElementById(RESULTS_AREA_ID);
 
     // Setup Page
+    game.style.display = "none";
+
     openIntelModalButton.onclick = function() {
         if (intelModal.style.display === "flex") {
             intelModal.style.display = "none";
@@ -252,11 +256,8 @@ document.addEventListener('DOMContentLoaded', function () {
     closeIntelModalButton.onclick = function() {
         intelModal.style.display = "none";
     }
-    if (toggleHostInformationButton) {
-        toggleHostInformationButton.style.display = "none";
-    }
     openIntelModalButton.style.display = "none";
-    game.style.display = "none";
+    intelModal.style.display = "none";
 
     openRolesModalButton.onclick = function() {
         if (rolesModal.style.display === "block") {
@@ -268,10 +269,10 @@ document.addEventListener('DOMContentLoaded', function () {
             rolesModal.style.display = "block";
         }
     }
-
     closeRolesModalButton.onclick = function() {
         rolesModal.style.display = "none";
     }
+    rolesModal.style.display = "none";
 
     closeResultsModalButton.onclick = function() {
         resultsModal.style.display = "none";
@@ -286,8 +287,8 @@ document.addEventListener('DOMContentLoaded', function () {
         };
     }
 
-    if (toggleHostInformationButton) {
-        toggleHostInformationButton.onclick = function() {
+    if (toggleLobbyInformationButton) {
+        toggleLobbyInformationButton.onclick = function() {
             if (lobbyInformation.style.display === "none") {
                 lobbyInformation.style.display = "flex";
                 startGameButton.style.display = "block";
@@ -298,18 +299,21 @@ document.addEventListener('DOMContentLoaded', function () {
                 closeGameButton.style.display = "none";
             }
         };
+        toggleLobbyInformationButton.style.display = "none";
     }
 
     function updateLobby(players) {
         const activePlayerCount = players.filter(p => p.active).length;
         document.getElementById(LOBBY_PLAYER_COUNT_ID).innerHTML = `Players [${activePlayerCount}]`;
-        const lobbyPlayerList = document.getElementById(LOBBY_PLAYER_LIST_ID);
 
-        clearChildrenFromElement(lobbyPlayerList);
+        if (lobbyPlayers.lastChild.id === LOBBY_PLAYER_LIST_ID) {
+            lobbyPlayers.removeChild(lobbyPlayers.lastChild);
+        }
+        const lobbyPlayerList = createDiv(LOBBY_PLAYER_LIST_ID);
         
         for (let i = 0; i < players.length; i++) {
             const player = players[i];
-            const playerListElement = document.createElement('li');
+            const playerListElement = document.createElement('div');
             const playerNameElement = document.createElement('span');
 
             playerNameElement.classList.add(player.active ? 'player-active' : 'player-inactive');
@@ -330,8 +334,28 @@ document.addEventListener('DOMContentLoaded', function () {
         }
 
         if (startGameButton) {
+            new Sortable(lobbyPlayerList, {
+                animation: 350,
+                onEnd: function (event) {
+                    /*
+                    var itemEl = event.item;  // dragged HTMLElement
+                    event.to;    // target list
+                    event.from;  // previous list
+                    event.oldIndex;  // element's old index within old parent
+                    event.newIndex;  // element's new index within new parent
+                    event.oldDraggableIndex; // element's old index within old parent, only counting draggable elements
+                    event.newDraggableIndex; // element's new index within new parent, only counting draggable elements
+                    event.clone // the clone element
+                    event.pullMode;  // when item is in another sortable: `"clone"` if cloning, `true` if moving
+                    */
+                   socket.emit('update-player-index', {oldIndex: event.oldIndex, newIndex: event.newIndex});
+                }
+            });
+
             setButtonDisabled(startGameButton, activePlayerCount < 5, false);
         }
+
+        lobbyPlayers.appendChild(lobbyPlayerList);
     }
 
     function handleSetupGame() {
@@ -381,8 +405,8 @@ document.addEventListener('DOMContentLoaded', function () {
 
         game.style.display = "none";
         lobbyInformation.style.display = "none";
-        if (toggleHostInformationButton) {
-            toggleHostInformationButton.style.display = "none";
+        if (toggleLobbyInformationButton) {
+            toggleLobbyInformationButton.style.display = "none";
         }
         if (startGameButton) {
             startGameButton.style.display = "none";
@@ -402,7 +426,7 @@ document.addEventListener('DOMContentLoaded', function () {
         } else {
             identityPickInformation.type = "Role";
         }
-        socket.emit('pick-identity', ({identityPickInformation}));
+        socket.emit('pick-identity', identityPickInformation);
     }
 
     function handleStartGame(gameHTML, players) {
@@ -424,8 +448,8 @@ document.addEventListener('DOMContentLoaded', function () {
             closeGameButton.style.display = "none";
         }
         resultsModal.style.display = "none";
-        if (toggleHostInformationButton) {
-            toggleHostInformationButton.style.display = "block";
+        if (toggleLobbyInformationButton) {
+            toggleLobbyInformationButton.style.display = "block";
         }
         openIntelModalButton.style.display = "block";
         game.style.display = "flex";
@@ -656,7 +680,7 @@ document.addEventListener('DOMContentLoaded', function () {
                 updateGunSelected(null);
                 removeNameClicks();
 
-                socket.emit('update-team', {gunSlots: getGunSlots()});
+                socket.emit('update-gun-slots', getGunSlots());
                 const selectGunArea = document.getElementById(SELECT_GUN_AREA_ID);
                 if (selectGunArea && selectGunArea.childElementCount === 0) {
                     showConfirmProposal();
@@ -750,11 +774,13 @@ document.addEventListener('DOMContentLoaded', function () {
 
         updateGunSelected(null);
 
-        socket.emit('propose-team', {selectedIds});
+        socket.emit('propose-team', selectedIds);
     }
 
-    function setupVote(selectedVote) {
+    function setupVote(setupVoteInformation) {
         statusMessage.innerHTML = "Voting on team...";
+
+        const selectedVote = setupVoteInformation.selectedVote;
 
         const selectVoteArea = createDiv(SELECT_VOTE_AREA_ID);
         actionArea.appendChild(selectVoteArea);
@@ -786,7 +812,7 @@ document.addEventListener('DOMContentLoaded', function () {
                 removeClassFromElement(option, "selected-image");
             }
         }
-        socket.emit('vote-team', {vote: selectedVote});
+        socket.emit('vote-team', selectedVote);
     }
 
     function showPlayerVoted(id) {
@@ -815,30 +841,41 @@ document.addEventListener('DOMContentLoaded', function () {
         }
     }
 
-    function setupMission(failAllowed, reverseAllowed) {
-        const selectMissionActionContainer = createDiv(SELECT_MISSION_ACTION_CONTAINER_ID);
-        actionArea.appendChild(selectMissionActionContainer);
+    function setupMission(conductMissionInformation) {
+        clearChildrenFromElement(actionArea);
 
-        const successMissionActionImage = createImage(null, SUCCEED_MISSION_IMG_SRC, SUCCEED_MISSION_IMG_ALT, ['action-image', 'clickable']);
-        successMissionActionImage.onclick = function () {
-            handleMissionActionSelection(selectMissionActionContainer.children, successMissionActionImage, 'Succeed');
-        };
-        selectMissionActionContainer.appendChild(successMissionActionImage);
+        if (conductMissionInformation) {
+            statusMessage.innerHTML = "Conducting mission...";
 
-        if (failAllowed) {
-            const failMissionActionImage = createImage(null, FAIL_MISSION_IMG_SRC, FAIL_MISSION_IMG_ALT, ['action-image', 'clickable']);
-            failMissionActionImage.onclick = function () {
-                handleMissionActionSelection(selectMissionActionContainer.children, failMissionActionImage, 'Fail');
+            const failAllowed = conductMissionInformation.failAllowed;
+            const reverseAllowed = conductMissionInformation.reverseAllowed;
+
+            const selectMissionActionContainer = createDiv(SELECT_MISSION_ACTION_CONTAINER_ID);
+            actionArea.appendChild(selectMissionActionContainer);
+    
+            const successMissionActionImage = createImage(null, SUCCEED_MISSION_IMG_SRC, SUCCEED_MISSION_IMG_ALT, ['action-image', 'clickable']);
+            successMissionActionImage.onclick = function () {
+                handleMissionActionSelection(selectMissionActionContainer.children, successMissionActionImage, 'Succeed');
             };
-            selectMissionActionContainer.appendChild(failMissionActionImage);
-        }
-
-        if (reverseAllowed) {
-            const reverseMissionActionImage = createImage(null, REVERSE_MISSION_IMG_SRC, REVERSE_MISSION_IMG_ALT, ['action-image', 'clickable']);
-            reverseMissionActionImage.onclick = function () {
-                handleMissionActionSelection(selectMissionActionContainer.children, reverseMissionActionImage, 'Reverse');
-            };
-            selectMissionActionContainer.appendChild(reverseMissionActionImage);
+            selectMissionActionContainer.appendChild(successMissionActionImage);
+    
+            if (failAllowed) {
+                const failMissionActionImage = createImage(null, FAIL_MISSION_IMG_SRC, FAIL_MISSION_IMG_ALT, ['action-image', 'clickable']);
+                failMissionActionImage.onclick = function () {
+                    handleMissionActionSelection(selectMissionActionContainer.children, failMissionActionImage, 'Fail');
+                };
+                selectMissionActionContainer.appendChild(failMissionActionImage);
+            }
+    
+            if (reverseAllowed) {
+                const reverseMissionActionImage = createImage(null, REVERSE_MISSION_IMG_SRC, REVERSE_MISSION_IMG_ALT, ['action-image', 'clickable']);
+                reverseMissionActionImage.onclick = function () {
+                    handleMissionActionSelection(selectMissionActionContainer.children, reverseMissionActionImage, 'Reverse');
+                };
+                selectMissionActionContainer.appendChild(reverseMissionActionImage);
+            }
+        } else {
+            statusMessage.innerHTML = "Waiting for mission to finish...";
         }
     }
 
@@ -857,15 +894,19 @@ document.addEventListener('DOMContentLoaded', function () {
         const actionAreaButtons = actionArea.getElementsByTagName("button");
         if (actionAreaButtons.length === 0) {
             showButton("Confirm", function () {
-                socket.emit('conduct-mission', {action: action});
-                clearChildrenFromElement(actionArea);
+                handleConfirmMissionActionClick(action);
             });
         } else {
             actionAreaButtons[0].onclick = function () {
-                socket.emit('conduct-mission', {action: action});
-                clearChildrenFromElement(actionArea);
+                handleConfirmMissionActionClick(action);
             };
         }
+    }
+
+    function handleConfirmMissionActionClick(action) {
+        socket.emit('conduct-mission', action);
+        clearChildrenFromElement(actionArea);
+        statusMessage.innerHTML = "Waiting for mission to finish...";
     }
 
     function showMissionResult(result, showActions) {
@@ -1041,44 +1082,48 @@ document.addEventListener('DOMContentLoaded', function () {
         boardArea.appendChild(resultImage);
     }
 
-    function setupAssassination() {
-        playersSelected = [];
-        assassinationModal.style.display = "flex";
-        assassinationArea.innerHTML = `
-            <h3 class="future-header" id="${ASSASSINATION_HEADER_ID}">Select Player(s) To Assassinate</h3>
-            <select id="${ASSASSINATION_ROLES_SELECT_ID}">
-                <option value=""></option>
-                <option value="Merlin">Merlin</option>
-                <option value="Arthur">Arthur</option>
-                <option value="Lovers">Lovers</option>
-            </select>
-            <button class="future-button" type="button"
-                id="${RESET_ASSASSINATION_BUTTON_ID}">Reset Assassination</button>
-            <button class="future-button future-button-disabled" type="button"
-                id="${CONFIRM_ASSASSINATION_BUTTON_ID}" disabled>Confirm Assassination</button>
-        `;
-
-        for (let i = 0; i < gamePlayers.length; i++) {
-            const nameElement = document.getElementById(gamePlayers[i].nameId);
-            if (nameElement.classList.contains("resistance")) {
-                nameElement.classList.add("clickable");
-                nameElement.onclick = function () {
-                    handleAssassinationClick(i);
-                };
-            }
-        }
-
-        document.getElementById(RESET_ASSASSINATION_BUTTON_ID).onclick = function () {
+    function setupAssassination(conductAssassinationInformation) {
+        if (!conductAssassinationInformation.assassin) {
             playersSelected = [];
-            document.getElementById(ASSASSINATION_HEADER_ID).innerHTML = "Select Player(s) To Assassinate";
-            document.getElementById(ASSASSINATION_ROLES_SELECT_ID).innerHTML = `
-                <option value=""></option>
-                <option value="Merlin">Merlin</option>
-                <option value="Arthur">Arthur</option>
-                <option value="Lovers">Lovers</option>
+            assassinationModal.style.display = "flex";
+            assassinationArea.innerHTML = `
+                <h3 class="future-header" id="${ASSASSINATION_HEADER_ID}">Select Player(s) To Assassinate</h3>
+                <select id="${ASSASSINATION_ROLES_SELECT_ID}">
+                    <option value=""></option>
+                    <option value="Merlin">Merlin</option>
+                    <option value="Arthur">Arthur</option>
+                    <option value="Lovers">Lovers</option>
+                </select>
+                <button class="future-button" type="button"
+                    id="${RESET_ASSASSINATION_BUTTON_ID}">Reset Assassination</button>
+                <button class="future-button future-button-disabled" type="button"
+                    id="${CONFIRM_ASSASSINATION_BUTTON_ID}" disabled>Confirm Assassination</button>
             `;
-            setButtonDisabled(document.getElementById(CONFIRM_ASSASSINATION_BUTTON_ID), true);
-        };
+    
+            for (let i = 0; i < gamePlayers.length; i++) {
+                const nameElement = document.getElementById(gamePlayers[i].nameId);
+                if (nameElement.classList.contains("resistance")) {
+                    nameElement.classList.add("clickable");
+                    nameElement.onclick = function () {
+                        handleAssassinationClick(i);
+                    };
+                }
+            }
+    
+            document.getElementById(RESET_ASSASSINATION_BUTTON_ID).onclick = function () {
+                playersSelected = [];
+                document.getElementById(ASSASSINATION_HEADER_ID).innerHTML = "Select Player(s) To Assassinate";
+                document.getElementById(ASSASSINATION_ROLES_SELECT_ID).innerHTML = `
+                    <option value=""></option>
+                    <option value="Merlin">Merlin</option>
+                    <option value="Arthur">Arthur</option>
+                    <option value="Lovers">Lovers</option>
+                `;
+                setButtonDisabled(document.getElementById(CONFIRM_ASSASSINATION_BUTTON_ID), true);
+            };
+        } else {
+            statusMessage.innerHTML = `${conductAssassinationInformation.assassin} is choosing who to assassinate...`;
+        }
     }
 
     function handleAssassinationClick(id) {
@@ -1145,11 +1190,11 @@ document.addEventListener('DOMContentLoaded', function () {
         }
     }
 
-    function showGameResult(winner, message) {
+    function showGameResult(winner, resultHTML) {
         resultsModal.style.display = "flex";
         rolesModal.style.display = "none";
         intelModal.style.display = "none";
-        resultsArea.innerHTML = message;
+        resultsArea.innerHTML = resultHTML;
         statusMessage.innerHTML = `${winner} wins!`;
         if (startGameButton) {
             startGameButton.style.display = "block";
@@ -1158,7 +1203,7 @@ document.addEventListener('DOMContentLoaded', function () {
     }
 
     // Attach Socket functions
-    socket.on('update-players', ({currentPlayers}) => {
+    socket.on('update-players', (currentPlayers) => {
         updateLobby(currentPlayers);
     });
 
@@ -1182,7 +1227,7 @@ document.addEventListener('DOMContentLoaded', function () {
         updateLeader(previousLeaderId, leaderId);
     });
 
-    socket.on('update-status', ({message}) => {
+    socket.on('update-status', (message) => {
         statusMessage.innerHTML = message;
     });
 
@@ -1190,19 +1235,19 @@ document.addEventListener('DOMContentLoaded', function () {
         showAdvance();
     });
     
-    socket.on('propose-team', ({gunSlots}) => {
+    socket.on('propose-team', (gunSlots) => {
         setupProposal(gunSlots);
     });
 
-    socket.on('update-team', ({gunSlots}) => {
+    socket.on('update-gun-slots', (gunSlots) => {
         updateGunSlots(gunSlots);
     });
 
-    socket.on('vote-team', ({selectedVote}) => {
-        setupVote(selectedVote);
+    socket.on('vote-team', (setupVoteInformation) => {
+        setupVote(setupVoteInformation);
     });
 
-    socket.on('player-vote', ({id}) => {
+    socket.on('player-vote', (id) => {
         showPlayerVoted(id);
     });
 
@@ -1210,19 +1255,19 @@ document.addEventListener('DOMContentLoaded', function () {
         showVoteResult(votes, approved);
     });
 
-    socket.on('conduct-mission', ({failAllowed, reverseAllowed}) => {
-        setupMission(failAllowed, reverseAllowed);
+    socket.on('conduct-mission', (conductMissionInformation) => {
+        setupMission(conductMissionInformation);
     });
 
     socket.on('mission-result', ({result, showActions}) => {
         showMissionResult(result, showActions);  
     });
 
-    socket.on('conduct-assassination', () => {
-        setupAssassination();
+    socket.on('conduct-assassination', (conductAssassinationInformation) => {
+        setupAssassination(conductAssassinationInformation);
     });
 
-    socket.on('game-result', ({winner, message}) => {
-        showGameResult(winner, message);
+    socket.on('game-result', ({winner, resultHTML}) => {
+        showGameResult(winner, resultHTML);
     });
 });

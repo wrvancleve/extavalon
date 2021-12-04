@@ -1,14 +1,14 @@
-body, button.future-button, input.future-button[type=submit], input.future-input:not([type=submit]), #lobby-players, .remove-player-button, .close-modal-button, #toggle-lobby-information-button, #open-roles-modal-button, #open-intel-modal-button, .unknown, #propose-team, #status-message, #action-area {
+body, button.future-button, input.future-button[type=submit], input.future-input:not([type=submit]), #lobby-players, .remove-player-button, .close-modal-button, #toggle-lobby-information-button, #open-roles-modal-button, #open-intel-modal-button {
   color: #9debfb; }
 
-h1.future-title-box, h2.future-header-box, button.future-button, input.future-button[type=submit], input.future-input:not([type=submit]), section.future-section-boxed, #toggle-lobby-information-button, #open-roles-modal-button, #open-intel-modal-button, #roles-modal, #propose-team, #intel-modal, #results-modal, #assassination-modal {
+h1.future-title-box, h2.future-header-box, button.future-button, input.future-button[type=submit], input.future-input:not([type=submit]), section.future-section-boxed, #toggle-lobby-information-button, #open-roles-modal-button, #open-intel-modal-button, #roles-modal, #intel-modal {
   border: 2px solid #00f8f8;
   box-shadow: 0 0 4px rgba(2, 157, 187, 0.65); }
 
-h1.future-title-box, h2.future-header-box, button.future-button, input.future-button[type=submit], input.future-input:not([type=submit]), section.future-section-boxed, #toggle-lobby-information-button, #open-roles-modal-button, #open-intel-modal-button, #roles-modal, #propose-team {
+h1.future-title-box, h2.future-header-box, button.future-button, input.future-button[type=submit], input.future-input:not([type=submit]), section.future-section-boxed, #toggle-lobby-information-button, #open-roles-modal-button, #open-intel-modal-button, #roles-modal {
   background-color: transparent; }
 
-form, .flex-column, .center-flex-column, #intel-modal-area, #results-area, #assassination-area, .horizontal-player-area {
+form, .flex-column, .center-flex-column, #intel-modal-area {
   display: flex;
   flex-direction: column; }
 
@@ -135,6 +135,18 @@ section.future-section-boxed {
   background-color: transparent;
   text-align: center; }
 
+.list-group-item {
+  border: 1px solid #00f8f8;
+  border-radius: 10px;
+  /*
+    display: flex;
+    align-items: center;
+    justify-content: space-evenly;
+    */
+  display: table;
+  width: 70vw;
+  max-width: 320px; }
+
 .player-active {
   color: #228B22; }
 
@@ -161,7 +173,7 @@ section.future-section-boxed {
   border: 1px solid #00f8f8;
   box-shadow: 0 0 4px rgba(2, 157, 187, 0.65); }
 
-#lobby-players ul, #propose-team ul {
+#lobby-player-list {
   position: relative;
   padding-inline-start: 10px;
   margin-block-start: 0px;
@@ -170,7 +182,7 @@ section.future-section-boxed {
   border: 1px solid #00f8f8;
   box-shadow: 0 0 4px rgba(2, 157, 187, 0.65); }
 
-#lobby-player-list li, #proposal-player-list li {
+#lobby-player-list div {
   list-style: none;
   padding: 10px;
   font-size: 1.25em; }
@@ -254,7 +266,7 @@ div.future-modal {
   height: 1.5em;
   font-size: 1.5em;
   top: 10px;
-  right: calc(16px + 3em);
+  left: 10px;
   margin-top: 0px;
   position: absolute;
   z-index: 5;
@@ -296,169 +308,122 @@ div.future-modal {
   margin: auto;
   text-align: center; }
 
-#intel-modal-area section {
+#game-information section, #intel-modal-area section {
   margin: 0.67em 0em; }
 
-#intel-modal-area p {
+#game-information p, #intel-modal-area p {
   margin: 0px; }
 
 .list-group {
   list-style: none;
   padding-inline-start: 0px; }
 
-.list-group-item {
-  padding: 2px 6px;
-  border: 1px solid #00f8f8;
-  border-radius: 5px;
-  cursor: pointer; }
-
 .list-group-item + .list-group-item {
   margin-top: 0.5em; }
 
-.list-group-item-selected {
-  background-color: #08a5c4; }
+.selected {
+  background-color: rgba(2, 157, 187, 0.65); }
 
-.suspicious {
-  color: #F7FE2E !important; }
+.draggable {
+  cursor: move; }
 
-#propose-team {
-  display: none;
-  margin: auto;
-  max-width: 400px;
-  width: 35vw;
-  text-align: center; }
+.draggable.dragging {
+  opacity: 0.5; }
 
 .clickable {
   cursor: pointer; }
 
-#proposal-submit-button {
-  width: 25vw; }
-
-#results-area, #assassination-area {
-  align-items: center;
-  justify-content: center;
-  margin: auto;
-  text-align: center; }
-
-#results-area p {
-  margin: 0px; }
-
-#results-area section {
-  margin: 0.67em 0em; }
-
-#assassination-area h3 {
-  margin-top: 1vh;
-  margin-bottom: 1vh; }
-
-#results-modal {
-  display: none;
-  font-family: 'Helvetica', sans-serif;
-  min-width: 30vw;
-  min-height: 30vh;
-  z-index: 8; }
-
-#assassination-modal {
-  display: none;
-  font-family: 'Helvetica', sans-serif;
-  min-width: 30vw;
-  min-height: 30vh; }
-
-#status-message {
-  display: block;
-  position: absolute;
-  left: 50%;
-  margin-top: 0px;
-  top: 10px;
-  transform: translate(-50%);
-  text-align: center; }
-
-.vertical-player-area {
-  display: flex;
-  justify-content: space-around;
-  width: 40vw;
-  margin: auto;
-  padding-top: 4vh; }
-
-.vertical-player {
-  text-align: center; }
-
-.vertical-player h3 {
-  margin: 0.5vh 0.5vw; }
-
-#center-area {
-  display: flex; }
-
-#game-board {
-  width: 43vw;
-  height: 43vh;
-  z-index: 0; }
-
-#board-area {
-  position: relative; }
-
-.result-image {
-  z-index: 1;
-  position: absolute;
-  height: 9vh;
-  width: 7vw; }
-
-.horizontal-player-area {
-  height: 35vh;
-  width: 25vw;
-  justify-content: space-between;
-  margin: auto; }
-
-.horizontal-player {
-  display: flex;
-  align-items: center; }
-
-.horizontal-player h2 {
-  margin: 0.5vh 0.5vw; }
-
-#left-player-area .horizontal-player {
-  justify-content: flex-end; }
-
-#right-player-area .horizontal-player {
-  justify-content: flex-start; }
-
-.current-leader {
-  text-decoration: underline; }
+.vote-image {
+  max-height: 320px;
+  height: 18vh;
+  border: 2px solid transparent; }
 
 .gun-image {
-  height: 6vh;
-  width: 10vw;
-  min-height: 6vh;
-  min-width: 10vw;
+  max-height: 180px;
+  height: 8vh;
   border: 2px solid transparent; }
 
-.vote-image {
-  height: 10vh;
-  width: 6vw;
-  min-height: 10vh;
-  min-width: 6vw;
-  border: 2px solid transparent; }
+.icon-wrapper {
+  display: table-cell;
+  vertical-align: middle;
+  width: calc(70vw/8);
+  max-width: 40px; }
+  .icon-wrapper img {
+    height: 2em; }
 
-.action-image {
-  height: 16vh;
-  width: 12vw;
-  min-height: 16vh;
-  min-width: 12vw;
-  border: 2px solid transparent; }
+.name-wrapper {
+  display: table-cell;
+  vertical-align: middle;
+  width: calc(70vw/2);
+  max-width: 160px; }
+  @media only screen and (max-height: 800px) {
+    .name-wrapper p {
+      margin-block-start: 0.75em !important;
+      margin-block-end: 0.75em !important;
+      line-height: 1; } }
+  @media only screen and (min-height: 800px) {
+    .name-wrapper p {
+      margin-block-start: 1em !important;
+      margin-block-end: 1em !important;
+      line-height: 1; } }
+
+.approved-color {
+  color: #14DBB3; }
+
+.rejected-color {
+  color: #DB143C; }
 
 .selected-image {
   border: 2px solid #00f8f8 !important;
   box-shadow: 0 0 4px rgba(2, 157, 187, 0.65); }
 
-#action-area {
-  margin: auto;
-  justify-content: center;
-  align-items: center; }
-
 img + img {
   margin-left: 0.5vw; }
 
-#reset-assassination-button, #confirm-assassination-button {
-  width: 20vw;
-  height: 5vh;
-  margin-top: 1vh;
-  font-size: 1.25em; }
+.action-image {
+  height: 18vh;
+  max-height: 600px;
+  border: 2px solid transparent; }
+
+#mission-results-container {
+  display: table;
+  margin: 0 auto;
+  margin-bottom: 1em; }
+
+.mission-result-wrapper {
+  display: table-cell;
+  vertical-align: middle; }
+  .mission-result-wrapper img {
+    height: 1.75em;
+    width: 1.75em;
+    padding: .25em .125em; }
+  .mission-result-wrapper p {
+    margin-block-start: 0;
+    margin-block-end: 0;
+    font-size: 2em; }
+
+.mission-result {
+  text-align: center; }
+
+.vote-container {
+  display: flex;
+  align-items: center; }
+
+.vote-image-wrapper {
+  width: 20vw; }
+
+#assassination-role-container {
+  margin-top: 0 !important;
+  width: 70vw;
+  max-width: 320px;
+  justify-content: space-around !important; }
+
+.player-names-container {
+  text-align: left; }
+
+.player-names-section {
+  text-align: left;
+  margin-left: 2vw; }
+  .player-names-section p {
+    margin: 0px;
+    line-height: normal; }

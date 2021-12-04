@@ -284,16 +284,16 @@ function getPlayerAssassinatedStats(callback) {
     performTableQuery(playerAssassinatedStatsQuery, callback);
 }
 
-async function createGame(game, gameResult, gameWinner) {
+async function createGame(gameStartTime, gameResult) {
     const createGameQuery = `
-      select create_game('${game.startTime.toISOString()}',
-                                   '${new Date(Date.now()).toISOString()}',
-                                   ${gameResult.missions[0] ? `'${gameResult.missions[0]}'` : 'null'},
-                                   ${gameResult.missions[1] ? `'${gameResult.missions[1]}'` : 'null'},
-                                   ${gameResult.missions[2] ? `'${gameResult.missions[2]}'` : 'null'},
-                                   ${gameResult.missions[3] ? `'${gameResult.missions[3]}'` : 'null'},
-                                   ${gameResult.missions[4] ? `'${gameResult.missions[4]}'` : 'null'},
-                                   '${gameWinner}') as game_id;
+      select create_game('${gameStartTime.toISOString()}',
+                         '${new Date(Date.now()).toISOString()}',
+                         ${gameResult.missions[0] ? `'${gameResult.missions[0]}'` : 'null'},
+                         ${gameResult.missions[1] ? `'${gameResult.missions[1]}'` : 'null'},
+                         ${gameResult.missions[2] ? `'${gameResult.missions[2]}'` : 'null'},
+                         ${gameResult.missions[3] ? `'${gameResult.missions[3]}'` : 'null'},
+                         ${gameResult.missions[4] ? `'${gameResult.missions[4]}'` : 'null'},
+                         '${gameResult.winner}') as game_id;
     `;
     const createGameQueryResult = await postgresPool.query(createGameQuery);
     return createGameQueryResult.rows[0].game_id;

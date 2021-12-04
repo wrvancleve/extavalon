@@ -17,48 +17,12 @@
     @extend %future-box-transparent;
     text-align: center;
 }
-  
-.clickable {
-    cursor: pointer;
-}
-  
-#open-intel-modal-button {
-    @extend %future-color;
-    @extend %future-box-transparent;
-    border-radius: 50%;
-    -webkit-border-radius: 50%;
-    width: 1.5em;
-    height: 1.5em;
-    font-size: 1.5em;
-    top: 10px;
-    right: calc(13px + 1.5em);
-    margin-top: 0px;
-    position: absolute;
-    z-index: 5;
-    cursor: pointer;
-}
-  
-#toggle-host-information-button {
-    border-radius: 50%;
-    -webkit-border-radius: 50%;
-    width: 1.5em;
-    height: 1.5em;
-    font-size: 1.5em;
-    top: 10px;
-    right: calc(16px + 3em);
-    margin-top: 0px;
-    position: absolute;
-    z-index: 5;
-    cursor: pointer;
-    @extend %future-color;
-    @extend %future-box-transparent;
-}
 
 #proposal-submit-button {
     width: 25vw;
 }
   
-#results-area, #intel-modal-area, #assassination-area {
+#results-area, #assassination-area {
     align-items: center;
     justify-content: center;
     @extend %flex-column;
@@ -73,31 +37,10 @@
 #results-area section {
     margin: 0.67em 0em;
 }
-  
-#intel-modal-area section {
-    margin: 0.67em 0em;
-}
-  
-#intel-modal-area p {
-    margin: 0px;
-}
-  
+
 #assassination-area h3 {
     margin-top: 1vh;
     margin-bottom: 1vh;
-}
-  
-#intel-modal {
-    display: none;
-    @extend %future-box;
-    font-family: 'Helvetica', sans-serif;
-    min-width: 30vw;
-    min-height: 30vh;
-    z-index: 7;
-
-    @media only screen and (max-width: 640px) {
-        height: auto;
-    }
 }
   
 #results-modal {
@@ -194,44 +137,11 @@
     text-decoration: underline;
 }
   
-.gun-image {
-    height: 6vh;
-    width: 10vw;
-    min-height: 6vh;
-    min-width: 10vw;
-    border: 2px solid transparent;
-}
-  
-.vote-image {
-    height: 10vh;
-    width: 6vw;
-    min-height: 10vh;
-    min-width: 6vw;
-    border: 2px solid transparent;
-}
-  
-.action-image {
-    height: 16vh;
-    width: 12vw;
-    min-height: 16vh;
-    min-width: 12vw;
-    border: 2px solid transparent;
-}
-  
-.selected-image {
-    border: 2px solid rgb(0, 248, 248) !important;
-    box-shadow: 0 0 4px rgba(2,157,187,0.65);
-}
-  
 #action-area {
     margin: auto;
     @extend %future-color;
     justify-content: center;
     align-items: center;
-}
-  
-img + img {
-    margin-left: 0.5vw;
 }
   
 #reset-assassination-button, #confirm-assassination-button {

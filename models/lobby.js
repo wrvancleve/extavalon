@@ -1,9 +1,8 @@
 const PlayerCollection = require('./playerCollection');
 
-function Lobby(code, host, type, settings) {
+function Lobby(code, host, settings) {
     this.code = code;
     this.host = host;
-    this.type = type;
     this.settings = settings;
     this.game = null;
     this.playerCollection = new PlayerCollection();

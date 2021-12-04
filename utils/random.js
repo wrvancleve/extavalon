@@ -23,3 +23,7 @@ module.exports.sample = (array, size) => {
 module.exports.choice = (array) => {
     return array[Math.floor(Math.random() * array.length)];
 }
+
+module.exports.nextBoolean = () => {
+    return Math.random() < 0.5;
+}

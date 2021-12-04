@@ -1,5 +1,18 @@
 @import 'main';
 
+%list-group-item {
+    border: 1px solid rgb(0, 248, 248);
+    border-radius: 10px;
+    /*
+    display: flex;
+    align-items: center;
+    justify-content: space-evenly;
+    */
+    display: table;
+    width: 70vw;
+    max-width: 320px;
+}
+
 .player-active {
     color: #228B22;
 }
@@ -32,7 +45,7 @@
     box-shadow: 0 0 4px rgba(2,157,187,0.65);
 }
   
-#lobby-players ul, #propose-team ul {
+#lobby-player-list {
     position: relative;
     padding-inline-start: 10px;
     margin-block-start: 0px;
@@ -42,7 +55,7 @@
     box-shadow: 0 0 4px rgba(2,157,187,0.65);
 }
   
-#lobby-player-list li, #proposal-player-list li {
+#lobby-player-list div {
     list-style: none;
     padding: 10px;
     font-size: 1.25em;
@@ -77,15 +90,18 @@ div.future-modal {
     box-sizing: border-box;
     padding: 2vh 2vw;
     overflow: auto;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
     position: fixed;
     background-color: #001a1a !important;
 
     @media only screen and (max-width: 640px) {
         width: 96vw;
-        height: 96vh;
+        height: calc(98vh - 3.5em);
+        top: 3.5em;
+    }
+    @media only screen and (min-width: 640px) {
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
     }
 }
 
@@ -127,13 +143,44 @@ div.future-modal {
     cursor: pointer;
 }
 
+#toggle-lobby-information-button {
+    border-radius: 50%;
+    -webkit-border-radius: 50%;
+    width: 1.5em;
+    height: 1.5em;
+    font-size: 1.5em;
+    top: 10px;
+    left: 10px;
+    margin-top: 0px;
+    position: absolute;
+    z-index: 5;
+    cursor: pointer;
+    @extend %future-color;
+    @extend %future-box-transparent;
+}
+
 #open-roles-modal-button {
     @extend %future-color;
     @extend %future-box-transparent;
 }
 
+#open-intel-modal-button {
+    @extend %future-color;
+    @extend %future-box-transparent;
+    border-radius: 50%;
+    -webkit-border-radius: 50%;
+    width: 1.5em;
+    height: 1.5em;
+    font-size: 1.5em;
+    top: 10px;
+    right: calc(13px + 1.5em);
+    margin-top: 0px;
+    position: absolute;
+    z-index: 5;
+    cursor: pointer;
+}
+
 #roles-modal {
-    display: none;
     color: #b6f0fc;
     @extend %future-box-transparent;
     font-family: 'Helvetica', sans-serif;
@@ -142,4 +189,183 @@ div.future-modal {
 
 #roles-modal h1 {
     margin-inline-start: 10px;
+}
+
+#intel-modal {
+    @extend %future-box;
+    font-family: 'Helvetica', sans-serif;
+    min-width: 30vw;
+    min-height: 30vh;
+    z-index: 7;
+
+    @media only screen and (max-width: 640px) {
+        height: auto;
+    }
+}
+
+#intel-modal-area {
+    align-items: center;
+    justify-content: center;
+    @extend %flex-column;
+    margin: auto;
+    text-align: center;
+}
+
+#game-information section, #intel-modal-area section {
+    margin: 0.67em 0em;
+}
+  
+#game-information p, #intel-modal-area p {
+    margin: 0px;
+}
+
+.list-group {
+    list-style: none;
+    padding-inline-start: 0px;
+}
+
+.list-group-item {
+    @extend %list-group-item;
+}
+
+.list-group-item + .list-group-item {
+    margin-top: 0.5em;
+}
+
+.selected {
+    background-color: rgba(2,157,187,0.65);
+}
+
+.draggable {
+    cursor: move;
+}
+
+.draggable.dragging {
+    opacity: 0.5;
+}
+
+.clickable {
+    cursor: pointer;
+}
+  
+.vote-image {
+    max-height: 320px;
+    height: 18vh;
+    border: 2px solid transparent;
+}
+
+.gun-image {
+    max-height: 180px;
+    height: 8vh;
+    border: 2px solid transparent;
+}
+
+.icon-wrapper {
+    display: table-cell;
+    vertical-align: middle;
+    width: calc(70vw/8);
+    max-width: 40px;
+
+    img {
+        height: 2em;
+    }
+}
+
+.name-wrapper {
+    display: table-cell;
+    vertical-align: middle;
+    width: calc(70vw/2);
+    max-width: 160px;
+
+    p {
+        @media only screen and (max-height: 800px) {
+            margin-block-start: 0.75em !important;
+            margin-block-end: 0.75em !important;
+            line-height: 1;
+        }
+        @media only screen and (min-height: 800px) {
+            margin-block-start: 1em !important;
+            margin-block-end: 1em !important;
+            line-height: 1;
+        }
+    }
+}
+
+.approved-color {
+    color: #14DBB3;
+}
+
+.rejected-color {
+    color: #DB143C;
+}
+
+.selected-image {
+    border: 2px solid rgb(0, 248, 248) !important;
+    box-shadow: 0 0 4px rgba(2,157,187,0.65);
+}
+
+img + img {
+    margin-left: 0.5vw;
+}
+
+.action-image {
+    height: 18vh;
+    max-height: 600px;
+    border: 2px solid transparent;
+}
+
+#mission-results-container {
+    display: table;
+    margin: 0 auto;
+    margin-bottom: 1em;
+}
+
+.mission-result-wrapper {
+    display: table-cell;
+    vertical-align: middle;
+
+    img {
+        height: 1.75em;
+        width: 1.75em;
+        padding: .25em .125em;
+    }
+
+    p {
+        margin-block-start: 0;
+        margin-block-end: 0;
+        font-size: 2em;
+    }
+}
+
+.mission-result {
+    text-align: center;
+}
+
+.vote-container {
+    display: flex;
+    align-items: center;
+}
+
+.vote-image-wrapper {
+    width: 20vw;
+}
+
+#assassination-role-container {
+    margin-top: 0 !important;
+    width: 70vw;
+    max-width: 320px;
+    justify-content: space-around !important;
+}
+
+.player-names-container {
+    text-align: left;
+}
+
+.player-names-section {
+    text-align: left;
+    margin-left: 2vw;
+    p {
+        margin: 0px;
+        line-height: normal;
+    }
 }

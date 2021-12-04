@@ -1,12 +1,11 @@
-const ROOT_URL = "https://extavalon.com";
-//const ROOT_URL = "http://192.168.1.107:25565";
+//const ROOT_URL = "https://extavalon.com";
+const ROOT_URL = "http://192.168.1.107:25565";
 
 const ROOT_ID = "root";
 const ERRORS_ID = "errors";
 const MAIN_ID = "main";
 const BACK_BUTTON_ID = "back-button";
 const BACK_BUTTON_TEXT = "Back";
-const NEW_LOCAL_GAME_FORM_ACTION = "";
 const PROFILE_BUTTON_ID = "profile-button";
 const PROFILE_BUTTON_TEXT = "Profile"
 const STATS_BUTTON_ID = "stats-button";
@@ -14,10 +13,8 @@ const STATS_BUTTON_TEXT = "Stats"
 const SIGNOUT_BUTTON_ID = "signout-button";
 const SIGNOUT_BUTTON_TEXT = "Sign Out";
 
-const NEW_LOCAL_GAME_BUTTON_ID = "new-local-game-button";
-const NEW_LOCAL_GAME_BUTTON_TEXT = "New Local Game";
-const NEW_ONLINE_GAME_BUTTON_ID = "new-online-game-button";
-const NEW_ONLINE_GAME_BUTTON_TEXT = "New Online Game";
+const NEW_GAME_BUTTON_ID = "new-game-button";
+const NEW_GAME_BUTTON_TEXT = "New Game";
 const JOIN_GAME_BUTTON_ID = "join-game-button";
 const JOIN_GAME_BUTTON_TEXT = "Join Game";
 const CREATE_GAME_BUTTON_TEXT = "Create Game";
@@ -68,26 +65,23 @@ function createButton(id, text, disabled) {
     return button;
 }
 
-function createForm(method, type) {
+function createForm(method) {
     const form = document.createElement("form");
     form.method = method;
     form.action = "/game";
     form.autocomplete = "off";
     form.addEventListener('submit', (event) => {
-        if (type) {
-            form.appendChild(createHiddenInput("type", type));
-        }
         form.submit();
     });
     return form;
 }
 
 function createDiv(styleClasses) {
-    const div = document.createElement("div");
+    const divElement = document.createElement("div");
     for (let styleClass of styleClasses) {
-        div.classList.add(styleClass);
+        divElement.classList.add(styleClass);
     }
-    return div;
+    return divElement;
 }
 
 function createGameSettingItem(text, name, checked=true) {
@@ -159,8 +153,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
         const profileButton = createButton(PROFILE_BUTTON_ID, PROFILE_BUTTON_TEXT, false);
         const statsButton = createButton(STATS_BUTTON_ID, STATS_BUTTON_TEXT, false);
-        const newLocalGameButton = createButton(NEW_LOCAL_GAME_BUTTON_ID, NEW_LOCAL_GAME_BUTTON_TEXT, false);
-        const newOnlineGameButton = createButton(NEW_ONLINE_GAME_BUTTON_ID, NEW_ONLINE_GAME_BUTTON_TEXT, false);
+        const newGameButton = createButton(NEW_GAME_BUTTON_ID, NEW_GAME_BUTTON_TEXT, false);
         const joinGameButton = createButton(JOIN_GAME_BUTTON_ID, JOIN_GAME_BUTTON_TEXT, false);
         const signoutButton = createButton(SIGNOUT_BUTTON_ID, SIGNOUT_BUTTON_TEXT, false);
 
@@ -170,11 +163,8 @@ document.addEventListener('DOMContentLoaded', function () {
         statsButton.onclick = function () {
             location.assign(`${ROOT_URL}/stats`);
         };
-        newLocalGameButton.onclick = function () {
-            handleNewGameButtonClick("local");
-        };
-        newOnlineGameButton.onclick = function () {
-            handleNewGameButtonClick("online");
+        newGameButton.onclick = function () {
+            handleNewGameButtonClick();
         };
         joinGameButton.onclick = handleJoinGameButtonClick;
         signoutButton.onclick = function () {
@@ -183,16 +173,15 @@ document.addEventListener('DOMContentLoaded', function () {
 
         main.appendChild(profileButton);
         main.appendChild(statsButton);
-        main.appendChild(newLocalGameButton);
-        main.appendChild(newOnlineGameButton);
+        main.appendChild(newGameButton);
         main.appendChild(joinGameButton);
         main.appendChild(signoutButton);
     }
 
-    function handleNewGameButtonClick(type, clearErrors=true) {
+    function handleNewGameButtonClick(clearErrors=true) {
         clearMain(clearErrors);
 
-        const newGameForm = createForm("post", type)
+        const newGameForm = createForm("post")
         const settingContainer = createDiv(["center-flex-column"]);
         const bedivereSetting = createGameSettingItem("Bedivere:", "bedivere");
         const galahadSetting = createGameSettingItem("Galahad:", "galahad");
@@ -242,11 +231,8 @@ document.addEventListener('DOMContentLoaded', function () {
     }
 
     switch (menu) {
-        case 'new-local':
-            handleNewGameButtonClick('local', false);
-            break;
-        case 'new-online':
-            handleNewGameButtonClick('online', false);
+        case 'new':
+            handleNewGameButtonClick(false);
             break;
         case 'join':
             handleJoinGameButtonClick(false);

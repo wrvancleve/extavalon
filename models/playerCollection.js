@@ -14,6 +14,10 @@ class PlayerCollection {
         return this.players;
     }
 
+    getGamePlayers() {
+        return this.players.filter(player => player.id !== null);
+    }
+
     getLobbyPlayers() {
         return this.players.map(({ displayName, active }) => ({name: displayName, active}));
     }
@@ -92,8 +96,8 @@ class PlayerCollection {
         this._updatePlayerDisplayNames();
     }
 
-    removePlayer(playerId) {
-        const removedPlayer = this.players.splice(playerId, 1)[0];
+    removePlayer(playerIndex) {
+        const removedPlayer = this.players.splice(playerIndex, 1)[0];
         this.playersByUserId.delete(removedPlayer.userId);
         this.playersBySocketId.delete(removedPlayer.socketId);
         if (removedPlayer.id !== null) {
@@ -148,6 +152,13 @@ class PlayerCollection {
         this.playersBySocketId.delete(player.socketId);
         player.socketId = socketId;
         this.playersBySocketId.set(player.socketId, player);
+    }
+
+    handleUpdatePlayerIndex(playerIndexUpdateInformation) {
+        const oldIndex = playerIndexUpdateInformation.oldIndex;
+        const newIndex = playerIndexUpdateInformation.newIndex;
+        const player = this.players.splice(oldIndex, 1)[0];
+        this.players.splice(newIndex, 0, player);
     }
 }
 
