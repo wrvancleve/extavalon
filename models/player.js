@@ -62,58 +62,58 @@ Player.prototype.getPlayerInformation = function(playerInformationFields) {
 }
 
 Player.prototype.getPlayerHTML = function() {
-    switch (this.role) {
-        case Roles.Merlin:
+    switch (this.role.name) {
+        case Roles.Merlin.name:
             return this._getMerlinHTML();
-        case Roles.Percival:
+        case Roles.Percival.name:
             return this._getPercivalHTML();
-        case Roles.Uther:
+        case Roles.Uther.name:
             return this._getUtherHTML();
-        case Roles.Lancelot:
+        case Roles.Lancelot.name:
             return this._getLancelotHTML();
-        case Roles.Tristan:
+        case Roles.Tristan.name:
             return this._getTristanHTML();
-        case Roles.Iseult:
+        case Roles.Iseult.name:
             return this._getIseultHTML();
-        case Roles.Puck:
+        case Roles.Puck.name:
             return this._getPuckHTML();
-        case Roles.Arthur:
+        case Roles.Arthur.name:
             return this._getArthurHTML();
-        case Roles.Guinevere:
+        case Roles.Guinevere.name:
             return this._getGuinevereHTML();
-        case Roles.Bedivere:
+        case Roles.Bedivere.name:
             return this._getBedivereHTML();
-        case Roles.Jester:
+        case Roles.Jester.name:
             return this._getJesterHTML();
-        case Roles.Galahad:
+        case Roles.Galahad.name:
             return this._getGalahadHTML();
-        case Roles.Titania:
+        case Roles.Titania.name:
             return this._getTitaniaHTML();
-        case Roles.Ector:
+        case Roles.Ector.name:
             return this._getEctorHTML();
-        case Roles.Kay:
+        case Roles.Kay.name:
             return this._getKayHTML();
-        case Roles.SirRobin:
+        case Roles.SirRobin.name:
             return this._getSirRobinHTML();
-        case Roles.Gaheris:
+        case Roles.Gaheris.name:
             return this._getGaherisHTML();
-        case Roles.Geraint:
+        case Roles.Geraint.name:
             return this._getGeraintHTML();
-        case Roles.Mordred:
+        case Roles.Mordred.name:
             return this._getMordredHTML();
-        case Roles.Morgana:
+        case Roles.Morgana.name:
             return this._getMorganaHTML();
-        case Roles.Maelagant:
+        case Roles.Maelagant.name:
             return this._getMaelagantHTML();
-        case Roles.Colgrevance:
+        case Roles.Colgrevance.name:
             return this._getColgrevanceHTML();
-        case Roles.Lucius:
+        case Roles.Lucius.name:
             return this._getLuciusHTML();
-        case Roles.Accolon:
+        case Roles.Accolon.name:
             return this._getAccolonHTML();
-        case Roles.Cerdic:
+        case Roles.Cerdic.name:
             return this._getCerdicHTML();
-        case Roles.Cynric:
+        case Roles.Cynric.name:
             return this._getCynricHTML();
         default:
             return null;
@@ -385,10 +385,6 @@ Player.prototype._getGuinevereHTML = function() {
     }
     guinevereHTML += `</section>`;
 
-    if (this.intel.length > 1) {
-        guinevereHTML += this._getResistanceEctorHTML();
-    }
-
     return guinevereHTML;
 }
 
@@ -475,24 +471,13 @@ Player.prototype._getKayHTML = function () {
 }
 
 Player.prototype._getSirRobinHTML = function () {
-    let sirRobinHTML = `
+    return `
         <h2 class="future-header resistance">Sir Robin</h2>
         <section>
-            <p>Complete the quest below to recieve its reward.</p>
-        </section>
-        <section>
-            <p>Quest: {}</p>
-        </section>
-        <section>
-            <p>Reward: Privately inspect the total number of spies on a single previous mission.</p>
+            <p>While conducting a mission, discover a new member of the <span class="resistance">Resistance</span> that is also on the mission.</p>
+            <p>If <span class="spy">Accolon</span> is present and is on the same mission, your ability is blocked.</p>
         </section>
     `;
-
-    if (this.intel.length > 1) {
-        sirRobinHTML += this._getResistanceEctorHTML();
-    }
-
-    return sirRobinHTML;
 }
 
 Player.prototype._getGaherisHTML = function () {

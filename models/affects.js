@@ -1,22 +1,50 @@
-const Affect = require('./affect');
 const Roles = require('./roles');
 
-const ResistanceBindAffect = new Affect("Bind", "Resistance");
-const ResistanceProtectAffect = new Affect("Protect", "Resistance");
-const SpyBindAffect = new Affect("Bind", "Spy");
-const SpyProtectAffect = new Affect("Protect", "Spy");
+const ResistanceBindAffect = {
+    name: "Bind",
+    type: "Resistance"
+};
+const ResistanceProtectAffect = {
+    name: "Protect",
+    type: "Resistance"
+};
+const SpyBindAffect = {
+    name: "Bind",
+    type: "Spy"
+};
+const SpyProtectAffect = {
+    name: "Protect", 
+    type: "Spy"
+};
 
-function getAffectForRole(roleName) {
+function getAffectKey(affect) {
+    return `${affect.type}${affect.name}`;
+}
+
+function getAffectFromRole(roleName) {
     switch (roleName) {
         case Roles.Cerdic.name:
             return SpyBindAffect;
         case Roles.Cynric.name:
-            affect = {name: "Protect", type: "Resistance", valid: true}
             return ResistanceProtectAffect;
         case Roles.Gaheris.name:
             return ResistanceBindAffect;
         case Roles.Geraint.name:
-            affect = {name: "Protect", type: "Spy", valid: true}
+            return SpyProtectAffect;
+        default:
+            return null;
+    }
+}
+
+function getAffectFromKey(affectKey) {
+    switch (affectKey) {
+        case getAffectKey(ResistanceBindAffect):
+            return ResistanceBindAffect;
+        case getAffectKey(ResistanceProtectAffect):
+            return ResistanceProtectAffect;
+        case getAffectKey(ResistanceBindAffect):
+            return ResistanceBindAffect;
+        case getAffectKey(SpyProtectAffect):
             return SpyProtectAffect;
         default:
             return null;
@@ -31,10 +59,17 @@ function isSpyBind(playerAffect) {
     return playerAffect !== null && playerAffect.name === SpyBindAffect.name && playerAffect.type === SpyBindAffect.type;
 }
 
+function areEqual(affect1, affect2) {
+    return affect1 && affect2 && affect1.name === affect2.name && affect1.type === affect2.type
+}
+
 module.exports = {
-    getAffectForRole,
+    getAffectKey,
+    getAffectFromRole,
+    getAffectFromKey,
     isResistanceBind,
     isSpyBind,
+    areEqual,
     ResistanceBindAffect: ResistanceBindAffect,
     ResistanceProtectAffect: ResistanceProtectAffect,
     SpyBindAffect: SpyBindAffect,

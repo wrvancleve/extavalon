@@ -3,7 +3,7 @@ const Player = require('./player');
 const Mission = require('./mission');
 const Proposal = require('./proposal');
 const Affects = require('./affects');
-const { shuffle, choice } = require('../utils/random');
+const { shuffle, choice, sample } = require('../utils/random');
 
 function Game(playerInformation, firstLeaderId, settings) {
     this.resistanceWins = 0;
@@ -58,6 +58,7 @@ function Game(playerInformation, firstLeaderId, settings) {
     this.currentMissionId = 0;
 
     this.phase = Game.PHASE_SETUP;
+    this.robinUsedIntel = new Map();
     this.castedBinds = [];
     this.redemptionAttemptInformation = null;
     this.assassinationAttemptInformation = null;
@@ -101,20 +102,20 @@ Game.prototype.getPossibleRoles = function() {
         case 12:
         case 11:
         case 10:
-        case 9:
-            if (this.settings.bedivere) {
-                possibleResistanceRoles.push(Roles.Bedivere.name);
-            }
             if (this.settings.titania) {
                 possibleResistanceRoles.push(Roles.Titania.name);
             }
+            if (this.settings.bedivere) {
+                possibleResistanceRoles.push(Roles.Bedivere.name);
+            }
+        case 9:
+            possibleResistanceRoles.push(Roles.SirRobin.name);
         case 8:
             possibleResistanceRoles.push(Roles.Ector.name);
             possibleResistanceRoles.push(Roles.Kay.name);
-            possibleResistanceRoles.push(Roles.SirRobin.name);
-            possibleResistanceRoles.push(Roles.Gareth.name);
-            possibleResistanceRoles.push(Roles.Gaheris.name);
         case 7:
+            possibleResistanceRoles.push(Roles.Geraint.name);
+            possibleResistanceRoles.push(Roles.Gaheris.name);
             possibleResistanceRoles.push(Roles.Guinevere.name);
             possibleResistanceRoles.push(Roles.Puck.name);
             break;
@@ -128,7 +129,9 @@ Game.prototype.getPossibleRoles = function() {
     ];
 
     if (this.playerCount > 6) {
-        possibleSpyRoles.push(Roles.Accolon.name);
+        if (this.settings.accolon) {
+            possibleSpyRoles.push(Roles.Accolon.name);
+        }
         possibleSpyRoles.push(Roles.Cerdic.name);
         possibleSpyRoles.push(Roles.Cynric.name);
     }
@@ -147,7 +150,7 @@ Game.prototype.assignRoles = function(identityPickInformation) {
         const player = this.players[id];
         const playerRole = playerRoles.pop();
         player.assignRole(playerRole);
-        this.playersByRole.set(playerRole, player);
+        this.playersByRole.set(playerRole.name, player);
         if (playerRole === Roles.Gaheris) {
             this.gaherisBindPossible = true;
         }
@@ -167,12 +170,12 @@ Game.prototype.assignRoles = function(identityPickInformation) {
     this.players[this.assassinId].setIsAssassin();
 
     this._addResistanceRoleIntel();
-    if (this.playersByRole.has(Roles.Accolon)) {
+    if (this.playersByRole.has(Roles.Accolon.name)) {
         this._performAccolonSabotage();
     }
     this._addSpyTeamIntel();
     this._addSpyRoleIntel();
-    if (this.playersByRole.has(Roles.Titania)) {
+    if (this.playersByRole.has(Roles.Titania.name)) {
         this._performTitaniaSabotage();
     }
 
@@ -249,7 +252,7 @@ Game.prototype.advance = function() {
         case Game.PHASE_VOTE_REACT:
             if (this.getProposalResult()) {
                 for (let usedAffect of this.getCurrentProposal().getUsedAffects()) {
-                    if (Affects.ResistanceBindAffect.isSameAffect(usedAffect) || Affects.SpyBindAffect.isSameAffect(usedAffect)) {
+                    if (Affects.areEqual(Affects.ResistanceBindAffect, usedAffect) || Affects.areEqual(Affects.SpyBindAffect, usedAffect)) {
                         this.castedBinds.push(usedAffect);
                     }
                 }
@@ -264,7 +267,7 @@ Game.prototype.advance = function() {
             const roundsWinner = this._processMissionResult(missionResult.result);
             if (roundsWinner) {
                 if (roundsWinner === "Spies") {
-                    if (this.playersByRole.has(Roles.Kay)) {
+                    if (this.playersByRole.has(Roles.Kay.name)) {
                         this.phase = Game.PHASE_REDEMPTION;
                     } else {
                         this.winner = "Spies";
@@ -356,23 +359,23 @@ Game.prototype.getSetupVoteInformation = function(id) {
                 case Roles.Cerdic.name:
                     // Spy Bind
                     if (currentProposal.hasAffectOnPlayerId(playerId, Affects.SpyBindAffect)) {
-                        currentProposalInformationForPlayer.affect = Affects.SpyBindAffect.getKey();
+                        currentProposalInformationForPlayer.affect = Affects.SpyBindAffect;
                     }
                     break;
                 case Roles.Cynric.name:
                     if (currentProposal.hasAffectOnPlayerId(playerId, Affects.ResistanceProtectAffect)) {
-                        currentProposalInformationForPlayer.affect = Affects.ResistanceProtectAffect.getKey();
+                        currentProposalInformationForPlayer.affect = Affects.ResistanceProtectAffect;
                     }
                     break;
                 case Roles.Gaheris.name:
                     // Resistance Bind
                     if (currentProposal.hasAffectOnPlayerId(playerId, Affects.ResistanceBindAffect)) {
-                        currentProposalInformationForPlayer.affect = Affects.ResistanceBindAffect.getKey();
+                        currentProposalInformationForPlayer.affect = Affects.ResistanceBindAffect;
                     }
                     break;
                 case Roles.Geraint.name:
                     if (currentProposal.hasAffectOnPlayerId(playerId, Affects.SpyProtectAffect)) {
-                        currentProposalInformationForPlayer.affect = Affects.SpyProtectAffect.getKey();
+                        currentProposalInformationForPlayer.affect = Affects.SpyProtectAffect;
                     }
                     break;
             }
@@ -401,13 +404,13 @@ Game.prototype.setProposalVote = function(id, vote) {
 }
 
 Game.prototype.toggleAffect = function(sourceId, destinationId) {
-    let affect = Affects.getAffectForRole(this.getPlayerRoleName(sourceId));
+    let affect = Affects.getAffectFromRole(this.getPlayerRoleName(sourceId));
     if (Affects.isResistanceBind(affect)) {
         affect.valid = this.getPlayerRoleName(destinationId) !== Roles.Morgana.name;
+    } else {
+        affect.valid = true;
     }
-    if (affect) {
-        this.getCurrentProposal().toggleAffect(sourceId, destinationId, affect);
-    }
+    this.getCurrentProposal().toggleAffect(sourceId, destinationId, affect);
 }
 
 Game.prototype.getProposalResult = function () {
@@ -427,13 +430,14 @@ Game.prototype.getProposalResultExtendedInformation = function(playerId) {
         for (let id = 0; id < this.playerCount; id++) {
             const isMissionLeader = this.currentLeaderId === id;
             const playerAffect = currentProposal.getAffectOnPlayerId(id);
-            if (isMissionLeader || missionTeam.includes(id)) {
+            const isOnTeam = missionTeam.includes(id);
+            if (isMissionLeader || isOnTeam) {
                 if (currentProposal.getVote(id)) {
                     importantApprovedVoteInformation.push({
                         name: this.players[id].name,
                         vote: true,
                         isLeader: isMissionLeader,
-                        isOnTeam: true,
+                        isOnTeam: isOnTeam,
                         affect: this._getVisibleAffectForPlayerId(playerId, playerAffect)
                     });
                 } else {
@@ -441,7 +445,7 @@ Game.prototype.getProposalResultExtendedInformation = function(playerId) {
                         name: this.players[id].name,
                         vote: false,
                         isLeader: isMissionLeader,
-                        isOnTeam: true,
+                        isOnTeam: isOnTeam,
                         affect: this._getVisibleAffectForPlayerId(playerId, playerAffect)
                     });
                 }
@@ -479,14 +483,19 @@ Game.prototype.getProposalResultExtendedInformation = function(playerId) {
     }
 }
 
-Game.prototype._getVisibleAffectForPlayerId = function (playerId, visibleAffect) {
+Game.prototype._getVisibleAffectForPlayerId = function(playerId, visibleAffect) {
     if (!visibleAffect) {
         return null;
-    } else if (this._getPlayer(playerId).isSpy || visibleAffect.sourceId === playerId || visibleAffect.destinationId === playerId) {
-        return visibleAffect.getKey();
+    } else if (this.players[playerId].isSpy || visibleAffect.sourceId === playerId || visibleAffect.destinationId === playerId) {
+        return {
+            name: visibleAffect.name,
+            type: visibleAffect.type
+        };
     } else {
-        // Return visibleAffect with type hidden
-        return visibleAffect.getKey(true);
+        return {
+            name: visibleAffect.name,
+            type: "Unknown"
+        }
     }
 }
 
@@ -504,43 +513,68 @@ Game.prototype.getConductMissionInformation = function(id) {
         const successAllowed = !spyBound;
         const failAllowed = (playerTeam === "Spies" || playerRole === Roles.Puck.name || spyBound) && !resistanceBound;
         const reverseAllowed = (playerRole === Roles.Lancelot.name || playerRole === Roles.Maelagant.name) && !resistanceBound && !spyBound;
-        let disclaimer = null;
-        if (resistanceBound) {
-            disclaimer = "You have been Resistance bounded for this mission! You can only play a success card.";
-        } else if (spyBound) {
-            disclaimer = "You have been Spy bounded for this mission! You can only play a fail card.";
-        } else if (playerTeam === "Spies") {
+        let sirRobinIntel = undefined;
+        let spySuggestion = null;
+
+        if (playerRole === Roles.SirRobin.name) {
+            sirRobinIntel = this._getSirRobinIntel(id, currentMission);
+        }
+
+        if (playerTeam === "Spies" && !resistanceBound && !spyBound) {
             const sabotagingPlayers = this._getSabotagingPlayers(currentMission);
             if (sabotagingPlayers.includes(id)) {
                 if (sabotagingPlayers.length === currentMission.requiredFails) {
                     if (playerRole === Roles.Maelagant && currentMission.requiredFails === 1) {
-                        disclaimer = "Your Spy intuition says you may play a fail or a reverse card.";
+                        spySuggestion = ["fail", "reverse"];
                     } else {
-                        disclaimer = "Your Spy intuition says you may play a fail card.";
+                        spySuggestion = ["fail"];
                     }
                 } else {
                     if (playerRole === Roles.Maelagant) {
                         // 2 fails required, you are Maelagant
-                        disclaimer = "Your Spy intuition says you should play a reverse card.";
+                        spySuggestion = ["reverse"];
                     } else if (this.resistanceWins !== 2) {
                         // 2 fails required, no second spy
-                        disclaimer = "Your Spy intuition says you should play a success card.";
+                        spySuggestion = ["success"];
                     }
                 }
             } else {
-                disclaimer = "Your Spy intuition says you should play a success card.";
+                spySuggestion = ["success"];
             }
         }
         
-        return {
-            disclaimer: disclaimer,
+        const conductMissionInformation = {
+            resistanceBound: resistanceBound,
+            spyBound: spyBound,
+            spySuggestion: spySuggestion,
             successAllowed: successAllowed,
             failAllowed: failAllowed,
             reverseAllowed: reverseAllowed
         };
+        if (sirRobinIntel !== undefined) {
+            conductMissionInformation.sirRobinIntel = sirRobinIntel;
+        }
+        return conductMissionInformation;
     } else {
         return null;
     }
+}
+
+Game.prototype._getSirRobinIntel = function (id, currentMission) {
+    let intel = null;
+    if (this.robinUsedIntel.has(this.currentMissionId)) {
+        intel = this.players[this.robinUsedIntel.get(this.currentMissionId)].name;
+    } else if (!this.playersByRole.has(Roles.Accolon.name) || !currentMission.isOnMissionTeam(this.playersByRole.get(Roles.Accolon.name).id)) {
+        const possibleIntel = currentMission.getMissionTeam()
+            .filter(missionPlayerId => missionPlayerId !== id && !Array.from(this.robinUsedIntel.values()).includes(missionPlayerId) && !this.players[missionPlayerId].isSpy);
+        if (possibleIntel.length > 0) {
+            const usedIntel = choice(possibleIntel);
+            this.robinUsedIntel.set(this.currentMissionId, usedIntel);
+            intel = this.players[usedIntel].name;
+        }
+    }
+
+    return intel;
 }
 
 Game.prototype.addMissionAction = function(id, action) {
@@ -590,16 +624,16 @@ Game.prototype.getMissionResultsInformation = function() {
 
 Game.prototype.getConductRedemptionInformation = function(id) {
     const currentPlayer = this.players[id];
-    if (!currentPlayer.isSpy) {
+    if (!currentPlayer.isSpy && currentPlayer.role === Roles.Kay) {
         return {
             players: this._selectPlayers({
-                excludedRoles: [currentPlayer.role]
+                excludedIds: [id]
             }, ['id', 'name'], false),
-            spyCount: this.spyCount
+            spyCount: this.spyPlayerCount
         };
     } else {
         return {
-            kay: this.playersByRole.get(Roles.Kay).name
+            kay: this.playersByRole.get(Roles.Kay.name).name
         }
     }
 }
@@ -649,15 +683,15 @@ Game.prototype.processAssassinationAttempt = function(conductAssassinationInform
     const targetOne = this._getPlayer(ids[0]);
     const targetTwo = role === "Lovers" ? this._getPlayer(ids[1]) : null;
 
-    if (targetOne.role === "Jester") {
+    if (targetOne.role === Roles.Jester.name) {
         this.winner = targetOne.name;
-    } else if (targetTwo && targetTwo.role === "Jester") {
+    } else if (targetTwo && targetTwo.role === Roles.Jester.name) {
         this.winner = targetTwo.name;
     } else {
         switch (role) {
-            case "Merlin":
-            case "Arthur":
-            case "Ector":
+            case Roles.Merlin.name:
+            case Roles.Arthur.name:
+            case Roles.Ector.name:
                 if (targetOne.role === role) {
                     this.winner = "Spies";
                 } else {
@@ -665,8 +699,8 @@ Game.prototype.processAssassinationAttempt = function(conductAssassinationInform
                 }
                 break;
             case "Lovers":
-                if ((targetOne.role === "Tristan" || targetOne.role === "Iseult")
-                    && (targetTwo.role === "Tristan" || targetTwo.role === "Iseult")) {
+                if ((targetOne.role === Roles.Tristan.name || targetOne.role === Roles.Iseult.name)
+                    && (targetTwo.role === Roles.Tristan.name || targetTwo.role === Roles.Iseult.name)) {
                     this.winner = "Spies";
                 } else {
                     this.winner = "Resistance";
@@ -707,12 +741,12 @@ Game.prototype.getGameResultInformation = function() {
             resistance: this.resistance.map(player => player.getPlayerInformation(["name", "role"])),
             spies: this.spies.map(player => player.getPlayerInformation(["name", "role"]))
         };
-        if (this.playersByRole.has(Roles.Puck)) {
-            gameResultInformation.puck = this.playersByRole.get(Roles.Puck).getPlayerInformation(["name"]);
+        if (this.playersByRole.has(Roles.Puck.name)) {
+            gameResultInformation.puck = this.playersByRole.get(Roles.Puck.name).getPlayerInformation(["name"]);
             gameResultInformation.puck.won = this.currentMissionId === 4
         }
-        if (this.playersByRole.has(Roles.Jester)) {
-            gameResultInformation.jester = this.playersByRole.get(Roles.Jester).getPlayerInformation(["name"]);
+        if (this.playersByRole.has(Roles.Jester.name)) {
+            gameResultInformation.jester = this.playersByRole.get(Roles.Jester.name).getPlayerInformation(["name"]);
         }
         if (this.assassinationAttemptInformation) {
             gameResultInformation.assassination = this.assassinationAttemptInformation;
@@ -808,7 +842,7 @@ Game.prototype._performAccolonSabotage = function() {
 
 Game.prototype._performTitaniaSabotage = function() {
     let index = null;
-    if (this.playersByRole.has(Roles.Maelagant)) {
+    if (this.playersByRole.has(Roles.Maelagant.name)) {
         index = Math.floor(Math.random() * (this.spyCount - 1)) + 1;
     } else {
         index = Math.floor(Math.random() * this.spyCount);
@@ -820,13 +854,13 @@ Game.prototype._performTitaniaSabotage = function() {
     })[0];
     let intel = target.intel[0];
 
-    const titaniaPlayer = this.playersByRole.get(Roles.Titania);
+    const titaniaPlayer = this.playersByRole.get(Roles.Titania,name);
     intel.splice(index, 0, titaniaPlayer.getPlayerInformation());
     target.performSabotage(intel);
 }
 
 Game.prototype._addResistanceRoleIntel = function() {
-    const ector = this.playersByRole.get(Roles.Ector);
+    const ector = this.playersByRole.get(Roles.Ector.name);
     for (let i = 0; i < this.resistance.length; i++) {
         const resistancePlayer = this.resistance[i];
         switch (resistancePlayer.role) {
@@ -905,15 +939,15 @@ Game.prototype._getPercivalIntel = function() {
 }
 
 Game.prototype._getTristanIntel = function() {
-    return [this.playersByRole.get(Roles.Iseult).getPlayerInformation()];
+    return [this.playersByRole.get(Roles.Iseult.name).getPlayerInformation()];
 }
 
 Game.prototype._getIseultIntel = function() {
-    return [this.playersByRole.get(Roles.Tristan).getPlayerInformation()];
+    return [this.playersByRole.get(Roles.Tristan.name).getPlayerInformation()];
 }
 
 Game.prototype._getGalahadIntel = function() {
-    return [this.playersByRole.get(Roles.Arthur).getPlayerInformation()];
+    return [this.playersByRole.get(Roles.Arthur.name).getPlayerInformation()];
 }
 
 Game.prototype._getUtherIntel = function() {
@@ -936,7 +970,7 @@ Game.prototype._getArthurIntel = function() {
 
 Game.prototype._getJesterIntel = function() {
     const seenPlayers = this._selectPlayers({
-        includedRoles: [Roles.Tristan, Roles.Iseult, Roles.Merlin, Roles.Arthur],
+        includedRoles: [Roles.Tristan, Roles.Iseult, Roles.Merlin, Roles.Arthur, Roles.Ector],
         includedTeams: []
     }, ['role']);
 
@@ -1057,7 +1091,7 @@ Game.prototype._getSabotagingPlayers = function(currentMission) {
     let currentSpyIndex = 0;
     while (sabotagingPlayers.length < requiredFails && currentSpyIndex < this.spies.length) {
         const spyId = this.spies[currentSpyIndex].id;
-        if (!sabotagingPlayers.includes(spyId) && currentMission.isOnMissionTeam(spyId) && !Affects.isResistanceBind(currentMission.getBindOnPlayer(spyId))) {
+        if (!sabotagingPlayers.includes(spyId) && currentMission.isOnMissionTeam(spyId) && !Affects.isResistanceBind(currentMission.getBindOnPlayerId(spyId))) {
             sabotagingPlayers.push(spyId);
         }
         currentSpyIndex += 1;

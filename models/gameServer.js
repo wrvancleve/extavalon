@@ -9,7 +9,7 @@ const {
 } = require('./database');
 
 function createGameServer(httpServer, sessionMiddleware) {
-    const io = require('socket.io')(httpServer);
+    const io = require('socket.io')(httpServer, {allowEIO3: true});
     io.use(function (socket, next) {
         sessionMiddleware(socket.request, socket.request.res || {}, next);
     });
@@ -181,7 +181,7 @@ function createGameServer(httpServer, sessionMiddleware) {
 
     async function handleGameResult(lobby) {
         const game = lobby.game;
-        const gameResult = lobby.game.getGameResult();
+        const gameResult = game.getGameResult();
         const gameId = await createGame(game.startTime, gameResult);
         if (gameResult.assassination) {
             const assassinationSuccessful = gameResult.winner === "Spies";
@@ -203,7 +203,7 @@ function createGameServer(httpServer, sessionMiddleware) {
         }
 
         for (let player of lobby.playerCollection.getGamePlayers()) {
-            await insertGamePlayer(gameId, player.userId, lobby.game.getPlayerRoleName(player.id));
+            await insertGamePlayer(gameId, player.userId, game.getPlayerRoleName(player.id));
         }
     }
 
@@ -266,7 +266,7 @@ function createGameServer(httpServer, sessionMiddleware) {
     function handleToggleAffect(lobby, sourceUserId, affectInformation) {
         const sourcePlayer = lobby.playerCollection.getPlayerOfUserId(sourceUserId);
         lobby.game.toggleAffect(sourcePlayer.id, affectInformation.playerId);
-        io.sockets.to(sourcePlayer.socketId).emit('vote-team', game.getSetupVoteInformation(sourcePlayer.id));
+        io.sockets.to(sourcePlayer.socketId).emit('vote-team', lobby.game.getSetupVoteInformation(sourcePlayer.id));
     }
 
     function handleVoteTeam(lobby, userId, vote) {
@@ -361,11 +361,11 @@ function createGameServer(httpServer, sessionMiddleware) {
     }
 
     function sendRedemptionAttempt(game, receiver) {
-        io.sockets.to(receiver.socketId).emit('redemption-attempt', game.getConductRedemptionInformation(receiver.id));
+        io.sockets.to(receiver.socketId).emit('conduct-redemption', game.getConductRedemptionInformation(receiver.id));
     }
 
     function handleRedemptionAttempt(lobby, redemptionAttemptInformation) {
-        lobby.game.processRedemptionAttempt(redemptionAttemptInformation);
+        lobby.game.processRedemptionAttempt(redemptionAttemptInformation.ids);
         if (lobby.game.phase === Game.PHASE_ASSASSINATION) {
             startConductAssassination(lobby);
         } else {
@@ -472,7 +472,7 @@ function createGameServer(httpServer, sessionMiddleware) {
                 handleAdvanceMission(lobby);
             });
 
-            socket.on('redemption-attempt', (redemptionAttemptInformation) => {
+            socket.on('conduct-redemption', (redemptionAttemptInformation) => {
                 lobby.updateTime = Date.now();
                 handleRedemptionAttempt(lobby, redemptionAttemptInformation);
             });

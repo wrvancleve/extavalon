@@ -25,11 +25,6 @@ RandomSample.prototype.getNextValue = function() {
         if (!randomPossibility.hasNextValue()) {
             this.possibilities.splice(randomIndex, 1);
         }
-    } else if (Array.isArray(randomPossibility)) {
-        selectedPossibility = randomPossibility.splice(0, 1)[0];
-        if (randomPossibility.length === 0) {
-            this.possibilities.splice(randomIndex, 1);
-        }
     } else {
         selectedPossibility = randomPossibility;
         this.possibilities.splice(randomIndex, 1);

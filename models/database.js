@@ -3,14 +3,12 @@ const { Pool } = require('pg');
 const postgresPool = new Pool({
     connectionString: process.env.POSTGRES_URL
 });
+const postgresPool = null;
 
 function getPlayerId(firstName, lastName, callback) {
-    console.log(firstName);
-    console.log(lastName);
     const query = `select get_player_id('${firstName}', '${lastName}') as player_id;`;
     postgresPool.query(query, (err, result) => {
         if (err) {
-            console.log(err.stack)
             callback(err, null);
         } else {
             callback(null, result.rows[0].player_id);
@@ -22,7 +20,6 @@ function getGameLog(playerId, callback) {
     const gameLogQuery = `select * from get_games(${playerId})`;
     postgresPool.query(gameLogQuery, (err, result) => {
       if (err) {
-          console.log(err.stack);
           callback(null);
       } else {
           callback(result.rows);
@@ -37,7 +34,6 @@ function performTableQuery(query, callback) {
     }
     postgresPool.query(queryConfig, (err, result) => {
         if (err) {
-            console.log(err.stack);
             callback(null);
         } else {
             callback(result.rows);

@@ -1,14 +1,14 @@
-body, button.future-button, input.future-button[type=submit], input.future-input:not([type=submit]), #lobby-players, .remove-player-button, .close-modal-button, #toggle-lobby-information-button, #open-roles-modal-button, #open-intel-modal-button {
+body, button.future-button, input.future-button[type=submit], input.future-input:not([type=submit]), #lobby-players, .remove-player-button, .close-modal-button, #menu-modal-content, .right-circle-future-button, .left-circle-future-button {
   color: #9debfb; }
 
-h1.future-title-box, h2.future-header-box, button.future-button, input.future-button[type=submit], input.future-input:not([type=submit]), section.future-section-boxed, #toggle-lobby-information-button, #open-roles-modal-button, #open-intel-modal-button, #roles-modal, #intel-modal {
+h1.future-title-box, h2.future-header-box, button.future-button, input.future-button[type=submit], input.future-input:not([type=submit]), section.future-section-boxed, .right-circle-future-button, .left-circle-future-button, #menu-modal-content {
   border: 2px solid #00f8f8;
   box-shadow: 0 0 4px rgba(2, 157, 187, 0.65); }
 
-h1.future-title-box, h2.future-header-box, button.future-button, input.future-button[type=submit], input.future-input:not([type=submit]), section.future-section-boxed, #toggle-lobby-information-button, #open-roles-modal-button, #open-intel-modal-button, #roles-modal {
+h1.future-title-box, h2.future-header-box, button.future-button, input.future-button[type=submit], input.future-input:not([type=submit]), section.future-section-boxed, .right-circle-future-button, .left-circle-future-button {
   background-color: transparent; }
 
-form, .flex-column, .center-flex-column, #intel-modal-area {
+form, .flex-column, .center-flex-column, #role-content {
   display: flex;
   flex-direction: column; }
 
@@ -43,9 +43,15 @@ a.future-link {
   align-items: center;
   justify-content: space-between;
   width: 80vw;
-  max-width: 500px;
-  height: 3em;
-  margin-top: 1em; }
+  max-width: 500px; }
+  @media only screen and (max-height: 700px) {
+    .center-flex-row {
+      height: 2.5em;
+      margin-top: 0.5em; } }
+  @media only screen and (min-height: 700px) {
+    .center-flex-row {
+      height: 3em;
+      margin-top: 1em; } }
 
 .center-flex-row label {
   font-size: 1.5em;
@@ -58,12 +64,40 @@ h1.future-title-box {
   width: 80vw;
   max-width: 300px;
   font-size: 3em;
-  margin-top: 0.5em;
   font-family: Candara, sans-serif;
   text-shadow: 0 0 4px rgba(161, 236, 251, 0.65); }
 
-h1.future-header, h2.future-header, h3.future-header, label.future-label {
+h2.future-title {
+  font-family: Candara, sans-serif;
+  font-size: 1.5em;
+  margin-block-start: calc(1.5em + 10px); }
+  @media only screen and (max-height: 700px) {
+    h2.future-title {
+      margin-block-end: 0.5em; } }
+  @media only screen and (min-height: 700px) {
+    h2.future-title {
+      margin-block-end: 1em; } }
+
+label.future-label {
   font-family: Candara, sans-serif; }
+
+h1.future-header {
+  font-family: Candara, sans-serif;
+  font-size: 2em;
+  margin-block-start: 0.5em;
+  margin-block-end: 0.5em; }
+
+h2.future-header {
+  font-family: Candara, sans-serif;
+  font-size: 1.5em;
+  margin-block-start: 0.33em;
+  margin-block-end: 0.33em; }
+
+h3.future-header {
+  font-family: Candara, sans-serif;
+  font-size: 1.25em;
+  margin-block-start: 0em;
+  margin-block-end: 0em; }
 
 h2.future-header-box {
   font-family: Candara, sans-serif; }
@@ -80,11 +114,17 @@ button.future-button, input[type=submit].future-button {
   padding: 1px 6px;
   width: 70vw;
   max-width: 300px;
-  height: 2.5em;
   margin: auto;
-  margin-top: 1em;
   border-radius: 20vw;
   box-sizing: border-box; }
+  @media only screen and (max-height: 700px) {
+    button.future-button, input[type=submit].future-button {
+      height: 2.25em;
+      margin-top: 0.5em; } }
+  @media only screen and (min-height: 700px) {
+    button.future-button, input[type=submit].future-button {
+      height: 2.5em;
+      margin-top: 1em; } }
 
 button.future-button-disabled, input[type=submit].future-button-disabled {
   color: #0790ab !important;
@@ -100,12 +140,18 @@ input:not([type=submit]).future-input {
   padding: 0 20px;
   width: 70vw;
   max-width: 300px;
-  height: 2.5em;
   margin: auto;
-  margin-top: 1em;
   display: inline-block;
   align-items: flex-start;
   text-align: start; }
+  @media only screen and (max-height: 700px) {
+    input:not([type=submit]).future-input {
+      height: 2.25em;
+      margin-top: 0.5em; } }
+  @media only screen and (min-height: 700px) {
+    input:not([type=submit]).future-input {
+      height: 2.5em;
+      margin-top: 1em; } }
 
 input:not([type=submit]).future-input::placeholder {
   color: #08a5c4;
@@ -161,11 +207,10 @@ section.future-section-boxed {
   box-shadow: 0 0 4px rgba(0, 157, 187, 0);
   background: transparent;
   border-bottom-left-radius: 10px;
-  border-bottom-right-radius: 10px;
-  margin-block-start: 2vh; }
+  border-bottom-right-radius: 10px; }
 
 #lobby-players h2 {
-  padding: 10px 20px;
+  padding: 1vh 2vw;
   margin: 0px;
   font-size: 1.5em;
   border-top-left-radius: 10px;
@@ -175,7 +220,7 @@ section.future-section-boxed {
 
 #lobby-player-list {
   position: relative;
-  padding-inline-start: 10px;
+  padding-inline-start: 1em;
   margin-block-start: 0px;
   margin-block-end: 0px;
   text-align: left;
@@ -184,7 +229,7 @@ section.future-section-boxed {
 
 #lobby-player-list div {
   list-style: none;
-  padding: 10px;
+  padding: 0.75vh 0vw;
   font-size: 1.25em; }
 
 .remove-player-button {
@@ -206,39 +251,33 @@ section.future-section-boxed {
   left: 0; }
 
 div.future-modal {
-  color: #b6f0fc;
-  max-height: 96vh;
-  max-width: 96vw;
-  box-sizing: border-box;
-  padding: 2vh 2vw;
-  overflow: auto;
+  display: none;
   position: fixed;
-  background-color: #001a1a !important; }
+  z-index: 1;
+  left: 0;
+  top: 0;
+  width: 100%;
+  height: 100%;
+  overflow: auto;
+  background-color: black;
+  background-color: rgba(0, 0, 0, 0.4); }
   @media only screen and (max-width: 640px) {
     div.future-modal {
-      width: 96vw;
-      height: calc(98vh - 3.5em);
-      top: 3.5em; } }
+      padding-top: 17.5vh; } }
   @media only screen and (min-width: 640px) {
     div.future-modal {
-      top: 50%;
-      left: 50%;
-      transform: translate(-50%, -50%); } }
+      padding-top: 15%; } }
 
 .close-modal-button {
   font-size: 1.75em;
   font-weight: bold;
-  width: .75em;
-  height: 1em;
-  padding: 0px 0px;
-  margin: 0px 0px;
-  justify-content: center;
-  align-items: center;
-  display: flex;
-  background-color: transparent;
-  border: none;
   position: absolute;
-  right: 1em; }
+  top: 0px;
+  right: 0px;
+  margin-top: 8px;
+  margin-right: 10px;
+  background-color: transparent;
+  border: none; }
 
 .close-modal-button:hover,
 .close-modal-button:focus {
@@ -246,7 +285,53 @@ div.future-modal {
   cursor: pointer;
   color: #08a5c4; }
 
-.open-modal-button {
+#menu-modal-content {
+  position: relative;
+  background-color: #001a1a !important;
+  margin: auto;
+  padding: 0;
+  -webkit-animation-name: animatetop;
+  -webkit-animation-duration: 0.4s;
+  animation-name: animatetop;
+  animation-duration: 0.4s; }
+  @media only screen and (max-width: 640px) {
+    #menu-modal-content {
+      width: calc(70vw + 5em);
+      max-width: calc(300px + 5em); } }
+  @media only screen and (min-width: 640px) {
+    #menu-modal-content {
+      width: calc(300px + 5em); } }
+
+#menu-modal-body {
+  display: flex;
+  align-items: center;
+  flex-direction: column;
+  margin-bottom: 2.5em;
+  margin-top: 2.5em; }
+
+#menu-modal-body button {
+  margin-top: 0; }
+
+#menu-modal-body button + button {
+  margin-top: 1em; }
+
+@-webkit-keyframes animatetop {
+  from {
+    top: -300px;
+    opacity: 0; }
+  to {
+    top: 0;
+    opacity: 1; } }
+
+@keyframes animatetop {
+  from {
+    top: -300px;
+    opacity: 0; }
+  to {
+    top: 0;
+    opacity: 1; } }
+
+.right-circle-future-button {
   border-radius: 50%;
   -webkit-border-radius: 50%;
   width: 1.5em;
@@ -259,7 +344,7 @@ div.future-modal {
   z-index: 5;
   cursor: pointer; }
 
-#toggle-lobby-information-button {
+.left-circle-future-button {
   border-radius: 50%;
   -webkit-border-radius: 50%;
   width: 1.5em;
@@ -270,49 +355,47 @@ div.future-modal {
   margin-top: 0px;
   position: absolute;
   z-index: 5;
-  cursor: pointer; }
+  cursor: pointer;
+  padding: 0px 12px; }
 
-#open-intel-modal-button {
-  border-radius: 50%;
-  -webkit-border-radius: 50%;
-  width: 1.5em;
-  height: 1.5em;
-  font-size: 1.5em;
-  top: 10px;
-  right: calc(13px + 1.5em);
-  margin-top: 0px;
-  position: absolute;
-  z-index: 5;
-  cursor: pointer; }
+.menu-bar {
+  height: 2px;
+  background-color: #9debfb;
+  margin: 3px 2.5px; }
 
-#roles-modal {
+#lobby-content {
+  margin-top: calc(1em + 13px); }
+
+#help-content {
+  margin-top: calc(1em + 13px);
+  align-items: center;
   color: #b6f0fc;
-  font-family: 'Helvetica', sans-serif;
-  z-index: 6; }
+  font-family: 'Helvetica', sans-serif; }
 
-#roles-modal h1 {
+@media only screen and (min-width: 640px) {
+  #help-content ul {
+    width: 50vw; } }
+
+#help-content h1 {
   margin-inline-start: 10px; }
 
-#intel-modal {
+#role-content {
   font-family: 'Helvetica', sans-serif;
-  min-width: 30vw;
-  min-height: 30vh;
-  z-index: 7; }
-  @media only screen and (max-width: 640px) {
-    #intel-modal {
-      height: auto; } }
-
-#intel-modal-area {
   align-items: center;
   justify-content: center;
   margin: auto;
-  text-align: center; }
+  text-align: center;
+  margin-top: calc(1.5em + 13px); }
 
-#game-information section, #intel-modal-area section {
-  margin: 0.67em 0em; }
+#game-content section, #role-content section {
+  margin: 0.33em 0em; }
 
-#game-information p, #intel-modal-area p {
+#game-content p {
   margin: 0px; }
+
+#role-content p {
+  margin-block-start: 0.33em;
+  margin-block-end: 0.33em; }
 
 .list-group {
   list-style: none;
@@ -334,9 +417,13 @@ div.future-modal {
   cursor: pointer; }
 
 .vote-image {
-  max-height: 320px;
-  height: 18vh;
   border: 2px solid transparent; }
+  @media only screen and (max-height: 1000px) {
+    .vote-image {
+      height: 15vh; } }
+  @media only screen and (min-height: 1000px) {
+    .vote-image {
+      max-height: 150px; } }
 
 .gun-image {
   max-height: 180px;
@@ -373,6 +460,14 @@ div.future-modal {
 .rejected-color {
   color: #DB143C; }
 
+@media only screen and (max-height: 700px) {
+  #select-vote-container {
+    margin-top: 0.5em; } }
+
+@media only screen and (min-height: 700px) {
+  #select-vote-container {
+    margin-top: 1em; } }
+
 .selected-image {
   border: 2px solid #00f8f8 !important;
   box-shadow: 0 0 4px rgba(2, 157, 187, 0.65); }
@@ -381,14 +476,18 @@ img + img {
   margin-left: 0.5vw; }
 
 .action-image {
-  height: 18vh;
-  max-height: 600px;
   border: 2px solid transparent; }
+  @media only screen and (max-height: 1000px) {
+    .action-image {
+      height: 14vh; } }
+  @media only screen and (min-height: 1000px) {
+    .action-image {
+      max-height: 150px; } }
 
 #mission-results-container {
   display: table;
   margin: 0 auto;
-  margin-bottom: 1em; }
+  margin-bottom: 0.5em; }
 
 .mission-result-wrapper {
   display: table-cell;

@@ -36,7 +36,7 @@ Proposal.prototype.hasVoted = function(playerId) {
 }
 
 Proposal.prototype.toggleAffect = function(sourceId, destinationId, affect) {
-    const affectKey = affect.getKey();
+    const affectKey = Affects.getAffectKey(affect);
 
     // Get playerId the affect is currently on and remove it from them
     let currentPlayerIdOfAffect = null;
@@ -48,7 +48,7 @@ Proposal.prototype.toggleAffect = function(sourceId, destinationId, affect) {
             this.affectsByPlayerId.delete(currentPlayerIdOfAffect);
         } else {
             for (let i = 0; i < currentPlayerAffects.length; i++) {
-                if (currentPlayerAffects[i].isSameAffect(affect)) {
+                if (Affects.areEqual(currentPlayerAffects[i], affect)) {
                     currentPlayerAffects.splice(i, 1);
                     break;
                 }
@@ -90,10 +90,10 @@ Proposal.prototype.finalize = function() {
         for (const [playerId, affects] of this.affectsByPlayerId.entries()) {
             const finalizedPlayerAffects = [];
             
-            const resistanceProtect = affects.find(affect => Affects.ResistanceProtectAffect.isSameAffect(affect));
-            const spyProtect = affects.find(affect => Affects.SpyProtectAffect.isSameAffect(affect));
-            const resistanceBind = affects.find(affect => Affects.ResistanceBindAffect.isSameAffect(affect));
-            const spyBind = affects.find(affect => Affects.SpyBindAffect.isSameAffect(affect));
+            const resistanceProtect = affects.find(affect => Affects.areEqual(Affects.ResistanceProtectAffect, affect));
+            const spyProtect = affects.find(affect => Affects.areEqual(Affects.SpyProtectAffect, affect));
+            const resistanceBind = affects.find(affect => Affects.areEqual(Affects.ResistanceBindAffect, affect));
+            const spyBind = affects.find(affect => Affects.areEqual(Affects.SpyBindAffect, affect));
     
             let resistanceBound = resistanceBind !== undefined;
             let resistanceProtected = false;
@@ -118,19 +118,19 @@ Proposal.prototype.finalize = function() {
     
             if (resistanceBound) {
                 finalizedPlayerAffects.push(resistanceBind);
-                this.playerIdByAffect.set(resistanceBind.getKey(), playerId);
+                this.playerIdByAffect.set(Affects.getAffectKey(resistanceBind), playerId);
             } else if (spyBound) {
                 finalizedPlayerAffects.push(spyBind);
-                this.playerIdByAffect.set(spyBind.getKey(), playerId);
+                this.playerIdByAffect.set(Affects.getAffectKey(spyBind), playerId);
             }
     
             if (resistanceProtected) {
                 finalizedPlayerAffects.push(resistanceProtect);
-                this.playerIdByAffect.set(resistanceProtect.getKey(), playerId);
+                this.playerIdByAffect.set(Affects.getAffectKey(resistanceProtect), playerId);
             }
             if (spyProtected) {
                 finalizedPlayerAffects.push(spyProtect);
-                this.playerIdByAffect.set(spyProtect.getKey(), playerId);
+                this.playerIdByAffect.set(Affects.getAffectKey(spyProtect), playerId);
             }
     
             if (finalizedPlayerAffects.length > 0) {
@@ -169,13 +169,13 @@ Proposal.prototype.getAffectOnPlayerId = function(playerId) {
 }
 
 Proposal.prototype.hasAffectOnPlayerId = function (playerId, affect) {
-    const affectKey = affect.getKey();
+    const affectKey = Affects.getAffectKey(affect);
     if (this.playerIdByAffect.has(affectKey)) {
         const playerIdOfAffect = this.playerIdByAffect.get(affectKey);
         if (playerIdOfAffect === playerId) {
             const affectsOnPlayerId = this.affectsByPlayerId.get(playerIdOfAffect);
             for (let affectOnPlayer of affectsOnPlayerId) {
-                if (affectOnPlayer.isSameAffect(affect)) {
+                if (Affects.areEqual(affectOnPlayer, affect)) {
                     return true;
                 }
             }
@@ -188,7 +188,7 @@ Proposal.prototype.hasAffectOnPlayerId = function (playerId, affect) {
 Proposal.prototype.getUsedAffects = function() {
     const usedAffects = [];
     for (let affect of this.playerIdByAffect.keys()) {
-        usedAffects.push(affect);
+        usedAffects.push(Affects.getAffectFromKey(affect));
     }
     return usedAffects;
 }

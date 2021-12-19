@@ -1,35 +1,42 @@
-//const ROOT_URL = "https://extavalon.com";
-const ROOT_URL = "http://192.168.1.107:25565";
+const ROOT_URL = "https://extavalon.com";
 
 const ROOT_ID = "root";
-const LOBBY_ID = "lobby";
-const LOBBY_INFORMATION_ID = "lobby-information";
-const TOGGLE_LOBBY_INFORMATION_BUTTON_ID = "toggle-lobby-information-button";
+
+const BACK_BUTTON_ID = "back-button";
+const MENU_BUTTON_ID = "menu-button";
+
+const MENU_MODAL_ID = "menu-modal";
+const CLOSE_MENU_MODAL_BUTTON_ID = "close-menu-modal-button";
+const VIEW_HELP_BUTTON_ID = "view-help-button";
+const VIEW_LOBBY_BUTTON_ID = "view-lobby-button";
+const VIEW_ROLE_BUTTON_ID = "view-role-button";
+const VIEW_GAME_BUTTON_ID = "view-game-button";
+
+const LOBBY_CONTENT_ID = "lobby-content";
 const LOBBY_PLAYERS_ID = "lobby-players";
 const LOBBY_PLAYER_COUNT_ID = "lobby-player-count";
 const LOBBY_PLAYER_LIST_ID = "lobby-player-list";
 const PLAYER_NAME_ID = "name";
-const ROLES_MODAL_ID = "roles-modal";
-const OPEN_ROLES_MODAL_BUTTON_ID = "open-roles-modal-button";
-const CLOSE_ROLES_MODAL_BUTTON_ID = "close-roles-modal-button";
-const INTEL_MODAL_ID = "intel-modal";
-const INTEL_MODAL_AREA_ID = "intel-modal-area";
-const OPEN_INTEL_MODAL_BUTTON_ID = "open-intel-modal-button";
-const CLOSE_INTEL_MODAL_BUTTON_ID = "close-intel-modal-button";
 const START_GAME_BUTTON_ID = "start-game-button";
 const CLOSE_LOBBY_BUTTON_ID = "close-lobby-button";
-const GAME_INFORMATION_ID = "game-information";
-const STATUS_HEADER_ID = "status-header";
-const MISSION_RESULTS_CONTAINER_ID = "mission-results-container";
+
+const HELP_CONTENT_ID = "help-content";
+
+const GAME_CONTENT_ID = "game-content";
+const MISSION_RESULTS_WRAPPER_ID = "mission-results-wrapper"
+
+const ROLE_CONTENT_ID = "role-content";
+
 const SELECT_VOTE_CONTAINER_ID = "select-vote-container";
 const SELECT_MISSION_ACTION_CONTAINER_ID = "select-mission-action-container";
 const MISSION_ACTIONS_CONTAINER_ID = "mission-actions-container";
-const SUBMIT_RESULTS_MODAL_ID = "submit-results-modal";
 
-const APPROVE_VOTE_IMG_SRC = "/images/approve.png";
-const APPROVE_VOTE_IMG_ALT = "Approve Team";
-const REJECT_VOTE_IMG_SRC = "/images/reject.png"
-const REJECT_VOTE_IMG_ALT = "Reject Team";
+const APPROVE_VOTE_TOKEN_SRC = "/images/approve-token.png";
+const APPROVE_VOTE_ICON_SRC = "/images/approve-icon.png";
+const APPROVE_VOTE_ALT = "Approve Team";
+const REJECT_VOTE_TOKEN_SRC = "/images/reject-token.png"
+const REJECT_VOTE_ICON_SRC = "/images/reject-icon.png"
+const REJECT_VOTE_ALT = "Reject Team";
 const SUCCEED_MISSION_IMG_SRC = "/images/success.png";
 const SUCCEED_MISSION_IMG_ALT = "Succeed Mission";
 const FAIL_MISSION_IMG_SRC = "/images/fail.png";
@@ -143,18 +150,26 @@ function createSection(styleClasses) {
     return sectionElement;
 }
 
-function createHeaderTwo(id, innerHTML, styleClasses=["future-header"]) {
-    const headerTwoElement = document.createElement('h2');
+function createHeader(id, headerType, innerHTML, styleClasses=["future-header"]) {
+    const headerElement = document.createElement(headerType);
     if (id) {
-        headerTwoElement.id = id;
+        headerElement.id = id;
     }
-    headerTwoElement.innerHTML = innerHTML;
+    headerElement.innerHTML = innerHTML;
     if (styleClasses) {
         for (let styleClass of styleClasses) {
-            headerTwoElement.classList.add(styleClass);
+            headerElement.classList.add(styleClass);
         }
     }
-    return headerTwoElement;
+    return headerElement;
+}
+
+function createHeaderTwo(id, innerHTML, styleClasses=["future-header"]) {
+    return createHeader(id, 'h2', innerHTML, styleClasses);
+}
+
+function createHeaderThree(id, innerHTML, styleClasses=["future-header"]) {
+    return createHeader(id, 'h3', innerHTML, styleClasses);
 }
 
 function createLabel(idFor, text) {
@@ -249,72 +264,97 @@ document.addEventListener('DOMContentLoaded', function () {
     const socket = io.connect(`${ROOT_URL}?code=${code}&userId=${userId}&firstName=${firstName}&lastName=${lastName}`);
 
     // Get elements
-    const root = document.getElementById(ROOT_ID);
-    const lobby = document.getElementById(LOBBY_ID);
-    const lobbyInformation = document.getElementById(LOBBY_INFORMATION_ID);
+    const backButton = document.getElementById(BACK_BUTTON_ID);
+    const menuButton = document.getElementById(MENU_BUTTON_ID);
+    const menuModal = document.getElementById(MENU_MODAL_ID);
+    const closeMenuModalButton = document.getElementById(CLOSE_MENU_MODAL_BUTTON_ID);
+    const viewHelpButton = document.getElementById(VIEW_HELP_BUTTON_ID);
+    const viewLobbyButton = document.getElementById(VIEW_LOBBY_BUTTON_ID);
+    const viewRoleButton = document.getElementById(VIEW_ROLE_BUTTON_ID);
+    const viewGameButton = document.getElementById(VIEW_GAME_BUTTON_ID);
+    const lobbyContent = document.getElementById(LOBBY_CONTENT_ID);
     const lobbyPlayers = document.getElementById(LOBBY_PLAYERS_ID);
-    const toggleLobbyInformationButton = document.getElementById(TOGGLE_LOBBY_INFORMATION_BUTTON_ID);
-    const rolesModal = document.getElementById(ROLES_MODAL_ID);
-    const openRolesModalButton = document.getElementById(OPEN_ROLES_MODAL_BUTTON_ID);
-    const closeRolesModalButton = document.getElementById(CLOSE_ROLES_MODAL_BUTTON_ID);
-    const intelModal = document.getElementById(INTEL_MODAL_ID);
-    const intelModalArea = document.getElementById(INTEL_MODAL_AREA_ID);
-    const openIntelModalButton = document.getElementById(OPEN_INTEL_MODAL_BUTTON_ID);
-    const closeIntelModalButton = document.getElementById(CLOSE_INTEL_MODAL_BUTTON_ID);
     const startGameButton = document.getElementById(START_GAME_BUTTON_ID);
     const closeLobbyButton = document.getElementById(CLOSE_LOBBY_BUTTON_ID);
-    const gameInformation = document.getElementById(GAME_INFORMATION_ID);
+    const helpContent = document.getElementById(HELP_CONTENT_ID);
+    const gameContent = document.getElementById(GAME_CONTENT_ID);
+    const roleContent = document.getElementById(ROLE_CONTENT_ID);
 
-    // Setup Page
-    openIntelModalButton.onclick = function() {
-        if (intelModal.style.display === "flex") {
-            intelModal.style.display = "none";
+    backButton.onclick = function() {
+        if (gameContent.children.length > 0) {
+            hideElement(lobbyContent);
+            hideElement(helpContent);
+            hideElement(roleContent);
+            gameContent.style.display = "flex";
+            hideElement(backButton);
         } else {
-            hideElement(rolesModal);
-            intelModal.style.display = "flex";
+            hideElement(helpContent);
+            hideElement(gameContent);
+            hideElement(roleContent);
+            lobbyContent.style.display = "flex";
+            hideElement(backButton);
         }
-    }
-    closeIntelModalButton.onclick = function() {
-        intelModal.style.display = "none";
-    }
-    intelModal.style.display = "none";
-    openIntelModalButton.style.display = 'none';
-
-    if (toggleLobbyInformationButton) {
-        toggleLobbyInformationButton.onclick = function() {
-            if (lobbyInformation.style.display === "none") {
-                lobbyInformation.style.display = "block";
-                startGameButton.style.display = 'block';
-                closeLobbyButton.style.display = "block";
-            } else {
-                lobbyInformation.style.display = "none";
-                startGameButton.style.display = 'none';
-                closeLobbyButton.style.display = "none";
-            }
-        }
-        toggleLobbyInformationButton.style.display = "none";
     }
 
-    openRolesModalButton.onclick = function() {
-        if (rolesModal.style.display === "none") {
-            rolesModal.style.display = "block";
-            hideElement(intelModal);
-        }
-        else {
-            rolesModal.style.display = "none";
+    menuButton.onclick = function() {
+        menuModal.style.display = "block";
+    }
+    closeMenuModalButton.onclick = function() {
+        hideElement(menuModal);
+    }
+    menuModal.onclick = function(event) {
+        if (event.target == menuModal) {
+            hideElement(menuModal);
         }
     }
-    closeRolesModalButton.onclick = function() {
-        rolesModal.style.display = "none";
+
+    viewHelpButton.onclick = function() {
+        hideElement(menuModal);
+        hideElement(lobbyContent);
+        hideElement(gameContent);
+        hideElement(roleContent);
+        helpContent.style.display = "flex";
+        backButton.style.display = "flex";
     }
-    rolesModal.style.display = "none";
+    viewLobbyButton.onclick = function() {
+        hideElement(menuModal);
+        hideElement(helpContent);
+        hideElement(gameContent);
+        hideElement(roleContent);
+        lobbyContent.style.display = "flex";
+        if (gameContent.children.length > 0) {
+            backButton.style.display = "flex";
+        } else {
+            hideElement(backButton);
+        }
+    }
+    viewGameButton.onclick = function() {
+        hideElement(menuModal);
+        hideElement(lobbyContent);
+        hideElement(helpContent);
+        hideElement(roleContent);
+        hideElement(backButton);
+        gameContent.style.display = "flex";
+    }
+    viewRoleButton.onclick = function() {
+        hideElement(menuModal);
+        hideElement(helpContent);
+        hideElement(gameContent);
+        hideElement(lobbyContent);
+        roleContent.style.display = "flex";
+        backButton.style.display = "flex";
+    }
+
+    hideElement(backButton);
+    hideElement(viewGameButton);
+    hideElement(viewRoleButton);
+    hideElement(menuModal);
+    hideElement(helpContent);
+    hideElement(gameContent);
+    hideElement(roleContent);
 
     if (startGameButton) {
         startGameButton.onclick = function () {
-            openIntelModalButton.style.display = "none";
-            toggleLobbyInformationButton.style.display = "none";
-            startGameButton.style.display = 'none';
-            closeLobbyButton.style.display = "none";
             socket.emit('start-game');
         };
         closeLobbyButton.onclick = function () {
@@ -335,8 +375,8 @@ document.addEventListener('DOMContentLoaded', function () {
         handlePickIdentity(possibleResistanceRoles, possibleSpyRoles);
     });
     
-    socket.on('start-game', (gameHTML) => {
-        startGame(gameHTML);
+    socket.on('start-game', (roleHTML) => {
+        startGame(roleHTML);
     });
 
     socket.on('propose-team', (setupProposalInformation) => {
@@ -371,17 +411,28 @@ document.addEventListener('DOMContentLoaded', function () {
         updateMissionResults(missionResultsInformation);
     });
 
+    socket.on('conduct-redemption', (conductRedemptionInformation) => {
+        handleConductRedemption(conductRedemptionInformation);
+    });
+
     socket.on('conduct-assassination', (conductAssassinationInformation) => {
         handleConductAssassination(conductAssassinationInformation);
     });
 
-    socket.on('game-result', ({winner, resultHTML}) => {
-        showGameResult(resultHTML);
+    socket.on('game-result', (gameResultInformation) => {
+        showGameResult(gameResultInformation);
     });
 
     socket.on('close-lobby', () => {
         location.replace(`${ROOT_URL}?menu=join`);
     });
+
+    function clearGameContent(clearMissionResults=false) {
+        const stopElement = clearMissionResults ? 0 : 1;
+        while (gameContent.children.length > stopElement) {
+            gameContent.removeChild(gameContent.lastChild);
+        }
+    }
 
     // Socket Functions
     function updateLobby(players) {
@@ -440,26 +491,32 @@ document.addEventListener('DOMContentLoaded', function () {
         lobbyPlayers.appendChild(lobbyPlayerList);
     }
 
-    function setupGame() {
-        lobbyInformation.style.display = "none";
-        openIntelModalButton.style.display = "none";
-        intelModal.style.display = "none";
-        clearChildrenFromElement(gameInformation);
+    function setupGame(setupMessage) {
+        hideElement(menuModal);
+        hideElement(viewRoleButton);
+        hideElement(lobbyContent);
+        hideElement(helpContent);
+        hideElement(roleContent);
+        hideElement(backButton);
+        clearChildrenFromElement(roleContent);
 
-        let missionResultsContainer = document.getElementById(MISSION_RESULTS_CONTAINER_ID);
-        if (missionResultsContainer) {
-            lobby.removeChild(missionResultsContainer);
+        if (viewGameButton.style.display === "none") {
+            viewGameButton.style.display = "block";
+            viewLobbyButton.innerText = "View Lobby";
+            backButton.title = "Return To Game"
         }
+
+        clearGameContent(true);
+        gameContent.appendChild(createHeaderTwo(null, setupMessage, ["future-title"]));
+        gameContent.style.display = "flex";        
     }
 
     function handleSetupGame() {
-        setupGame();
-        updateStatusHeader("Waiting for role information...");
+        setupGame("Waiting for role information...");
     }
 
     function handlePickIdentity(possibleResistanceRoles, possibleSpyRoles) {
-        setupGame();
-        updateStatusHeader("Congratulations, you may select your role/team for this game!");
+        setupGame("Congratulations, you may select your role/team for this game!");
 
         const identitySelect = createSelect(null, false);
         identitySelect.appendChild(createOption("Resistance", "Resistance"));
@@ -485,8 +542,8 @@ document.addEventListener('DOMContentLoaded', function () {
             }
         };
 
-        gameInformation.appendChild(identitySelect);
-        gameInformation.appendChild(submitIdentitySelectionButton);
+        gameContent.appendChild(identitySelect);
+        gameContent.appendChild(submitIdentitySelectionButton);
     }
 
     function handleSubmitIdentitySelection(identitySelection) {
@@ -501,50 +558,29 @@ document.addEventListener('DOMContentLoaded', function () {
         socket.emit('pick-identity', identityPickInformation);
     }
 
-    function startGame(gameHTML) {
-        lobbyInformation.style.display = "none";
-        clearChildrenFromElement(gameInformation);
-
-        if (toggleLobbyInformationButton) {
-            toggleLobbyInformationButton.style.display = "block";
-        }
-        openIntelModalButton.style.display = "block";
-        intelModalArea.innerHTML = gameHTML;
-        intelModal.style.display = "flex";
+    function startGame(roleHTML) {
+        hideElement(menuModal);
+        hideElement(lobbyContent);
+        hideElement(helpContent);
+        hideElement(gameContent);
+        clearGameContent(true);
+        roleContent.innerHTML = roleHTML;
+        roleContent.style.display = "flex";
+        backButton.style.display = "flex";
+        viewRoleButton.style.display = "block";
 
         if (startGameButton) {
             startGameButton.innerHTML = 'New Game';
-            startGameButton.style.display = 'none';
-            closeLobbyButton.style.display = "none";
         }
-    }
-
-    function updateStatusHeader(message) {
-        let statusHeader = document.getElementById(STATUS_HEADER_ID);
-        if (!statusHeader) {
-            statusHeader = createHeaderTwo(STATUS_HEADER_ID, message);
-            gameInformation.insertBefore(statusHeader, gameInformation.firstChild);
-        } else {
-            statusHeader.innerHTML = message;
-        }
-    }
-
-    function createProposalPlayerListGroup(players, maxSelections) {
-        const playerListGroup = createDiv("player-list-group", ["list-group"]);
-        const playerSelections = [];
-
-
     }
 
     function setupProposal(setupProposalInformation) {
-        clearChildrenFromElement(gameInformation);
+        clearGameContent();
 
-        const leader = setupProposalInformation.leader;
         const players = setupProposalInformation.players;
         const requiredTeamSize = setupProposalInformation.requiredTeamSize;
-        const currentProposedTeam = setupProposalInformation.currentProposedTeam;
 
-        updateStatusHeader(`Select ${requiredTeamSize} players to go on the mission:`);
+        gameContent.appendChild(createHeaderTwo(null, `Select ${requiredTeamSize} players for the mission:`));
 
         const proposeTeamContainer = createDiv("propose-team-container");
         const proposedTeamListGroup = createDiv("proposed-team-list-group", ["list-group"]);
@@ -568,17 +604,13 @@ document.addEventListener('DOMContentLoaded', function () {
             proposeTeamContainer.removeChild(proposeTeamSubmitButton);
         };
 
-        for (let player of currentProposedTeam) {
-            playerSelections.push(player.id);
-        }
-
         for (let player of players) {
             const playerListGroupItem = createDiv(null, ["list-group-item", "clickable"]);
             playerListGroupItem.setAttribute('data-value', player.id);
 
             const playerLeaderSlotWrapper = createDiv(null, ["icon-wrapper"]);
             const playerListGroupItemLeaderIcon = createImage(null, "/images/leader.png", "Leader Slot", ["leader-icon"]);
-            playerListGroupItemLeaderIcon.style.visibility = player.id === leader.id ? "visible" : "hidden";
+            playerListGroupItemLeaderIcon.style.visibility = player.isLeader ? "visible" : "hidden";
             playerLeaderSlotWrapper.appendChild(playerListGroupItemLeaderIcon);
 
             const playerNameWrapper = createDiv(null, ["name-wrapper"]);
@@ -587,7 +619,13 @@ document.addEventListener('DOMContentLoaded', function () {
 
             const playerGunSlotWrapper = createDiv(null, ["icon-wrapper"]);
             const playerListGroupItemGunIcon = createImage(null, "/images/gun-blank.png", "Gun Slot", ["gun-icon"]);
-            playerListGroupItemGunIcon.style.visibility = playerSelections.includes(player.id) ? "visible" : "hidden";
+            if (player.isOnTeam) {
+                playerListGroupItemGunIcon.style.visibility = "visible";
+                playerSelections.push(player.id);
+            }
+            else {
+                playerListGroupItemGunIcon.style.visibility = "hidden";
+            }
             playerGunSlotWrapper.appendChild(playerListGroupItemGunIcon);
 
             playerListGroupItem.appendChild(playerLeaderSlotWrapper);
@@ -616,16 +654,16 @@ document.addEventListener('DOMContentLoaded', function () {
 
         proposeTeamContainer.appendChild(proposedTeamListGroup);
         proposeTeamContainer.appendChild(proposeTeamSubmitButton);
-        gameInformation.appendChild(proposeTeamContainer);
+        gameContent.appendChild(proposeTeamContainer);
     }
 
     function updateProposedTeam(currentProposedTeamInformation) {
-        clearChildrenFromElement(gameInformation);
+        clearGameContent();
 
         const leaderName = currentProposedTeamInformation.leaderName;
         const team = currentProposedTeamInformation.team;
 
-        updateStatusHeader(`${leaderName} is proposing the mission team...`);
+        gameContent.appendChild(createHeaderTwo(null, `${leaderName} is proposing the mission team...`));
 
         const proposedTeamListGroup = createDiv("proposed-team-list-group", ["list-group"]);
 
@@ -655,11 +693,11 @@ document.addEventListener('DOMContentLoaded', function () {
             proposedTeamListGroup.appendChild(playerListGroupItem);
         }
         
-        gameInformation.appendChild(proposedTeamListGroup);
+        gameContent.appendChild(proposedTeamListGroup);
     }
 
     function setupVote(setupVoteInformation) {
-        clearChildrenFromElement(gameInformation);
+        clearGameContent();
 
         const selectedVote = setupVoteInformation.selectedVote;
         const team = setupVoteInformation.team;
@@ -667,22 +705,22 @@ document.addEventListener('DOMContentLoaded', function () {
 
         switch (applyAffect) {
             case "ResistanceProtect":
-                gameInformation.appendChild(createHeaderTwo(null, `
+                gameContent.appendChild(createHeaderTwo(null, `
                     You may select one player below to protect from a <span class="resistance">Resistance</span> bind. Refer to your role information for more details.
                 `));
                 break;
             case "ResistanceBind":
-                gameInformation.appendChild(createHeaderTwo(null, `
+                gameContent.appendChild(createHeaderTwo(null, `
                     You may select one player below to bind to the <span class="resistance">Resistance</span>. Refer to your role information for more details.
                 `));
                 break;
             case "SpyProtect":
-                gameInformation.appendChild(createHeaderTwo(null, `
+                gameContent.appendChild(createHeaderTwo(null, `
                     You may select one player below to protect from a <span class="spy">Spy</span> bind. Refer to your role information for more details.
                 `));
                 break;
             case "SpyBind":
-                gameInformation.appendChild(createHeaderTwo(null, `
+                gameContent.appendChild(createHeaderTwo(null, `
                     You may select one player below to bind to the <span class="spy">Spies</span>. Refer to your role information for more details.
                 `));
                 break;
@@ -712,9 +750,9 @@ document.addEventListener('DOMContentLoaded', function () {
                     }
                 } else if (player.affect.name === "Protect") {
                     if (player.affect.type === "Resistance") {
-                        playerListGroupItemAffectIconSrc = "/images/resistance-protect.png";
-                    } else if (player.affect.type === "Spy") {
                         playerListGroupItemAffectIconSrc = "/images/spy-protect.png";
+                    } else if (player.affect.type === "Spy") {
+                        playerListGroupItemAffectIconSrc = "/images/resistance-protect.png";
                     } else {
                         playerListGroupItemAffectIconSrc = "/images/unknown-protect.png";
                     }
@@ -748,18 +786,16 @@ document.addEventListener('DOMContentLoaded', function () {
             proposedTeamListGroup.appendChild(playerListGroupItem);
         }
         
-        gameInformation.appendChild(proposedTeamListGroup);
-
-        gameInformation.appendChild(createHeaderTwo(null, "Vote on the mission team above:"));
+        gameContent.appendChild(proposedTeamListGroup);
 
         const selectVoteContainer = createDiv(SELECT_VOTE_CONTAINER_ID);
-        const approveTeamImage = createImage(null, APPROVE_VOTE_IMG_SRC, APPROVE_VOTE_IMG_ALT, ['vote-image', 'clickable']);
+        const approveTeamImage = createImage(null, APPROVE_VOTE_TOKEN_SRC, APPROVE_VOTE_ALT, ['vote-image', 'clickable']);
         approveTeamImage.onclick = function() {
             handleProposalVoteSelection(selectVoteContainer.children, approveTeamImage, true);
         }
         selectVoteContainer.appendChild(approveTeamImage);
 
-        const rejectTeamImage = createImage(null, REJECT_VOTE_IMG_SRC, REJECT_VOTE_IMG_ALT, ['vote-image', 'clickable']);
+        const rejectTeamImage = createImage(null, REJECT_VOTE_TOKEN_SRC, REJECT_VOTE_ALT, ['vote-image', 'clickable']);
         rejectTeamImage.onclick = function() {
             handleProposalVoteSelection(selectVoteContainer.children, rejectTeamImage, false);
         }
@@ -770,7 +806,7 @@ document.addEventListener('DOMContentLoaded', function () {
         } else if (selectedVote == false) {
             rejectTeamImage.classList.add("selected-image");
         }
-        gameInformation.appendChild(selectVoteContainer);
+        gameContent.appendChild(selectVoteContainer);
     }
 
     function handleProposalVoteSelection(voteOptions, selectedOption, selectedVote) {
@@ -796,16 +832,16 @@ document.addEventListener('DOMContentLoaded', function () {
     function showButton(text, handleClick) {
         const button = createButton(text, ["future-button"]);
         button.onclick = handleClick;
-        gameInformation.appendChild(button);
+        gameContent.appendChild(button);
     }
 
     function showVoteResult(proposalResultInformation) {
-        clearChildrenFromElement(gameInformation);
+        clearGameContent();
 
         if (proposalResultInformation.result) {
-            updateStatusHeader("Proposal Approved!");
+            gameContent.appendChild(createHeaderTwo(null, "Proposal Approved!"));
         } else {
-            updateStatusHeader("Proposal Rejected!");
+            gameContent.appendChild(createHeaderTwo(null, "Proposal Rejected!"));
         }
 
         const proposalVotesContainer = createDiv("proposal-votes-container");
@@ -821,20 +857,20 @@ document.addEventListener('DOMContentLoaded', function () {
 
             const playerAffectSlotWrapper = createDiv(null, ["icon-wrapper"]);
             let playerListGroupItemAffectIconSrc = null;
-            if (player.affect) {
-                if (player.affect.name === "Bind") {
-                    if (player.affect.type === "Resistance") {
+            if (playerVoteInformation.affect) {
+                if (playerVoteInformation.affect.name === "Bind") {
+                    if (playerVoteInformation.affect.type === "Resistance") {
                         playerListGroupItemAffectIconSrc = "/images/resistance-bind.png";
-                    } else if (player.affect.type === "Spy") {
+                    } else if (playerVoteInformation.affect.type === "Spy") {
                         playerListGroupItemAffectIconSrc = "/images/spy-bind.png";
                     } else {
                         playerListGroupItemAffectIconSrc = "/images/unknown-bind.png";
                     }
-                } else if (player.affect.name === "Protect") {
-                    if (player.affect.type === "Resistance") {
-                        playerListGroupItemAffectIconSrc = "/images/resistance-protect.png";
-                    } else if (player.affect.type === "Spy") {
+                } else if (playerVoteInformation.affect.name === "Protect") {
+                    if (playerVoteInformation.affect.type === "Resistance") {
                         playerListGroupItemAffectIconSrc = "/images/spy-protect.png";
+                    } else if (playerVoteInformation.affect.type === "Spy") {
+                        playerListGroupItemAffectIconSrc = "/images/resistance-protect.png";
                     } else {
                         playerListGroupItemAffectIconSrc = "/images/unknown-protect.png";
                     }
@@ -856,9 +892,9 @@ document.addEventListener('DOMContentLoaded', function () {
 
             const playerVoteSlotWrapper = createDiv(null, ["icon-wrapper"]);
             if (playerVoteInformation.vote) {
-                playerVoteSlotWrapper.appendChild(createParagraph("&#10003;", ["approved-color"]));
+                playerVoteSlotWrapper.appendChild(createImage(null, APPROVE_VOTE_ICON_SRC, "Vote Slot", ["vote-icon"]))
             } else {
-                playerVoteSlotWrapper.appendChild(createParagraph("&#10005;", ["rejected-color"]));
+                playerVoteSlotWrapper.appendChild(createImage(null, REJECT_VOTE_ICON_SRC, "Vote Slot", ["vote-icon"]))
             }
 
             playerListGroupItem.appendChild(playerLeaderSlotWrapper);
@@ -871,18 +907,38 @@ document.addEventListener('DOMContentLoaded', function () {
         }
 
         proposalVotesContainer.appendChild(proposalVotesListGroup);
-        gameInformation.appendChild(proposalVotesContainer);
+        gameContent.appendChild(proposalVotesContainer);
     }
 
     function setupMission(conductMissionInformation) {
-        clearChildrenFromElement(gameInformation);
+        clearGameContent();
 
         if (conductMissionInformation) {
-            const missionActionDisclaimer = conductMissionInformation.disclaimer;
-            if (missionActionDisclaimer) {
-                updateStatusHeader(missionActionDisclaimer);
-            } else {
-                updateStatusHeader("Select a mission action:");
+            if (conductMissionInformation.sirRobinIntel !== undefined) {
+                if (conductMissionInformation.sirRobinIntel) {
+                    gameContent.appendChild(createHeaderTwo(null, `
+                        <span class="resistance">${conductMissionInformation.sirRobinIntel}</span> from the mission team is <span class="resistance">Resistance</span>.
+                    `));
+                } else {
+                    gameContent.appendChild(createHeaderTwo(null, `
+                        You either already know all the <span class="resistance">Resistance</span> players on this mission team
+                        OR <span class="spy">Accolon</span> (if present) is on this mission team.
+                    `));
+                }
+            }
+
+            if (conductMissionInformation.resistanceBound) {
+                gameContent.appendChild(createHeaderTwo(null, `
+                    You have been <span class="resistance">Resistance</span> bounded for this mission! You can only play a success card.
+                `));
+            } else if (conductMissionInformation.spyBound) {
+                gameContent.appendChild(createHeaderTwo(null, `
+                    You have been <span class="spy">Spy</span> bounded for this mission! You can only play a fail card.
+                `));
+            } else if (conductMissionInformation.spySuggestion) {
+                gameContent.appendChild(createHeaderTwo(null, `
+                    Your <span class="spy">Spy</span> intuition says you should play a ${conductMissionInformation.spySuggestion.join(" or ")} card.
+                `));
             }
 
             const successAllowed = conductMissionInformation.successAllowed;
@@ -890,7 +946,7 @@ document.addEventListener('DOMContentLoaded', function () {
             const reverseAllowed = conductMissionInformation.reverseAllowed;
 
             const selectMissionActionContainer = createDiv(SELECT_MISSION_ACTION_CONTAINER_ID);
-            gameInformation.appendChild(selectMissionActionContainer);
+            gameContent.appendChild(selectMissionActionContainer);
     
             if (successAllowed) {
                 const successMissionActionImage = createImage(null, SUCCEED_MISSION_IMG_SRC, SUCCEED_MISSION_IMG_ALT, ['action-image', 'clickable']);
@@ -916,7 +972,7 @@ document.addEventListener('DOMContentLoaded', function () {
                 selectMissionActionContainer.appendChild(reverseMissionActionImage);
             }
         } else {
-            updateStatusHeader("Waiting for mission to finish...");
+            gameContent.appendChild(createHeaderTwo(null, `Waiting for mission to finish...`));
         }
     }
 
@@ -932,13 +988,13 @@ document.addEventListener('DOMContentLoaded', function () {
     }
 
     function showConfirmMissionAction(action) {
-        const gameInformationButtons = gameInformation.getElementsByTagName("button");
-        if (gameInformationButtons.length === 0) {
+        const gameContentButtons = gameContent.getElementsByTagName("button");
+        if (gameContentButtons.length === 0) {
             showButton("Confirm", function () {
                 handleConfirmMissionActionClick(action);
             });
         } else {
-            gameInformationButtons[0].onclick = function () {
+            gameContentButtons[0].onclick = function () {
                 handleConfirmMissionActionClick(action);
             };
         }
@@ -946,40 +1002,69 @@ document.addEventListener('DOMContentLoaded', function () {
 
     function handleConfirmMissionActionClick(action) {
         socket.emit('conduct-mission', action);
-        clearChildrenFromElement(gameInformation);
-        updateStatusHeader("Waiting for mission to finish...");
+        clearGameContent();
+        gameContent.appendChild(createHeaderTwo(null, `Waiting for mission to finish...`));
     }
 
     function showMissionResult(missionResultInformation) {
-        clearChildrenFromElement(gameInformation);
+        clearGameContent();
 
         if (missionResultInformation.result === "Success") {
-            updateStatusHeader("Mission successful!");
+            gameContent.appendChild(createHeaderTwo(null, `Mission successful!`));
         } else {
-            updateStatusHeader("Mission failed!");
+            gameContent.appendChild(createHeaderTwo(null, `Mission failed!`));
         }
 
+        const totalActions = missionResultInformation.successCount + missionResultInformation.failCount + missionResultInformation.reverseCount;
+        const rowSize = totalActions === 4 ? 2 : 3;
+        let actionsAdded = 0;
+
         const missionActionsContainer = createDiv(MISSION_ACTIONS_CONTAINER_ID);
-        gameInformation.appendChild(missionActionsContainer);
+        let currentActionsRow = null;
+
         for (let i = 0; i < missionResultInformation.successCount; i++) {
-            missionActionsContainer.appendChild(createImage(null, SUCCEED_MISSION_IMG_SRC, SUCCEED_MISSION_IMG_ALT, ["action-image"]));
+            if (actionsAdded % rowSize === 0) {
+                if (currentActionsRow) {
+                    missionActionsContainer.appendChild(currentActionsRow);
+                }
+                currentActionsRow = createDiv("mission-actions-row");
+            }
+            currentActionsRow.appendChild(createImage(null, SUCCEED_MISSION_IMG_SRC, SUCCEED_MISSION_IMG_ALT, ["action-image"]));
+            actionsAdded += 1;
         }
         for (let i = 0; i < missionResultInformation.failCount; i++) {
-            missionActionsContainer.appendChild(createImage(null, FAIL_MISSION_IMG_SRC, FAIL_MISSION_IMG_ALT, ["action-image"]));
+            if (actionsAdded % rowSize === 0) {
+                if (currentActionsRow) {
+                    missionActionsContainer.appendChild(currentActionsRow);
+                }
+                currentActionsRow = createDiv("mission-actions-row");
+            }
+            currentActionsRow.appendChild(createImage(null, FAIL_MISSION_IMG_SRC, FAIL_MISSION_IMG_ALT, ["action-image"]));
+            actionsAdded += 1;
         }
         for (let i = 0; i < missionResultInformation.reverseCount; i++) {
-            missionActionsContainer.appendChild(createImage(null, REVERSE_MISSION_IMG_SRC, REVERSE_MISSION_IMG_ALT, ["action-image"]));
+            if (actionsAdded % rowSize === 0) {
+                if (currentActionsRow) {
+                    missionActionsContainer.appendChild(currentActionsRow);
+                }
+                currentActionsRow = createDiv("mission-actions-row");
+            }
+            currentActionsRow.appendChild(createImage(null, REVERSE_MISSION_IMG_SRC, REVERSE_MISSION_IMG_ALT, ["action-image"]));
+            actionsAdded += 1;
         }
+
+        missionActionsContainer.appendChild(currentActionsRow);
+        gameContent.appendChild(missionActionsContainer);
     }
 
     function updateMissionResults(missionResultsInformation) {
-        let missionResultsContainer = document.getElementById(MISSION_RESULTS_CONTAINER_ID);
-        if (!missionResultsContainer) {
-            missionResultsContainer = createDiv(MISSION_RESULTS_CONTAINER_ID, []);
-            lobby.insertBefore(missionResultsContainer, lobby.firstChild);
+        let missionResultsWrapper = document.getElementById(MISSION_RESULTS_WRAPPER_ID);
+        if (!missionResultsWrapper) {
+            missionResultsWrapper = createDiv(MISSION_RESULTS_WRAPPER_ID, []);
+            gameContent.insertBefore(missionResultsWrapper, gameContent.firstChild);
         }
 
-        clearChildrenFromElement(missionResultsContainer);
+        clearChildrenFromElement(missionResultsWrapper);
         for (let missionInformation of missionResultsInformation.missions) {
             const missionResultWrapper = createDiv(null, ["mission-result-wrapper"]);
             if (missionInformation.result) {
@@ -1009,17 +1094,77 @@ document.addEventListener('DOMContentLoaded', function () {
                 }
                 missionResultWrapper.appendChild(createParagraph(spanText));
             }
-            missionResultsContainer.appendChild(missionResultWrapper);
+            missionResultsWrapper.appendChild(missionResultWrapper);
+        }
+    }
+
+    function handleConductRedemption(conductRedemptionInformation) {
+        clearGameContent();
+
+        if ('kay' in conductRedemptionInformation) {
+            gameContent.appendChild(createHeaderTwo(null, `
+                ${conductRedemptionInformation.kay} is attempting to redeem the <span class="resistance">Resistance</span>...
+            `));
+        } else {
+            gameContent.appendChild(createHeaderTwo(null, `
+                Select the players you think are the <span class="spy">spies</span>:
+            `));
+
+            const players = conductRedemptionInformation.players;
+
+            const redemptionPlayersContainer = createDiv("redemption-players-container");
+            const redemptionPlayersListGroup = createDiv("redemption-players-list-group", ["list-group"]);
+            let playerSelections = [];
+            const requiredPlayerCount = conductRedemptionInformation.spyCount;
+
+            const redemptionPlayersSubmitButton = createButton("Submit", ["future-button"]);
+            redemptionPlayersSubmitButton.onclick = function() {
+                setButtonDisabled(redemptionPlayersSubmitButton, true, false);
+                const conductRedemptionInformation = {
+                    ids: playerSelections
+                };
+                socket.emit('conduct-redemption', conductRedemptionInformation);
+            };
+
+            for (let player of players) {
+                const playerListGroupItem = createDiv(null, ["list-group-item", "clickable"]);
+
+                const playerNameWrapper = createDiv(null, ["name-wrapper"]);
+                const playerNameParagraph = createParagraph(player.name);
+                playerNameWrapper.appendChild(playerNameParagraph);
+
+                playerListGroupItem.appendChild(playerNameWrapper);
+
+                playerListGroupItem.onclick = function() {
+                    const selected = playerSelections.includes(player.id);
+                    if (selected) {
+                        playerSelections.splice(playerSelections.indexOf(player.id), 1);
+                        removeClassFromElement(playerListGroupItem, 'selected');
+                    } else if (playerSelections.length !== requiredPlayerCount) {
+                        playerSelections.push(player.id);
+                        addClassToElement(playerListGroupItem, 'selected');
+                    }
+
+                    const submitDisabled = playerSelections.length !== requiredPlayerCount;
+                    setButtonDisabled(redemptionPlayersSubmitButton, submitDisabled, false);
+                };
+                redemptionPlayersListGroup.appendChild(playerListGroupItem);
+            }
+            setButtonDisabled(redemptionPlayersSubmitButton, true, false);
+
+            redemptionPlayersContainer.appendChild(redemptionPlayersListGroup);
+            gameContent.appendChild(redemptionPlayersContainer);
+            gameContent.appendChild(redemptionPlayersSubmitButton);
         }
     }
 
     function handleConductAssassination(conductAssassinationInformation) {
-        clearChildrenFromElement(gameInformation);
+        clearGameContent();
 
         if ('assassin' in conductAssassinationInformation) {
-            updateStatusHeader(`${conductAssassinationInformation.assassin} is choosing who to assassinate...`);
+            gameContent.appendChild(createHeaderTwo(null, `${conductAssassinationInformation.assassin} is choosing who to assassinate...`));
         } else {
-            updateStatusHeader("Select role and player(s) to assassinate for:");
+            gameContent.appendChild(createHeaderTwo(null, `Select role and player(s) to assassinate for:`));
 
             const assassinationRoleContainer = createDiv("assassination-role-container", ["center-flex-row"]);
             const assassinationRoleLabel = createLabel("assassination-role-select", "Role:");
@@ -1027,6 +1172,7 @@ document.addEventListener('DOMContentLoaded', function () {
             assassinationRoleSelect.appendChild(createOption("Merlin", "Merlin"));
             assassinationRoleSelect.appendChild(createOption("Arthur", "Arthur"));
             assassinationRoleSelect.appendChild(createOption("Lovers", "Tristan & Iseult"));
+            assassinationRoleSelect.appendChild(createOption("Ector", "Ector"));
             assassinationRoleContainer.appendChild(assassinationRoleLabel);
             assassinationRoleContainer.appendChild(assassinationRoleSelect);
 
@@ -1079,21 +1225,16 @@ document.addEventListener('DOMContentLoaded', function () {
                 setButtonDisabled(assassinationPlayersSubmitButton, submitDisabled, false);
             }
 
-            gameInformation.appendChild(assassinationRoleContainer);
+            gameContent.appendChild(assassinationRoleContainer);
             assassinationPlayersContainer.appendChild(assassinationPlayersListGroup);
-            gameInformation.appendChild(assassinationPlayersContainer);
-            gameInformation.appendChild(assassinationPlayersSubmitButton);
+            gameContent.appendChild(assassinationPlayersContainer);
+            gameContent.appendChild(assassinationPlayersSubmitButton);
         }
     }
 
     function showGameResult(gameResultInformation) {
-        clearChildrenFromElement(gameInformation);
-        gameInformation.innerHTML = buildGameResultHTML(gameResultInformation);
-
-        if (startGameButton) {
-            startGameButton.style.display = 'block';
-            closeLobbyButton.style.display = "block";
-        }
+        clearGameContent();
+        gameContent.innerHTML += buildGameResultHTML(gameResultInformation);
     }
 
     function buildGameResultHTML(gameResultInformation) {
@@ -1122,7 +1263,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
         resultHTML += `<section><p><span class="spy">Spies</span>:</p>`;
         resultHTML += `
-            ${this.spies.map(player => {
+            ${gameResultInformation.spies.map(player => {
                 return `<p>(<span class="spy">${player.role}</span>) ${player.name}</p>`;
             }).join('')}
         `;
@@ -1170,14 +1311,19 @@ document.addEventListener('DOMContentLoaded', function () {
                 `;
             } else {
                 loserDescriptor = `
-                    <span class="resistance">${puck.name}</span> failed to extend the game to 5 rounds and has lost
-                    as <span class="resistance">Puck</span>!
+                    <p>
+                        <span class="resistance">${puck.name}</span> failed to extend the game to 5 rounds and has lost
+                        as <span class="resistance">Puck</span>!
+                    </p>
                 `;
             }
-        } else if (jester) {
-            loserDescriptor = `
-                <span class="resistance">${jester.name}</span>
-                failed to get assassinated and has lost as <span class="resistance">Jester</span>!
+        }
+        if (jester) {
+            loserDescriptor += `
+                <p>
+                    <span class="resistance">${jester.name}</span>
+                    failed to get assassinated and has lost as <span class="resistance">Jester</span>!
+                </p>
             `;
         }
     
@@ -1192,7 +1338,7 @@ document.addEventListener('DOMContentLoaded', function () {
         `;
     
         if (loserDescriptor) {
-            incorrectAssassinationResultHTML += `<p>${loserDescriptor}</p>`;
+            incorrectAssassinationResultHTML += loserDescriptor;
         }
     
         incorrectAssassinationResultHTML += "</section>";

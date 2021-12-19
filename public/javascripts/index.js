@@ -1,5 +1,4 @@
-//const ROOT_URL = "https://extavalon.com";
-const ROOT_URL = "http://192.168.1.107:25565";
+const ROOT_URL = "https://extavalon.com";
 
 const ROOT_ID = "root";
 const ERRORS_ID = "errors";
@@ -183,10 +182,8 @@ document.addEventListener('DOMContentLoaded', function () {
 
         const newGameForm = createForm("post")
         const settingContainer = createDiv(["center-flex-column"]);
-        const bedivereSetting = createGameSettingItem("Bedivere:", "bedivere");
-        const galahadSetting = createGameSettingItem("Galahad:", "galahad");
+        const bedivereSetting = createGameSettingItem("Bedivere:", "bedivere", false);
         const titaniaSetting = createGameSettingItem("Titania:", "titania", false);
-        const luciusSetting = createGameSettingItem("Lucius:", "lucius");
         const accolonSetting = createGameSettingItem("Accolon:", "accolon");
         const mordredSetting = createGameSettingItem("Force Mordred:", "mordred", false);
         const createGameButton = createSubmitInput(CREATE_GAME_BUTTON_TEXT);
@@ -195,9 +192,7 @@ document.addEventListener('DOMContentLoaded', function () {
         backButton.onclick = showMainMenu;
 
         settingContainer.appendChild(bedivereSetting);
-        settingContainer.appendChild(galahadSetting);
         settingContainer.appendChild(titaniaSetting);
-        settingContainer.appendChild(luciusSetting);
         settingContainer.appendChild(accolonSetting);
         settingContainer.appendChild(mordredSetting);
         newGameForm.appendChild(settingContainer);

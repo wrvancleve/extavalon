@@ -27,10 +27,8 @@ router.get('/', authenticate, function (req, res) {
 
 router.post('/', authenticate, function (req, res) {
     const settings = {
-        galahad: req.body.galahad === 'on',
         titania: req.body.titania === 'on',
         bedivere: req.body.bedivere === 'on',
-        lucius: req.body.lucius === 'on',
         accolon: req.body.accolon === 'on',
         mordred: req.body.mordred === 'on'
     };
