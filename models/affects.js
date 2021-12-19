@@ -42,8 +42,8 @@ function getAffectFromKey(affectKey) {
             return ResistanceBindAffect;
         case getAffectKey(ResistanceProtectAffect):
             return ResistanceProtectAffect;
-        case getAffectKey(ResistanceBindAffect):
-            return ResistanceBindAffect;
+        case getAffectKey(SpyBindAffect):
+            return SpyBindAffect;
         case getAffectKey(SpyProtectAffect):
             return SpyProtectAffect;
         default:

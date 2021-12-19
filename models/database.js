@@ -3,7 +3,6 @@ const { Pool } = require('pg');
 const postgresPool = new Pool({
     connectionString: process.env.POSTGRES_URL
 });
-const postgresPool = null;
 
 function getPlayerId(firstName, lastName, callback) {
     const query = `select get_player_id('${firstName}', '${lastName}') as player_id;`;
