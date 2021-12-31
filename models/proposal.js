@@ -8,6 +8,7 @@ function Proposal(leaderId, team) {
     this.votesByPlayerId = new Map();
     this.affectsByPlayerId = new Map();
     this.playerIdByAffect = new Map();
+    this.blockedAffects = [];
     this.result = null;
 }
 
@@ -86,6 +87,7 @@ Proposal.prototype.finalize = function() {
     if (this.result) {
         const finalizedAffectsByPlayerId = new Map();
         this.playerIdByAffect.clear();
+        this.blockedAffects = [];
 
         for (const [playerId, affects] of this.affectsByPlayerId.entries()) {
             const finalizedPlayerAffects = [];
@@ -100,6 +102,7 @@ Proposal.prototype.finalize = function() {
             if (resistanceBound && (!resistanceBind.valid || resistanceProtect)) {
                 resistanceProtected = true;
                 resistanceBound = false;
+                this.blockedAffects.push(Affects.getAffectKey(resistanceBind));
             }
     
             let spyBound = spyBind !== undefined;
@@ -107,13 +110,14 @@ Proposal.prototype.finalize = function() {
             if (spyBound && (!spyBind.valid || spyProtect)) {
                 spyProtected = true;
                 spyBound = false;
+                this.blockedAffects.push(Affects.getAffectKey(spyBind));
             }
     
             if (resistanceBound && spyBound) {
                 resistanceBound = false;
-                resistanceProtected = true;
                 spyBound = false;
-                spyProtected = true;
+                this.blockedAffects.push(Affects.getAffectKey(resistanceBind));
+                this.blockedAffects.push(Affects.getAffectKey(spyBind));
             }
     
             if (resistanceBound) {
@@ -145,6 +149,7 @@ Proposal.prototype.finalize = function() {
     } else {
         this.playerIdByAffect.clear();
         this.affectsByPlayerId.clear();
+        this.blockedAffects = [];
     }
 }
 
@@ -190,6 +195,10 @@ Proposal.prototype.getUsedAffects = function() {
     for (let affect of this.playerIdByAffect.keys()) {
         usedAffects.push(Affects.getAffectFromKey(affect));
     }
+    for (let blockedAffect of this.blockedAffects) {
+        usedAffects.push(Affects.getAffectFromKey(blockedAffect));
+    }
+    console.log("Used affects: %j", usedAffects);
     return usedAffects;
 }
 

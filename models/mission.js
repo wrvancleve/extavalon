@@ -35,10 +35,6 @@ Mission.prototype.getBindOnPlayerId = function(playerId) {
     return this.getCurrentProposal().getBindOnPlayerId(playerId);
 }
 
-Mission.prototype.getUsedAffects = function() {
-    return this.getCurrentProposal().getUsedAffects();
-}
-
 Mission.prototype.addAction = function(playerId, action) {
     this.actionsPerformedByPlayerId.set(playerId, action);
     this.actionCount += 1;
