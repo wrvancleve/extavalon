@@ -486,17 +486,29 @@ Game.prototype.getProposalResultExtendedInformation = function(playerId) {
 Game.prototype._getVisibleAffectForPlayerId = function(playerId, visibleAffect) {
     if (!visibleAffect) {
         return null;
-    } else if (this.players[playerId].isSpy || visibleAffect.sourceId === playerId || visibleAffect.destinationId === playerId) {
-        return {
-            name: visibleAffect.name,
-            type: visibleAffect.type
-        };
-    } else {
-        return {
-            name: visibleAffect.name,
-            type: "Unknown"
+    }
+
+    const isSpy = this.players[playerId].isSpy;
+    const isSource = visibleAffect.sourceId === playerId;
+    const isDestination = visibleAffect.destinationId === playerId;
+
+    if (visibleAffect.name === "Protect") {
+        if (isSpy || isSource) {
+            return {
+                name: visibleAffect.name,
+                type: visibleAffect.type
+            };
+        }
+    } else if (visibleAffect.name === "Bind") {
+        if (isSpy || isSource || isDestination) {
+            return {
+                name: visibleAffect.name,
+                type: visibleAffect.type
+            };
         }
     }
+
+    return null;
 }
 
 Game.prototype.getConductMissionInformation = function(id) {

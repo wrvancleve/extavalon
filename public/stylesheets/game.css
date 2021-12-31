@@ -342,7 +342,11 @@ div.future-modal {
   margin-top: 0px;
   position: absolute;
   z-index: 5;
-  cursor: pointer; }
+  cursor: pointer;
+  -webkit-appearance: none; }
+
+.right-circle-future-button img {
+  width: 0.75em; }
 
 .left-circle-future-button {
   border-radius: 50%;
@@ -356,7 +360,8 @@ div.future-modal {
   position: absolute;
   z-index: 5;
   cursor: pointer;
-  padding: 0px 12px; }
+  padding: 0px 12px;
+  -webkit-appearance: none; }
 
 .menu-bar {
   height: 2px;

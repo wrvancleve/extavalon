@@ -183,6 +183,11 @@ div.future-modal {
     cursor: pointer;
     @extend %future-color;
     @extend %future-box-transparent;
+    -webkit-appearance: none;
+}
+
+.right-circle-future-button img {
+    width: 0.75em;
 }
 
 .left-circle-future-button {
@@ -200,6 +205,7 @@ div.future-modal {
     @extend %future-color;
     @extend %future-box-transparent;
     padding: 0px 12px;
+    -webkit-appearance: none
 }
 
 .menu-bar {

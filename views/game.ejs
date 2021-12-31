@@ -8,15 +8,13 @@
         </script>
         <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/2.3.0/socket.io.js"></script>
         <script src="https://cdn.jsdelivr.net/npm/sortablejs@latest/Sortable.min.js"></script>
-        <script src="/javascripts/gameLocal.js"></script>
+        <script src="/javascripts/gameLocal.js" defer></script>
     </head>
     <body>
         <div class="flex-column" id="root">
             <button class="left-circle-future-button" id="back-button" title="Return To Lobby"> &#8249; </button>
-            <button class="right-circle-future-button" id="menu-button" title="Open Menu"> 
-                <div class="menu-bar"></div>
-                <div class="menu-bar"></div>
-                <div class="menu-bar"></div>
+            <button class="right-circle-future-button" id="menu-button" title="Open Menu">
+                <img src="/images/menu.png" alt="Menu">
             </button>
             <div class="future-modal" id="menu-modal">
                 <div id="menu-modal-content">
