@@ -129,7 +129,13 @@ const RESISTANCE_ROLES = [
     "Puck",
     "Galahad",
     "Bedivere",
-    "Titania"
+    "Titania",
+    "Ector",
+    "Geraint",
+    "Gaheris",
+    "Kay",
+    "Sir Robin",
+    "Lamorak"
 ]
 const RESISTANCE_KEY_WORDS = [
     "Resistance",
@@ -143,7 +149,9 @@ const SPY_ROLES = [
     "Lucius",
     "Maelagant",
     "Mordred",
-    "Morgana"
+    "Morgana",
+    "Cerdic",
+    "Cynric",
 ];
 const SPY_KEY_WORDS = [
     "Spies"    
