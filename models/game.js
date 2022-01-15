@@ -343,7 +343,7 @@ Game.prototype._performAccolonSabotage = function() {
     if (target.role === Roles.Arthur) {
         const possibleIndexes = [];
         for (let i = 0; i < intel.length; i++) {
-            if (intel[i] !== Roles.Merlin.name) {
+            if (intel[i] !== Roles.Tristan.name && Roles.Iseult.name) {
                 possibleIndexes.push(i);
             }
         }
