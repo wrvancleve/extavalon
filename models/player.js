@@ -93,6 +93,8 @@ Player.prototype.getPlayerHTML = function() {
             return this._getEctorHTML();
         case Roles.Kay.name:
             return this._getKayHTML();
+        case Roles.Lamorak.name:
+            return this._getLamorakHTML();
         case Roles.SirRobin.name:
             return this._getSirRobinHTML();
         case Roles.Gaheris.name:
@@ -334,25 +336,11 @@ Player.prototype._getJesterHTML = function() {
 
     let jesterHTML = `
         <h2 class="future-header resistance">Jester</h2>
-        <section><p>You only win if you get assassinated by the assassin.</p></section><section>
+        <section><p>You only win if you get assassinated by the assassin.</p></section>
+        <section><p>You see:</p></section><section>
     `;
-    if (!this.intelSabotaged) {
-        jesterHTML += `<p>You see:</p></section><section>`;
-
-        for (let i = 0; i < seenRoles.length; i++) {
-            jesterHTML += `<p><span class="resistance">${seenRoles[i]}</span> is in the game</p>`;
-        }
-    } else {
-        jesterHTML += `
-            <p>Your vision has been sabotaged by <span class="spy">Accolon</span></p>
-            <p>You see:</p></section><section>
-        `;
-
-        if (seenRoles === 1) {
-            jesterHTML += `<p>${seenRoles} assassinable role is in the game</p>`;
-        } else {
-            jesterHTML += `<p>${seenRoles} assassinable roles are in the game</p>`;
-        }
+    for (let i = 0; i < seenRoles.length; i++) {
+        jesterHTML += `<p><span class="resistance">${seenRoles[i]}</span> is in the game</p>`;
     }
     jesterHTML += `</section>`;
 
@@ -468,6 +456,34 @@ Player.prototype._getKayHTML = function () {
             <p>Correctly name all <span class="spy">spies</span> and the game will progress as if the <span class="resistance">Resistance</span> had won 3 missions.</p>
         </section>
     `;
+}
+
+Player.prototype._getLamorakHTML = function () {
+    let lamorakHTML = `
+        <h2 class="future-header resistance">Lamorak</h2><section>
+    `;
+    if (this.intelSabotaged) {
+        lamorakHTML += `
+            <p>Your vision has been sabotaged by <span class="spy">Accolon</span></p>
+            <p>You were inserted into one of your pairs. This gives you less information than you normally would have.</p>
+        `;
+    }
+    lamorakHTML += `
+        <p>You see two pairs of players:</p></section>
+        <section>
+            <p>${this.intel[0][0][0].name} and ${this.intel[0][0][1].name}</p>
+            <p>${this.intel[0][1][0].name} and ${this.intel[0][1][1].name}</p>
+        </section>
+        <section>
+            <p>One pair of players are on the same team and the other pair of players are on different teams.</p>
+        </section>
+    `;
+
+    if (this.intel.length > 1) {
+        lamorakHTML += this._getResistanceEctorHTML();
+    }
+
+    return lamorakHTML;
 }
 
 Player.prototype._getSirRobinHTML = function () {

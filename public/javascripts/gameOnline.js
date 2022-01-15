@@ -1,65 +1,54 @@
-const ROOT_URL = "https://extavalon.com";
+import {
+    socket,
+    amHost,
+    backButton,
+    menuButton,
+    menuModal,
+    viewHelpButton,
+    viewLobbyButton,
+    viewRoleButton,
+    viewGameButton,
+    lobbyContent,
+    lobbyPlayers,
+    startGameButton,
+    closeLobbyButton,
+    helpContent,
+    gameContent,
+    roleContent,
+    LOBBY_PLAYER_COUNT_ID,
+    createButton,
+    createDiv,
+    createParagraph,
+    createSection,
+    createHeaderTwo,
+    createLabel,
+    createOption,
+    createSelect,
+    addClassToElement,
+    removeClassFromElement,
+    hideElement,
+    clearChildrenFromElement,
+    setButtonDisabled,
+    createSimplePlayerListGroupItem,
+    clearGameContent,
+    createLobbyPlayerList,
+    showConductRedemption,
+    showConductAssassination,
+    showGameResult
+} from './game.js';
 
-const LOBBY_INFORMATION_ID = "lobby-information";
-const TOGGLE_LOBBY_INFORMATION_BUTTON_ID = "toggle-lobby-information-button";
-const LOBBY_PLAYERS_ID = "lobby-players";
-const LOBBY_PLAYER_COUNT_ID = "lobby-player-count";
-const LOBBY_PLAYER_LIST_ID = "lobby-player-list";
+const MISSION_RESULTS_WRAPPER_ID = "mission-results-wrapper";
 
-const ROLES_MODAL_ID = "roles-modal";
-const OPEN_ROLES_MODAL_BUTTON_ID = "open-roles-modal-button";
-const CLOSE_ROLES_MODAL_BUTTON_ID = "close-roles-modal-button";
-
-const INTEL_MODAL_ID = "intel-modal";
-const INTEL_MODAL_AREA_ID = "intel-modal-area";
-const OPEN_INTEL_MODAL_BUTTON_ID = "open-intel-modal-button";
-const CLOSE_INTEL_MODAL_BUTTON_ID = "close-intel-modal-button";
-
-const START_GAME_BUTTON_ID = "start-game-button";
-const CLOSE_GAME_BUTTON_ID = "close-game-button";
-const GAME_ID = "game";
-const ROOT_ID = "root";
-const SETUP_GAME_ID = "setup-game";
-
-const STATUS_MESSAGE_ID = "status-message";
-const BOARD_AREA_ID = "board-area";
-const GAME_BOARD_ID = "game-board";
-const LEFT_PLAYER_AREA_ID = "left-player-area";
-const TOP_PLAYER_AREA_ID = "top-player-area";
-const RIGHT_PLAYER_AREA_ID = "right-player-area";
-
-const ACTION_AREA_ID = "action-area";
-const SELECT_VOTE_AREA_ID = "select-vote-area";
-const SELECT_GUN_AREA_ID = "select-gun-area";
+const SELECT_VOTE_CONTAINER_ID = "select-vote-container";
 const SELECT_MISSION_ACTION_CONTAINER_ID = "select-mission-action-container";
-const ACTION_RESULTS_AREA_ID = "action-results-area";
+const MISSION_ACTIONS_CONTAINER_ID = "mission-actions-container";
 
-const ASSASSINATION_MODAL_ID = "assassination-modal";
-const ASSASSINATION_AREA_ID = "assassination-area";
-const ASSASSINATION_HEADER_ID = "assassination-header";
-const ASSASSINATION_ROLES_SELECT_ID = "assassination-roles-select";
-const CONFIRM_ASSASSINATION_BUTTON_ID = "confirm-assassination-button";
-const RESET_ASSASSINATION_BUTTON_ID = "reset-assassination-button";
-
-const RESULTS_MODAL_ID = "results-modal";
-const CLOSE_RESULTS_MODAL_BUTTON_ID = "close-results-modal-button";
-const RESULTS_AREA_ID = "results-area";
-
-const FIVE_PLAYER_BOARD_IMG_SRC = "/images/5-player-board.png";
-const SIX_PLAYER_BOARD_IMG_SRC = "/images/6-player-board.png";
-const SEVEN_PLAYER_BOARD_IMG_SRC = "/images/7-player-board.png";
-const EIGHT_PLAYER_BOARD_IMG_SRC = "/images/8-player-board.png";
-const NINE_PLAYER_BOARD_IMG_SRC = "/images/9-player-board.png";
-const TEN_PLAYER_BOARD_IMG_SRC = "/images/10-player-board.png";
-const DEFAULT_GUN_SLOT_IMG_SRC = "/images/gun.png";
-const DEFAULT_GUN_SLOT_IMG_ALT = "gun";
-const DEFAULT_VOTE_SLOT_IMG_ALT = "Vote Slot";
-
-const BLANK_VOTE_IMG_SRC = "/images/blank.png";
-const APPROVE_VOTE_IMG_SRC = "/images/approve.png";
-const APPROVE_VOTE_IMG_ALT = "Approve Team";
-const REJECT_VOTE_IMG_SRC = "/images/reject.png"
-const REJECT_VOTE_IMG_ALT = "Reject Team";
+const APPROVE_VOTE_TOKEN_SRC = "/images/approve-token.png";
+const APPROVE_VOTE_ICON_SRC = "/images/approve-icon.png";
+const APPROVE_VOTE_ALT = "Approve Team";
+const REJECT_VOTE_TOKEN_SRC = "/images/reject-token.png"
+const REJECT_VOTE_ICON_SRC = "/images/reject-icon.png"
+const REJECT_VOTE_ALT = "Reject Team";
 const SUCCEED_MISSION_IMG_SRC = "/images/success.png";
 const SUCCEED_MISSION_IMG_ALT = "Succeed Mission";
 const FAIL_MISSION_IMG_SRC = "/images/fail.png";
@@ -70,88 +59,6 @@ const SUCCESSFUL_MISSION_IMG_SRC = "/images/successful-mission.png";
 const SUCCESSFUL_MISSION_IMG_ALT = "Success";
 const FAILED_MISSION_IMG_SRC = "/images/failed-mission.png";
 const FAILED_MISSION_IMG_ALT = "Fail";
-
-function parseCookie(str) {
-    return str.split(';').map(v => v.split('=')).reduce((acc, v) => {
-      acc[decodeURIComponent(v[0].trim())] = decodeURIComponent(v[1].trim());
-      return acc;
-    }, {});
-};
-
-function addClassToElement(element, className) {
-    if (!element.classList.contains(className)) {
-        element.classList.add(className);
-    }
-}
-
-function removeClassFromElement(element, className) {
-    if (element.classList.contains(className)) {
-        element.classList.remove(className);
-    }
-}
-
-function hideElement(element) {
-    element.style.display = "none";
-    element.disable = true;
-}
-
-function createDiv(id, styleClasses) {
-    const divElement = document.createElement('div');
-    if (id) {
-        divElement.id = id;
-    }
-    if (styleClasses) {
-        for (let styleClass of styleClasses) {
-            divElement.classList.add(styleClass);
-        }
-    }
-    return divElement;
-}
-
-function createSelect(id, enableNoneOption) {
-    const selectElement = document.createElement('select');
-    if (id) {
-        selectElement.id = id;
-    }
-    const noneResultOption = createOption("none");
-    noneResultOption.selected = true;
-    if (!enableNoneOption) {
-        noneResultOption.disabled = true;
-    }
-    selectElement.appendChild(noneResultOption);
-    return selectElement;
-}
-
-function createOption(value, text) {
-    const optionElement = document.createElement('option');
-    optionElement.value = value;
-    if (text) {
-        optionElement.innerText = text;
-    }
-    return optionElement;
-}
-
-function createButton(text, styleClasses) {
-    const buttonElement = document.createElement('button');
-    buttonElement.innerText = text;
-    if (styleClasses) {
-        for (let styleClass of styleClasses) {
-            buttonElement.classList.add(styleClass);
-        }
-    }
-    return buttonElement;
-}
-
-function createHeaderTwo(text, styleClasses) {
-    const headerTwoElement = document.createElement('h2');
-    headerTwoElement.innerText = text;
-    if (styleClasses) {
-        for (let styleClass of styleClasses) {
-            headerTwoElement.classList.add(styleClass);
-        }
-    }
-    return headerTwoElement;
-}
 
 function createImage(id, src, alt, styleClasses) {
     const imageElement = document.createElement('img');
@@ -168,1105 +75,634 @@ function createImage(id, src, alt, styleClasses) {
     return imageElement;
 }
 
-function clearChildrenFromElement(element) {
-    while (element.children.length > 0) {
-        element.removeChild(element.lastChild);
-    }
-}
+function createFullPlayerListGroupItem(player, styleClasses=["list-group-item"]) {
+    const playerListGroupItem = createDiv(null, styleClasses);
 
-function setButtonDisabled(buttonElement, disabled, removeOnClick=true) {
-    buttonElement.disabled = disabled;
-    if (buttonElement.disabled) {
-        addClassToElement(buttonElement, "future-button-disabled");
-        if (removeOnClick) {
-            buttonElement.removeAttribute("onclick");
-        }
-    } else {
-        removeClassFromElement(buttonElement, "future-button-disabled");
-    }
-}
+    const playerLeaderSlotWrapper = createDiv(null, ["icon-wrapper"]);
+    const playerListGroupItemLeaderIcon = createImage(null, "/images/leader.png", "Leader Slot", ["leader-icon"]);
+    playerListGroupItemLeaderIcon.style.visibility = player.isLeader ? "visible" : "hidden";
+    playerLeaderSlotWrapper.appendChild(playerListGroupItemLeaderIcon);
 
-function removeClickable(element) {
-    removeClassFromElement(element, "clickable");
-    element.removeAttribute("onclick");
-}
-
-document.addEventListener('DOMContentLoaded', function () {
-    const {code} = Qs.parse(location.search, {
-        ignoreQueryPrefix: true
-    });
-
-    const parsedCookie = parseCookie(document.cookie);
-
-    const userId = parsedCookie.userId;
-    const firstName = parsedCookie.firstName;
-    const lastName = parsedCookie.lastName;
-
-    const socket = io.connect(`${ROOT_URL}?code=${code}&userId=${userId}&firstName=${firstName}&lastName=${lastName}`);
-
-    // Get Elements
-    const lobbyInformation = document.getElementById(LOBBY_INFORMATION_ID);
-    const toggleLobbyInformationButton = document.getElementById(TOGGLE_LOBBY_INFORMATION_BUTTON_ID);
-    const lobbyPlayers = document.getElementById(LOBBY_PLAYERS_ID);
-    const rolesModal = document.getElementById(ROLES_MODAL_ID);
-    const openRolesModalButton = document.getElementById(OPEN_ROLES_MODAL_BUTTON_ID);
-    const closeRolesModalButton = document.getElementById(CLOSE_ROLES_MODAL_BUTTON_ID);
-    const intelModal = document.getElementById(INTEL_MODAL_ID);
-    const intelModalArea = document.getElementById(INTEL_MODAL_AREA_ID);
-    const openIntelModalButton = document.getElementById(OPEN_INTEL_MODAL_BUTTON_ID);
-    const closeIntelModalButton = document.getElementById(CLOSE_INTEL_MODAL_BUTTON_ID);
-    const startGameButton = document.getElementById(START_GAME_BUTTON_ID);
-    const closeGameButton = document.getElementById(CLOSE_GAME_BUTTON_ID);
-    const game = document.getElementById(GAME_ID);
-    const root = document.getElementById(ROOT_ID);
-
-    const statusMessage = document.getElementById(STATUS_MESSAGE_ID);
-    const boardArea = document.getElementById(BOARD_AREA_ID);
-    const gameBoard = document.getElementById(GAME_BOARD_ID);
-
-    let gamePlayers = [];
-    let gunSelected = null;
-    let playersSelected = null;
-    const leftPlayerArea = document.getElementById(LEFT_PLAYER_AREA_ID);
-    const topPlayerArea = document.getElementById(TOP_PLAYER_AREA_ID);
-    const rightPlayerArea = document.getElementById(RIGHT_PLAYER_AREA_ID);
-
-    const actionArea = document.getElementById(ACTION_AREA_ID);
-
-    const resultsModal = document.getElementById(RESULTS_MODAL_ID);
-    const closeResultsModalButton = document.getElementById(CLOSE_RESULTS_MODAL_BUTTON_ID);
-    const assassinationModal = document.getElementById(ASSASSINATION_MODAL_ID);
-    const assassinationArea = document.getElementById(ASSASSINATION_AREA_ID);
-    const resultsArea = document.getElementById(RESULTS_AREA_ID);
-
-    // Setup Page
-    game.style.display = "none";
-
-    openIntelModalButton.onclick = function() {
-        if (intelModal.style.display === "flex") {
-            intelModal.style.display = "none";
-        } else {
-            if (rolesModal.style.display === 'flex') {
-                rolesModal.style.display = 'none';
-            }
-            intelModal.style.display = "flex";
-        }
-    }
-    closeIntelModalButton.onclick = function() {
-        intelModal.style.display = "none";
-    }
-    openIntelModalButton.style.display = "none";
-    intelModal.style.display = "none";
-
-    openRolesModalButton.onclick = function() {
-        if (rolesModal.style.display === "block") {
-            rolesModal.style.display = "none";
-        } else {
-            if (intelModal.style.display === "flex") {
-                intelModal.style.display = "none"
-            }
-            rolesModal.style.display = "block";
-        }
-    }
-    closeRolesModalButton.onclick = function() {
-        rolesModal.style.display = "none";
-    }
-    rolesModal.style.display = "none";
-
-    closeResultsModalButton.onclick = function() {
-        resultsModal.style.display = "none";
-    }
-
-    if (startGameButton) {
-        startGameButton.onclick = function () {
-            socket.emit('start-game');
-        };
-        closeGameButton.onclick = function () {
-            socket.emit('close-lobby');
-        };
-    }
-
-    if (toggleLobbyInformationButton) {
-        toggleLobbyInformationButton.onclick = function() {
-            if (lobbyInformation.style.display === "none") {
-                lobbyInformation.style.display = "flex";
-                startGameButton.style.display = "block";
-                closeGameButton.style.display = "block";
+    const playerAffectSlotWrapper = createDiv(null, ["icon-wrapper"]);
+    if (player.affect != null) {
+        let playerListGroupItemAffectIconSrc = null;
+        if (player.affect.name === "Bind") {
+            if (player.affect.type === "Resistance") {
+                playerListGroupItemAffectIconSrc = "/images/resistance-bind.png";
+            } else if (player.affect.type === "Spy") {
+                playerListGroupItemAffectIconSrc = "/images/spy-bind.png";
             } else {
-                lobbyInformation.style.display = "none";
-                startGameButton.style.display = "none";
-                closeGameButton.style.display = "none";
+                playerListGroupItemAffectIconSrc = "/images/unknown-bind.png";
             }
-        };
-        toggleLobbyInformationButton.style.display = "none";
-    }
-
-    function updateLobby(players) {
-        const activePlayerCount = players.filter(p => p.active).length;
-        document.getElementById(LOBBY_PLAYER_COUNT_ID).innerHTML = `Players [${activePlayerCount}]`;
-
-        if (lobbyPlayers.lastChild.id === LOBBY_PLAYER_LIST_ID) {
-            lobbyPlayers.removeChild(lobbyPlayers.lastChild);
-        }
-        const lobbyPlayerList = createDiv(LOBBY_PLAYER_LIST_ID);
-        
-        for (let i = 0; i < players.length; i++) {
-            const player = players[i];
-            const playerListElement = document.createElement('div');
-            const playerNameElement = document.createElement('span');
-
-            playerNameElement.classList.add(player.active ? 'player-active' : 'player-inactive');
-            playerNameElement.innerHTML = player.name;
-            playerListElement.appendChild(playerNameElement);
-
-            if (startGameButton && !player.active) {
-                const playerKickElement = document.createElement('span');
-                playerKickElement.innerHTML = "&times;";
-                playerKickElement.classList.add('remove-player-button');
-                playerKickElement.onclick = function() {
-                    socket.emit('kick-player', i);
-                }
-                playerListElement.appendChild(playerKickElement);
-            }
-
-            lobbyPlayerList.appendChild(playerListElement);
-        }
-
-        if (startGameButton) {
-            new Sortable(lobbyPlayerList, {
-                animation: 350,
-                onEnd: function (event) {
-                    /*
-                    var itemEl = event.item;  // dragged HTMLElement
-                    event.to;    // target list
-                    event.from;  // previous list
-                    event.oldIndex;  // element's old index within old parent
-                    event.newIndex;  // element's new index within new parent
-                    event.oldDraggableIndex; // element's old index within old parent, only counting draggable elements
-                    event.newDraggableIndex; // element's new index within new parent, only counting draggable elements
-                    event.clone // the clone element
-                    event.pullMode;  // when item is in another sortable: `"clone"` if cloning, `true` if moving
-                    */
-                   socket.emit('update-player-index', {oldIndex: event.oldIndex, newIndex: event.newIndex});
-                }
-            });
-
-            setButtonDisabled(startGameButton, activePlayerCount < 5, false);
-        }
-
-        lobbyPlayers.appendChild(lobbyPlayerList);
-    }
-
-    function handleSetupGame() {
-        const setupDiv = createDiv(SETUP_GAME_ID, ["center-flex-column"]);
-        const waitingHeader = createHeaderTwo("Waiting for role information...", ["future-header"]);
-        setupDiv.appendChild(waitingHeader);
-        handleSetupGameDiv(setupDiv);
-    }
-
-    function handlePickIdentity(possibleResistanceRoles, possibleSpyRoles) {
-        const setupDiv = createDiv(SETUP_GAME_ID, ["center-flex-column"]);
-
-        const identityHeader = createHeaderTwo("Congratulations, you may select your role/team for this game!", ["future-header"]);
-
-        const identitySelect = createSelect(null, false);
-        identitySelect.appendChild(createOption("Resistance", "Resistance"));
-        for (let possibleResistanceRole of possibleResistanceRoles) {
-            identitySelect.appendChild(createOption(possibleResistanceRole, `(Resistance) ${possibleResistanceRole}`));
-        }
-        identitySelect.appendChild(createOption("Spy", "Spy"));
-        for (let possibleSpyRole of possibleSpyRoles) {
-            identitySelect.appendChild(createOption(possibleSpyRole, `(Spy) ${possibleSpyRole}`));
-        }
-
-        const submitIdentitySelectionButton = createButton("Submit", ["future-button"]);
-        setButtonDisabled(submitIdentitySelectionButton, true);
-
-        identitySelect.onchange = function () {
-            if (identitySelect.selectedIndex !== 0) {
-                setButtonDisabled(submitIdentitySelectionButton, false);
-                submitIdentitySelectionButton.onclick = function () {
-                    handleSubmitIdentitySelection(identitySelect.value);
-                };
+        } else if (player.affect.name === "Protect") {
+            if (player.affect.type === "Resistance") {
+                playerListGroupItemAffectIconSrc = "/images/spy-protect.png";
+            } else if (player.affect.type === "Spy") {
+                playerListGroupItemAffectIconSrc = "/images/resistance-protect.png";
             } else {
-                setButtonDisabled(submitIdentitySelectionButton, true);
+                playerListGroupItemAffectIconSrc = "/images/unknown-protect.png";
             }
+        }
+
+        if (playerListGroupItemAffectIconSrc) {
+            const playerListGroupItemAffectIcon = createImage(null, playerListGroupItemAffectIconSrc, "Affect Slot", ["affect-icon"]);
+            playerAffectSlotWrapper.appendChild(playerListGroupItemAffectIcon);
+        }
+    }    
+
+    const playerNameWrapper = createDiv(null, ["name-wrapper"]);
+    const playerNameParagraph = createParagraph(player.name);
+    playerNameWrapper.appendChild(playerNameParagraph);
+
+    const playerGunSlotWrapper = createDiv(null, ["icon-wrapper"]);
+    const playerListGroupItemGunIcon = createImage(null, "/images/gun-blank.png", "Gun Slot", ["gun-icon"]);
+    playerListGroupItemGunIcon.style.visibility = player.isOnTeam ? "visible" : "hidden";
+    playerGunSlotWrapper.appendChild(playerListGroupItemGunIcon);
+
+    const playerVoteSlotWrapper = createDiv(null, ["icon-wrapper"]);
+    if (player.vote !== undefined) {
+        if (player.vote) {
+            playerVoteSlotWrapper.appendChild(createImage(null, APPROVE_VOTE_ICON_SRC, "Vote Slot", ["vote-icon"]))
+        } else {
+            playerVoteSlotWrapper.appendChild(createImage(null, REJECT_VOTE_ICON_SRC, "Vote Slot", ["vote-icon"]))
+        }
+    }
+
+    playerListGroupItem.appendChild(playerLeaderSlotWrapper);
+    playerListGroupItem.appendChild(playerAffectSlotWrapper);
+    playerListGroupItem.appendChild(playerNameWrapper);
+    playerListGroupItem.appendChild(playerGunSlotWrapper);
+    playerListGroupItem.appendChild(playerVoteSlotWrapper);
+
+    return playerListGroupItem;
+}
+
+// Socket Handlers
+socket.on('lobby:update-players', (currentPlayers) => {
+    const activePlayerCount = currentPlayers.filter(p => p.active).length;
+    document.getElementById(LOBBY_PLAYER_COUNT_ID).innerHTML = `Players [${activePlayerCount}]`;
+
+    const lobbyPlayerList = createLobbyPlayerList(currentPlayers);
+
+    if (amHost) {
+        new Sortable(lobbyPlayerList, {
+            animation: 350,
+            onEnd: function (event) {
+                /*
+                var itemEl = event.item;  // dragged HTMLElement
+                event.to;    // target list
+                event.from;  // previous list
+                event.oldIndex;  // element's old index within old parent
+                event.newIndex;  // element's new index within new parent
+                event.oldDraggableIndex; // element's old index within old parent, only counting draggable elements
+                event.newDraggableIndex; // element's new index within new parent, only counting draggable elements
+                event.clone // the clone element
+                event.pullMode;  // when item is in another sortable: `"clone"` if cloning, `true` if moving
+                */
+               socket.emit('lobby:update-player-index', {oldIndex: event.oldIndex, newIndex: event.newIndex});
+            }
+        });
+
+        setButtonDisabled(startGameButton, activePlayerCount < 5, false);
+    }
+
+    lobbyPlayers.appendChild(lobbyPlayerList);
+});
+
+socket.on('role:assign', (roleHTML) => {
+    startGame(roleHTML);
+});
+
+socket.on('proposal:setup', (setupProposalInformation) => {
+    setupProposal(setupProposalInformation);
+});
+
+socket.on('proposal:view', (currentProposedTeamInformation) => {
+    updateProposedTeam(currentProposedTeamInformation);
+});
+
+socket.on('proposal:vote', (setupVoteInformation) => {
+    setupVote(setupVoteInformation);
+});
+
+socket.on('proposal:result', (proposalResultInformation) => {
+    showVoteResult(proposalResultInformation);
+});
+
+socket.on('react', () => {
+    showAdvance();
+});
+
+socket.on('mission:conduct', (conductMissionInformation) => {
+    setupMission(conductMissionInformation);
+});
+
+socket.on('mission:result', ({result, showActions}) => {
+    showMissionResult(result);
+});
+
+socket.on('game:update-mission-results', (missionResultsInformation) => {
+    updateMissionResults(missionResultsInformation);
+});
+
+socket.on('redemption:conduct', (conductRedemptionInformation) => {
+    handleConductRedemption(conductRedemptionInformation);
+});
+
+socket.on('assassination:conduct', (conductAssassinationInformation) => {
+    handleConductAssassination(conductAssassinationInformation);
+});
+
+socket.on('game:result', (gameResultInformation) => {
+    showGameResult(gameResultInformation, false);
+});
+
+// Socket Functions
+
+function startGame(roleHTML) {
+    hideElement(menuModal);
+    hideElement(lobbyContent);
+    hideElement(helpContent);
+    hideElement(gameContent);
+    clearGameContent();
+    roleContent.innerHTML = roleHTML;
+    roleContent.style.display = "flex";
+    backButton.title = "Return To Game";
+    backButton.style.display = "flex";
+    viewRoleButton.style.display = "block";
+    viewGameButton.style.display = "block";
+    viewLobbyButton.innerText = "View Lobby";
+
+    if (amHost) {
+        startGameButton.innerHTML = 'New Game';
+    }
+}
+
+function setupProposal(setupProposalInformation) {
+    clearGameContent(false);
+
+    const players = setupProposalInformation.players;
+    const requiredTeamSize = setupProposalInformation.requiredTeamSize;
+
+    gameContent.appendChild(createHeaderTwo(null, `Select ${requiredTeamSize} players for the mission:`));
+
+    const proposeTeamContainer = createDiv("propose-team-container");
+    const proposedTeamListGroup = createDiv("proposed-team-list-group", ["list-group"]);
+    const playerSelections = [];
+
+    const proposeTeamSubmitButton = createButton("Submit");
+    proposeTeamSubmitButton.onclick = function() {
+        setButtonDisabled(proposeTeamSubmitButton, true, false);
+        socket.emit('proposal:submit', playerSelections);
+        const otherPlayers = [];
+        for (let i = 0; i < proposedTeamListGroup.children.length; i++) {
+            const playerListGroupItem = proposedTeamListGroup.children[i];
+            const playerId = Number(playerListGroupItem.getAttribute('data-value'));
+            if (!playerSelections.includes(playerId)) {
+                otherPlayers.push(playerListGroupItem);
+            }
+        }
+        for (let playerListGroupItem of otherPlayers) {
+            proposedTeamListGroup.removeChild(playerListGroupItem);
+        }
+        proposeTeamContainer.removeChild(proposeTeamSubmitButton);
+    };
+
+    for (let player of players) {
+        const playerListGroupItem = createDiv(null, ["list-group-item", "clickable"]);
+        playerListGroupItem.setAttribute('data-value', player.id);
+
+        const playerLeaderSlotWrapper = createDiv(null, ["icon-wrapper"]);
+        const playerListGroupItemLeaderIcon = createImage(null, "/images/leader.png", "Leader Slot", ["leader-icon"]);
+        playerListGroupItemLeaderIcon.style.visibility = player.isLeader ? "visible" : "hidden";
+        playerLeaderSlotWrapper.appendChild(playerListGroupItemLeaderIcon);
+
+        const playerNameWrapper = createDiv(null, ["name-wrapper"]);
+        const playerNameParagraph = createParagraph(player.name);
+        playerNameWrapper.appendChild(playerNameParagraph);
+
+        const playerGunSlotWrapper = createDiv(null, ["icon-wrapper"]);
+        const playerListGroupItemGunIcon = createImage(null, "/images/gun-blank.png", "Gun Slot", ["gun-icon"]);
+        if (player.isOnTeam) {
+            playerListGroupItemGunIcon.style.visibility = "visible";
+            playerSelections.push(player.id);
+        }
+        else {
+            playerListGroupItemGunIcon.style.visibility = "hidden";
+        }
+        playerGunSlotWrapper.appendChild(playerListGroupItemGunIcon);
+
+        playerListGroupItem.appendChild(playerLeaderSlotWrapper);
+        playerListGroupItem.appendChild(createDiv(null, ["icon-wrapper"]));
+        playerListGroupItem.appendChild(playerNameWrapper);
+        playerListGroupItem.appendChild(playerGunSlotWrapper);
+        playerListGroupItem.appendChild(createDiv(null, ["icon-wrapper"]));
+
+        playerListGroupItem.onclick = function() {
+            const selected = playerSelections.includes(player.id);
+            if (selected) {
+                playerSelections.splice(playerSelections.indexOf(player.id), 1);
+                playerListGroupItemGunIcon.style.visibility = "hidden";
+                socket.emit('proposal:update', playerSelections);
+            } else if (playerSelections.length !== requiredTeamSize) {
+                playerSelections.push(player.id);
+                playerListGroupItemGunIcon.style.visibility = "visible";
+                socket.emit('proposal:update', playerSelections);
+            }
+
+            setButtonDisabled(proposeTeamSubmitButton, playerSelections.length !== requiredTeamSize, false);
         };
+        proposedTeamListGroup.appendChild(playerListGroupItem);
+    }
+    setButtonDisabled(proposeTeamSubmitButton, playerSelections.length !== requiredTeamSize, false);
 
-        setupDiv.appendChild(identityHeader);
-        setupDiv.appendChild(identitySelect);
-        setupDiv.appendChild(submitIdentitySelectionButton);
-        handleSetupGameDiv(setupDiv);
+    proposeTeamContainer.appendChild(proposedTeamListGroup);
+    proposeTeamContainer.appendChild(proposeTeamSubmitButton);
+    gameContent.appendChild(proposeTeamContainer);
+}
+
+function updateProposedTeam(currentProposedTeamInformation) {
+    clearGameContent(false);
+
+    const leaderName = currentProposedTeamInformation.leaderName;
+    const team = currentProposedTeamInformation.team;
+
+    gameContent.appendChild(createHeaderTwo(null, `${leaderName} is proposing the mission team...`));
+
+    const proposedTeamListGroup = createDiv("proposed-team-list-group", ["list-group"]);
+
+    for (let i = 0; i < team.length; i++) {
+        const player = team[i];
+        const playerListGroupItem = createDiv(null, ["list-group-item"]);
+
+        const playerLeaderSlotWrapper = createDiv(null, ["icon-wrapper"]);
+        const playerListGroupItemLeaderIcon = createImage(null, "/images/leader.png", "Leader Slot", ["leader-icon"]);
+        playerListGroupItemLeaderIcon.style.visibility = player.isLeader ? "visible" : "hidden";
+        playerLeaderSlotWrapper.appendChild(playerListGroupItemLeaderIcon);
+
+        const playerNameWrapper = createDiv(null, ["name-wrapper"]);
+        const playerNameParagraph = createParagraph(player.name);
+        playerNameWrapper.appendChild(playerNameParagraph);
+
+        const playerGunSlotWrapper = createDiv(null, ["icon-wrapper"]);
+        const playerListGroupItemGunIcon = createImage(null, "/images/gun-blank.png", "Gun Slot", ["gun-icon"]);
+        playerGunSlotWrapper.appendChild(playerListGroupItemGunIcon);
+
+        playerListGroupItem.appendChild(playerLeaderSlotWrapper);
+        playerListGroupItem.appendChild(createDiv(null, ["icon-wrapper"]));
+        playerListGroupItem.appendChild(playerNameWrapper);
+        playerListGroupItem.appendChild(playerGunSlotWrapper);
+        playerListGroupItem.appendChild(createDiv(null, ["icon-wrapper"]));
+
+        proposedTeamListGroup.appendChild(playerListGroupItem);
+    }
+    
+    gameContent.appendChild(proposedTeamListGroup);
+}
+
+function setupVote(setupVoteInformation) {
+    clearGameContent(false);
+
+    const selectedVote = setupVoteInformation.selectedVote;
+    const team = setupVoteInformation.team;
+    const applyAffect = setupVoteInformation.applyAffect;
+
+    switch (applyAffect) {
+        case "ResistanceProtect":
+            gameContent.appendChild(createHeaderTwo(null, `
+                You may select one player below to protect from a <span class="resistance">Resistance</span> bind. Refer to your role information for more details.
+            `));
+            break;
+        case "ResistanceBind":
+            gameContent.appendChild(createHeaderTwo(null, `
+                You may select one player below to bind to the <span class="resistance">Resistance</span>. Refer to your role information for more details.
+            `));
+            break;
+        case "SpyProtect":
+            gameContent.appendChild(createHeaderTwo(null, `
+                You may select one player below to protect from a <span class="spy">Spy</span> bind. Refer to your role information for more details.
+            `));
+            break;
+        case "SpyBind":
+            gameContent.appendChild(createHeaderTwo(null, `
+                You may select one player below to bind to the <span class="spy">Spies</span>. Refer to your role information for more details.
+            `));
+            break;
     }
 
-    function handleSetupGameDiv(setupDiv) {
-        root.appendChild(setupDiv);
+    const proposedTeamListGroup = createDiv("proposed-team-list-group", ["list-group"]);
 
-        game.style.display = "none";
-        lobbyInformation.style.display = "none";
-        if (toggleLobbyInformationButton) {
-            toggleLobbyInformationButton.style.display = "none";
-        }
-        if (startGameButton) {
-            startGameButton.style.display = "none";
-            closeGameButton.style.display = "none";
-        }
-        openIntelModalButton.style.display = "none";
-        intelModal.style.display = "none";
-        resultsModal.style.display = "none";
-    }
+    for (let i = 0; i < team.length; i++) {
+        const player = team[i];
+        const playerListGroupItem = createFullPlayerListGroupItem(player, ["list-group-item"]);
 
-    function handleSubmitIdentitySelection(identitySelection) {
-        const identityPickInformation = {
-            value: identitySelection
-        }
-        if (identitySelection === "Resistance" || identitySelection === "Spy") {
-            identityPickInformation.type = "Team";
-        } else {
-            identityPickInformation.type = "Role";
-        }
-        socket.emit('pick-identity', identityPickInformation);
-    }
-
-    function handleStartGame(gameHTML, players) {
-        gamePlayers = [];
-        gunSelected = null;
-        playersSelected = null;
-
-        const setupGameDiv = document.getElementById(SETUP_GAME_ID);
-        if (setupGameDiv) {
-            root.removeChild(setupGameDiv);
-        }
-
-        clearChildrenFromElement(leftPlayerArea);
-        clearChildrenFromElement(topPlayerArea);
-        clearChildrenFromElement(rightPlayerArea);
-        lobbyInformation.style.display = "none";
-        if (startGameButton) {
-            startGameButton.style.display = "none";
-            closeGameButton.style.display = "none";
-        }
-        resultsModal.style.display = "none";
-        if (toggleLobbyInformationButton) {
-            toggleLobbyInformationButton.style.display = "block";
-        }
-        openIntelModalButton.style.display = "block";
-        game.style.display = "flex";
-        intelModalArea.innerHTML = gameHTML;
-
-        while (boardArea.children.length > 1) {
-            boardArea.removeChild(boardArea.lastChild);
-        }
-
-        switch (players.length) {
-            case 5:
-                gameBoard.src = FIVE_PLAYER_BOARD_IMG_SRC;
-                createPlayer(players[0], "Left");
-                createPlayer(players[1], "Top");
-                createPlayer(players[2], "Top");
-                createPlayer(players[3], "Top");
-                createPlayer(players[4], "Right");
-                break;
-            case 6:
-                gameBoard.src = SIX_PLAYER_BOARD_IMG_SRC;
-                createPlayer(players[1], "Left");
-                createPlayer(players[0], "Left", true);
-                createPlayer(players[2], "Top");
-                createPlayer(players[3], "Top");
-                createPlayer(players[4], "Right");
-                createPlayer(players[5], "Right");
-                break;
-            case 7:
-                gameBoard.src = SEVEN_PLAYER_BOARD_IMG_SRC;
-                createPlayer(players[1], "Left");
-                createPlayer(players[0], "Left", true);
-                createPlayer(players[2], "Top");
-                createPlayer(players[3], "Top");
-                createPlayer(players[4], "Top");
-                createPlayer(players[5], "Right");
-                createPlayer(players[6], "Right");
-                break;
-            case 8:
-                gameBoard.src = EIGHT_PLAYER_BOARD_IMG_SRC;
-                createPlayer(players[1], "Left");
-                createPlayer(players[0], "Left", true);
-                createPlayer(players[2], "Top");
-                createPlayer(players[3], "Top");
-                createPlayer(players[4], "Top");
-                createPlayer(players[5], "Top");
-                createPlayer(players[6], "Right");
-                createPlayer(players[7], "Right");
-                break;
-            case 9:
-                gameBoard.src = NINE_PLAYER_BOARD_IMG_SRC;
-                createPlayer(players[2], "Left");
-                createPlayer(players[1], "Left", true);
-                createPlayer(players[0], "Left", true);
-                createPlayer(players[3], "Top");
-                createPlayer(players[4], "Top");
-                createPlayer(players[5], "Top");
-                createPlayer(players[6], "Right");
-                createPlayer(players[7], "Right");
-                createPlayer(players[8], "Right");
-                break;
-            case 10:
-                gameBoard.src = TEN_PLAYER_BOARD_IMG_SRC;
-                createPlayer(players[2], "Left");
-                createPlayer(players[1], "Left", true);
-                createPlayer(players[0], "Left", true);
-                createPlayer(players[3], "Top");
-                createPlayer(players[4], "Top");
-                createPlayer(players[5], "Top");
-                createPlayer(players[6], "Top");
-                createPlayer(players[7], "Right");
-                createPlayer(players[8], "Right");
-                createPlayer(players[9], "Right");
-                break;
-        }
-
-        if (startGameButton) {
-            startGameButton.innerHTML = 'Play Again';
-            hideElement(startGameButton);
-            hideElement(closeGameButton);
-        }
-
-        intelModal.style.display = "flex";
-    }
-
-    function createPlayer(player, section, unshift) {
-        const name = player.name;
-        const id = player.id;
-        const status = player.status;
-        const elementPrefix = `player-${id}`;
-        switch (section) {
-            case "Left":
-                leftPlayerArea.innerHTML += `
-                    <div class="horizontal-player">
-                        <img class="gun-image" id="${elementPrefix}-gun-slot" src="${DEFAULT_GUN_SLOT_IMG_SRC}" alt="${DEFAULT_GUN_SLOT_IMG_ALT}" style="visibility:hidden"></img>
-                        <h2 class="future-header ${status}" id="${elementPrefix}-name">${name}</h2>
-                        <img class="vote-image" id="${elementPrefix}-vote-slot" alt="${DEFAULT_VOTE_SLOT_IMG_ALT}" style="visibility:hidden"></img>
-                    </div>
-                `; 
-                break;
-            case "Top":
-                topPlayerArea.innerHTML += `
-                    <div class="vertical-player">
-                        <img class="gun-image" id="${elementPrefix}-gun-slot" src="${DEFAULT_GUN_SLOT_IMG_SRC}" alt="${DEFAULT_GUN_SLOT_IMG_ALT}" style="visibility:hidden"></img>
-                        <h2 class="future-header ${status}" id="${elementPrefix}-name">${name}</h2>
-                        <img class="vote-image" id="${elementPrefix}-vote-slot" alt="${DEFAULT_VOTE_SLOT_IMG_ALT}" style="visibility:hidden"></img>
-                    </div>
-                `; 
-                break;
-            case "Right":
-                rightPlayerArea.innerHTML += `
-                    <div class="horizontal-player">
-                        <img class="vote-image" id="${elementPrefix}-vote-slot" alt="${DEFAULT_VOTE_SLOT_IMG_ALT}" style="visibility:hidden"></img>
-                        <h2 class="future-header ${status}" id="${elementPrefix}-name">${name}</h2>
-                        <img class="gun-image" id="${elementPrefix}-gun-slot" src="${DEFAULT_GUN_SLOT_IMG_SRC}" alt="${DEFAULT_GUN_SLOT_IMG_ALT}" style="visibility:hidden"></img>
-                    </div>
-                `; 
-                break;
-        }
-
-        const newPlayer = {
-            id: id,
-            nameId: `${elementPrefix}-name`,
-            gunSlotId: `${elementPrefix}-gun-slot`,
-            voteSlotId: `${elementPrefix}-vote-slot`
-        };
-        if (unshift) {
-            gamePlayers.unshift(newPlayer);
-        } else {
-            gamePlayers.push(newPlayer);
-        }
-    }
-
-    function updateLeader(previousLeaderId, leaderId) {
-        for (let id = 0; id < gamePlayers.length; id++) {
-            const player = gamePlayers[id];
-            const playerVoteSlot = document.getElementById(player.voteSlotId);
-            playerVoteSlot.src = "";
-            playerVoteSlot.style.visibility = "hidden";
-            playerVoteSlot.alt = DEFAULT_VOTE_SLOT_IMG_ALT;
-            const playerGunSlot = document.getElementById(player.gunSlotId);
-            playerGunSlot.src = DEFAULT_GUN_SLOT_IMG_SRC;
-            playerGunSlot.style.visibility = "hidden";
-            playerGunSlot.alt = DEFAULT_GUN_SLOT_IMG_ALT;
-
-            if (id === previousLeaderId) {
-                removeClassFromElement(document.getElementById(player.nameId), "current-leader");
-            } else if (id === leaderId) {
-                addClassToElement(document.getElementById(player.nameId), "current-leader");
-            }
-        }
-
-        clearChildrenFromElement(actionArea);
-        gunSelected = null;
-    }
-
-    function showButton(text, handleClick) {
-        const button = createButton(text, ["future-button"]);
-        button.onclick = handleClick;
-        actionArea.appendChild(button);
-    }
-
-    function showConfirmProposal() {
-        if (actionArea.getElementsByTagName("button").length === 0) {
-            showButton("Confirm", function () {
-                clearChildrenFromElement(actionArea);
-                submitProposal();
-            });
-        }
-    }
-
-    function showAdvance() {
-        if (actionArea.getElementsByTagName("button").length === 0) {
-            showButton("Advance", function () {
-                clearChildrenFromElement(actionArea);
-                socket.emit('advance-mission');
-            });
-        }
-    }
-
-    function setupProposal(gunSlots) {
-        clearChildrenFromElement(actionArea);
-
-        // Set click events for guns already attached to players
-        for (let i = 0; i < gamePlayers.length; i++) {
-            const gunSlot = document.getElementById(gamePlayers[i].gunSlotId);
-            if (gunSlot.style.visibility === "visible") {
-                gunSlot.classList.add("clickable");
-                gunSlot.onclick = function () {
-                    updateGunSelected(gunSlot);
-                    attachNameClicks();
-                };
-            }
-        }
-
-        if (gunSlots.length) {
-            const gunArea = createDiv(SELECT_GUN_AREA_ID);
-            actionArea.appendChild(gunArea);
-            for (let i = 0; i < gunSlots.length; i++) {
-                const gunSlot = gunSlots[i];
-                const gunImage = createImage(null, `/images/${gunSlot}.png`, gunSlot, ["gun-image", "clickable"]);
-                gunImage.onclick = function () {
-                    updateGunSelected(gunImage);
-                    attachNameClicks();
-                };
-                gunArea.appendChild(gunImage);
-            }
-        } else {
-            showConfirmProposal();
-        }
-    }
-
-    function updateGunSelected(gunClicked) {
-        if (gunSelected) {
-            removeClassFromElement(gunSelected, "selected-image");
-        }
-        gunSelected = gunClicked;
-        if (gunSelected) {
-            addClassToElement(gunSelected, "selected-image");
-        }
-    }
-
-    function attachNameClicks() {
-        for (let i = 0; i < gamePlayers.length; i++) {
-            const playerName = document.getElementById(gamePlayers[i].nameId);
-            playerName.classList.add("clickable");
-            playerName.onclick = function () {
-                handleNameClick(i);
-                updateGunSelected(null);
-                removeNameClicks();
-
-                socket.emit('update-gun-slots', getGunSlots());
-                const selectGunArea = document.getElementById(SELECT_GUN_AREA_ID);
-                if (selectGunArea && selectGunArea.childElementCount === 0) {
-                    showConfirmProposal();
-                }
+        if (applyAffect) {
+            playerListGroupItem.onclick = function() {
+                socket.emit('affect:toggle', {playerId: player.id});
             };
         }
-    }
 
-    function handleNameClick(i) {
-        const gunSlot = document.getElementById(gamePlayers[i].gunSlotId);
-        if (gunSlot.alt !== gunSelected.alt) {
-            if (gunSlot.alt === DEFAULT_GUN_SLOT_IMG_ALT) {
-                gunSlot.style.visibility = "visible";
-                gunSlot.src = `/images/${gunSelected.alt}.png`;
-                gunSlot.alt = gunSelected.alt;
-                gunSlot.classList.add("clickable");
-                gunSlot.onclick = function () {
-                    updateGunSelected(gunSlot);
-                    attachNameClicks();
-                };
+        proposedTeamListGroup.appendChild(playerListGroupItem);
+    }
     
-                if (gunSelected.parentNode.id === SELECT_GUN_AREA_ID) {
-                    gunSelected.remove();
-                } else {
-                    gunSelected.src = DEFAULT_GUN_SLOT_IMG_SRC;
-                    gunSelected.alt = DEFAULT_GUN_SLOT_IMG_ALT;
-                    gunSelected.classList.remove("selected-image");
-                    removeClickable(gunSelected);
-                    gunSelected.style.visibility = "hidden";
-                }
-            } else {
-                const tempSrc = gunSlot.src;
-                const tempAlt = gunSlot.alt;
-                gunSlot.src = gunSelected.src;
-                gunSlot.alt = gunSelected.alt;
-                gunSelected.src = tempSrc;
-                gunSelected.alt = tempAlt;
-            }
-        }
+    gameContent.appendChild(proposedTeamListGroup);
+
+    const selectVoteContainer = createDiv(SELECT_VOTE_CONTAINER_ID);
+    const approveTeamImage = createImage(null, APPROVE_VOTE_TOKEN_SRC, APPROVE_VOTE_ALT, ['vote-image', 'clickable']);
+    approveTeamImage.onclick = function() {
+        handleProposalVoteSelection(selectVoteContainer.children, approveTeamImage, true);
     }
+    selectVoteContainer.appendChild(approveTeamImage);
 
-    function removeNameClicks() {
-        for (let i = 0; i < gamePlayers.length; i++) {
-            const playerName = document.getElementById(gamePlayers[i].nameId);
-            removeClickable(playerName);
-        }
+    const rejectTeamImage = createImage(null, REJECT_VOTE_TOKEN_SRC, REJECT_VOTE_ALT, ['vote-image', 'clickable']);
+    rejectTeamImage.onclick = function() {
+        handleProposalVoteSelection(selectVoteContainer.children, rejectTeamImage, false);
     }
+    selectVoteContainer.appendChild(rejectTeamImage);
 
-    function getGunSlots() {
-        const gunSlots = [];
-        for (let i = 0; i < gamePlayers.length; i++) {
-            const gunSlot = document.getElementById(gamePlayers[i].gunSlotId);
-            if (gunSlot.style.visibility === "visible") {
-                gunSlots.push(gunSlot.alt);
-            } else {
-                gunSlots.push("");
-            }
-        }
-        return gunSlots;
+    if (selectedVote === true) {
+        approveTeamImage.classList.add("selected-image");
+    } else if (selectedVote == false) {
+        rejectTeamImage.classList.add("selected-image");
     }
+    gameContent.appendChild(selectVoteContainer);
+}
 
-    function updateGunSlots(gunSlots) {
-        if (gunSlots) {
-            for (let i = 0; i < gamePlayers.length; i++) {
-                const gunSlot = document.getElementById(gamePlayers[i].gunSlotId);
-                gunSlot.style.visibility = "visible";
-                if (gunSlots[i]) {
-                    gunSlot.src = `/images/${gunSlots[i]}.png`;
-                    gunSlot.alt = gunSlots[i];
-                } else {
-                    gunSlot.src = DEFAULT_GUN_SLOT_IMG_SRC;
-                    gunSlot.alt = DEFAULT_GUN_SLOT_IMG_ALT;
-                    gunSlot.style.visibility = "hidden";
-                }
-            }
-        }
-    }
-
-    function submitProposal() {
-        const selectedIds = [];
-        for (let i = 0; i < gamePlayers.length; i++) {
-            const gunSlot = document.getElementById(gamePlayers[i].gunSlotId);
-            if (gunSlot.style.visibility === "visible") {
-                selectedIds.push(i);
-                removeClickable(gunSlot);
-            }
-
-            const playerName = document.getElementById(gamePlayers[i].nameId);
-            removeClickable(playerName);
-        }
-
-        updateGunSelected(null);
-
-        socket.emit('propose-team', selectedIds);
-    }
-
-    function setupVote(setupVoteInformation) {
-        statusMessage.innerHTML = "Voting on team...";
-
-        const selectedVote = setupVoteInformation.selectedVote;
-
-        const selectVoteArea = createDiv(SELECT_VOTE_AREA_ID);
-        actionArea.appendChild(selectVoteArea);
-
-        const approveTeamImage = createImage(null, APPROVE_VOTE_IMG_SRC, APPROVE_VOTE_IMG_ALT, ['vote-image', 'clickable']);
-        approveTeamImage.onclick = function() {
-            handleProposalVoteSelection(selectVoteArea.children, approveTeamImage, true);
-        }
-        selectVoteArea.appendChild(approveTeamImage);
-
-        const rejectTeamImage = createImage(null, REJECT_VOTE_IMG_SRC, REJECT_VOTE_IMG_ALT, ['vote-image', 'clickable']);
-        rejectTeamImage.onclick = function() {
-            handleProposalVoteSelection(selectVoteArea.children, rejectTeamImage, false);
-        }
-        selectVoteArea.appendChild(rejectTeamImage);
-
-        if (selectedVote === true) {
-            approveTeamImage.classList.add("selected-image");
-        } else if (selectedVote == false) {
-            rejectTeamImage.classList.add("selected-image");
-        }
-    }
-
-    function handleProposalVoteSelection(voteOptions, selectedOption, selectedVote) {
-        for (let option of voteOptions) {
-            if (option.alt === selectedOption.alt) {
-                addClassToElement(option, "selected-image");
-            } else {
-                removeClassFromElement(option, "selected-image");
-            }
-        }
-        socket.emit('vote-team', selectedVote);
-    }
-
-    function showPlayerVoted(id) {
-        const voteSlot = document.getElementById(gamePlayers[id].voteSlotId);
-        voteSlot.style.visibility = "visible";
-        voteSlot.src = BLANK_VOTE_IMG_SRC;
-    }
-
-    function showVoteResult(votes, approved) {
-        actionArea.innerHTML= "";
-
-        if (approved) {
-            statusMessage.innerHTML = "Proposal Approved!";
+function handleProposalVoteSelection(voteOptions, selectedOption, selectedVote) {
+    for (let option of voteOptions) {
+        if (option.alt === selectedOption.alt) {
+            addClassToElement(option, "selected-image");
         } else {
-            statusMessage.innerHTML = "Proposal Rejected!";
-        }
-
-        for (let i = 0; i < gamePlayers.length; i++) {
-            const voteSlot = document.getElementById(gamePlayers[i].voteSlotId);
-            voteSlot.style.visibility = "visible";
-            if (votes[i]) {
-                voteSlot.src = APPROVE_VOTE_IMG_SRC;
-            } else {
-                voteSlot.src = REJECT_VOTE_IMG_SRC;
-            }
+            removeClassFromElement(option, "selected-image");
         }
     }
+    socket.emit('proposal:vote', selectedVote);
+}
 
-    function setupMission(conductMissionInformation) {
-        clearChildrenFromElement(actionArea);
+function showAdvance() {
+    let advanceButton = document.getElementById("advance-button");
+    if (!advanceButton) {
+        showButton("Advance", function () {
+            socket.emit('mission:advance');
+        });
+    }
+}
 
-        if (conductMissionInformation) {
-            statusMessage.innerHTML = "Conducting mission...";
+function showButton(text, handleClick) {
+    const button = createButton(text);
+    button.onclick = handleClick;
+    gameContent.appendChild(button);
+}
 
-            const failAllowed = conductMissionInformation.failAllowed;
-            const reverseAllowed = conductMissionInformation.reverseAllowed;
+function showVoteResult(proposalResultInformation) {
+    clearGameContent(false);
 
-            const selectMissionActionContainer = createDiv(SELECT_MISSION_ACTION_CONTAINER_ID);
-            actionArea.appendChild(selectMissionActionContainer);
+    if (proposalResultInformation.result) {
+        gameContent.appendChild(createHeaderTwo(null, "Proposal Approved!"));
+    } else {
+        gameContent.appendChild(createHeaderTwo(null, "Proposal Rejected!"));
+    }
+
+    const proposalVotesContainer = createDiv("proposal-votes-container");
+    const proposalVotesListGroup = createDiv("proposal-votes-list-group", ["list-group"]);
+
+    for (let playerVoteInformation of proposalResultInformation.voteInformation) {
+        proposalVotesListGroup.appendChild(createFullPlayerListGroupItem(playerVoteInformation, ["list-group-item"]));
+    }
+
+    proposalVotesContainer.appendChild(proposalVotesListGroup);
+    gameContent.appendChild(proposalVotesContainer);
+
+    if (proposalResultInformation.bindInformation && proposalResultInformation.bindInformation.length > 0) {
+        const bindSection = createSection();
+        for (let bindInformation of proposalResultInformation.bindInformation) {
+            bindSection.appendChild(createParagraph("*" + bindInformation));
+        }
+        bindSection.appendChild(createParagraph("*Not public information! Use caution if revealing!"));
+        gameContent.appendChild(bindSection);
+    }
     
+}
+
+function setupMission(conductMissionInformation) {
+    clearGameContent(false);
+
+    if (conductMissionInformation) {
+        if (conductMissionInformation.sirRobinIntel !== undefined) {
+            if (conductMissionInformation.sirRobinIntel) {
+                gameContent.appendChild(createHeaderTwo(null, `
+                    <span class="resistance">${conductMissionInformation.sirRobinIntel}</span> from the mission team is <span class="resistance">Resistance</span>.
+                `));
+            } else {
+                gameContent.appendChild(createHeaderTwo(null, `
+                    You either already know all the <span class="resistance">Resistance</span> players on this mission team
+                    OR <span class="spy">Accolon</span> (if present) is on this mission team.
+                `));
+            }
+        }
+
+        if (conductMissionInformation.resistanceBound) {
+            gameContent.appendChild(createHeaderTwo(null, `
+                You have been <span class="resistance">Resistance</span> bounded for this mission! You can only play a success card.
+            `));
+        } else if (conductMissionInformation.spyBound) {
+            gameContent.appendChild(createHeaderTwo(null, `
+                You have been <span class="spy">Spy</span> bounded for this mission! You can only play a fail card.
+            `));
+        } else if (conductMissionInformation.spySuggestion) {
+            gameContent.appendChild(createHeaderTwo(null, `
+                Your <span class="spy">Spy</span> intuition says you should play a ${conductMissionInformation.spySuggestion.join(" or ")} card.
+            `));
+        }
+
+        const successAllowed = conductMissionInformation.successAllowed;
+        const failAllowed = conductMissionInformation.failAllowed;
+        const reverseAllowed = conductMissionInformation.reverseAllowed;
+
+        const selectMissionActionContainer = createDiv(SELECT_MISSION_ACTION_CONTAINER_ID);
+        gameContent.appendChild(selectMissionActionContainer);
+
+        if (successAllowed) {
             const successMissionActionImage = createImage(null, SUCCEED_MISSION_IMG_SRC, SUCCEED_MISSION_IMG_ALT, ['action-image', 'clickable']);
             successMissionActionImage.onclick = function () {
                 handleMissionActionSelection(selectMissionActionContainer.children, successMissionActionImage, 'Succeed');
             };
             selectMissionActionContainer.appendChild(successMissionActionImage);
-    
-            if (failAllowed) {
-                const failMissionActionImage = createImage(null, FAIL_MISSION_IMG_SRC, FAIL_MISSION_IMG_ALT, ['action-image', 'clickable']);
-                failMissionActionImage.onclick = function () {
-                    handleMissionActionSelection(selectMissionActionContainer.children, failMissionActionImage, 'Fail');
-                };
-                selectMissionActionContainer.appendChild(failMissionActionImage);
-            }
-    
-            if (reverseAllowed) {
-                const reverseMissionActionImage = createImage(null, REVERSE_MISSION_IMG_SRC, REVERSE_MISSION_IMG_ALT, ['action-image', 'clickable']);
-                reverseMissionActionImage.onclick = function () {
-                    handleMissionActionSelection(selectMissionActionContainer.children, reverseMissionActionImage, 'Reverse');
-                };
-                selectMissionActionContainer.appendChild(reverseMissionActionImage);
-            }
-        } else {
-            statusMessage.innerHTML = "Waiting for mission to finish...";
         }
-    }
 
-    function handleMissionActionSelection(actionOptions, selectedOption, selectedAction) {
-        for (let option of actionOptions) {
-            if (option.alt === selectedOption.alt) {
-                addClassToElement(option, "selected-image");
-            } else {
-                removeClassFromElement(option, "selected-image");
-            }
-        }
-        showConfirmMissionAction(selectedAction);
-    }
-
-    function showConfirmMissionAction(action) {
-        const actionAreaButtons = actionArea.getElementsByTagName("button");
-        if (actionAreaButtons.length === 0) {
-            showButton("Confirm", function () {
-                handleConfirmMissionActionClick(action);
-            });
-        } else {
-            actionAreaButtons[0].onclick = function () {
-                handleConfirmMissionActionClick(action);
+        if (failAllowed) {
+            const failMissionActionImage = createImage(null, FAIL_MISSION_IMG_SRC, FAIL_MISSION_IMG_ALT, ['action-image', 'clickable']);
+            failMissionActionImage.onclick = function () {
+                handleMissionActionSelection(selectMissionActionContainer.children, failMissionActionImage, 'Fail');
             };
-        }
-    }
-
-    function handleConfirmMissionActionClick(action) {
-        socket.emit('conduct-mission', action);
-        clearChildrenFromElement(actionArea);
-        statusMessage.innerHTML = "Waiting for mission to finish...";
-    }
-
-    function showMissionResult(result, showActions) {
-        if (showActions) {
-            clearChildrenFromElement(actionArea);
-            const actionResultArea = createDiv(ACTION_RESULTS_AREA_ID);
-            actionArea.appendChild(actionResultArea);
-            for (let i = 0; i < result.successCount; i++) {
-                actionResultArea.appendChild(createImage(null, SUCCEED_MISSION_IMG_SRC, SUCCEED_MISSION_IMG_ALT, ["action-image"]));
-            }
-            for (let i = 0; i < result.failCount; i++) {
-                actionResultArea.appendChild(createImage(null, FAIL_MISSION_IMG_SRC, FAIL_MISSION_IMG_ALT, ["action-image"]));
-            }
-            for (let i = 0; i < result.reverseCount; i++) {
-                actionResultArea.appendChild(createImage(null, REVERSE_MISSION_IMG_SRC, REVERSE_MISSION_IMG_ALT, ["action-image"]));
-            }
+            selectMissionActionContainer.appendChild(failMissionActionImage);
         }
 
-        const missionId = boardArea.children.length - 1;
-        const resultImage = document.createElement('img');
-        resultImage.classList.add("result-image");
-        if (result.result === "Success") {
-            statusMessage.innerHTML = "Mission successful!";
-            resultImage.src = SUCCESSFUL_MISSION_IMG_SRC;
-            resultImage.alt = SUCCESSFUL_MISSION_IMG_ALT;
-        } else {
-            statusMessage.innerHTML = "Mission failed!";
-            resultImage.src = FAILED_MISSION_IMG_SRC;
-            resultImage.alt = FAILED_MISSION_IMG_ALT;
-        }
-        switch (missionId) {
-            case 0:
-                switch (gamePlayers.length) {
-                    case 5:
-                        resultImage.style.left = "1.5vw";
-                        resultImage.style.top = "17.5vh";
-                        break;
-                    case 6:
-                        resultImage.style.left = "2.75vw";
-                        resultImage.style.top = "16.5vh";
-                        break;
-                    case 7:
-                        resultImage.style.left = "2vw";
-                        resultImage.style.top = "17.6vh";
-                        break;
-                    case 8:
-                        resultImage.style.left = "1.75vw";
-                        resultImage.style.top = "17.75vh";
-                        break;
-                    case 9:
-                        resultImage.style.left = "1.65vw";
-                        resultImage.style.top = "17.85vh";
-                        break;
-                    case 10:
-                        resultImage.style.left = "1.65vw";
-                        resultImage.style.top = "17vh";
-                        break;
-                }
-                break;
-            case 1:
-                switch (gamePlayers.length) {
-                    case 5:
-                        resultImage.style.left = "9.5vw";
-                        resultImage.style.top = "17.5vh";
-                        break;
-                    case 6:
-                        resultImage.style.left = "9.75vw";
-                        resultImage.style.top = "16.5vh";
-                        break;
-                    case 7:
-                        resultImage.style.left = "9.4vw";
-                        resultImage.style.top = "17.6vh";
-                        break;
-                    case 8:
-                        resultImage.style.left = "9.25vw";
-                        resultImage.style.top = "17.75vh";
-                        break;
-                    case 9:
-                        resultImage.style.left = "9.45vw";
-                        resultImage.style.top = "17.85vh";
-                        break;
-                    case 10:
-                        resultImage.style.left = "9.45vw";
-                        resultImage.style.top = "16.8vh";
-                        break;
-                }
-                break;
-            case 2:
-                switch (gamePlayers.length) {
-                    case 5:
-                        resultImage.style.left = "17.25vw";
-                        resultImage.style.top = "17.25vh";
-                        break;
-                    case 6:
-                        resultImage.style.left = "16.6vw";
-                        resultImage.style.top = "16.5vh";
-                        break;
-                    case 7:
-                        resultImage.style.left = "16.65vw";
-                        resultImage.style.top = "17.6vh";
-                        break;
-                    case 8:
-                        resultImage.style.left = "16.35vw";
-                        resultImage.style.top = "17.25vh";
-                        break;
-                    case 9:
-                        resultImage.style.left = "17vw";
-                        resultImage.style.top = "17.85vh";
-                        break;
-                    case 10:
-                        resultImage.style.left = "17vw";
-                        resultImage.style.top = "16.8vh";
-                        break;
-                }
-                break;
-            case 3:
-                switch (gamePlayers.length) {
-                    case 5:
-                        resultImage.style.left = "24.9vw";
-                        resultImage.style.top = "17.25vh";
-                        break;
-                    case 6:
-                        resultImage.style.left = "23.45vw";
-                        resultImage.style.top = "16.4vh";
-                        break;
-                    case 7:
-                        resultImage.style.left = "23.75vw";
-                        resultImage.style.top = "17.5vh";
-                        break;
-                    case 8:
-                        resultImage.style.left = "23.6vw";
-                        resultImage.style.top = "17.25vh";
-                        break;
-                    case 9:
-                        resultImage.style.left = "24.6vw";
-                        resultImage.style.top = "17.85vh";
-                        break;
-                    case 10:
-                        resultImage.style.left = "24.65vw";
-                        resultImage.style.top = "16.75vh";
-                        break;
-                }
-                break;
-            case 4:
-                switch (gamePlayers.length) {
-                    case 5:
-                        resultImage.style.left = "32.75vw";
-                        resultImage.style.top = "17vh";
-                        break;
-                    case 6:
-                        resultImage.style.left = "30.35vw";
-                        resultImage.style.top = "16.4vh";
-                        break;
-                    case 7:
-                        resultImage.style.left = "31.1vw";
-                        resultImage.style.top = "17.6vh";
-                        break;
-                    case 8:
-                        resultImage.style.left = "30.8vw";
-                        resultImage.style.top = "17.25vh";
-                        break;
-                    case 9:
-                        resultImage.style.left = "32.25vw";
-                        resultImage.style.top = "17.85vh";
-                        break;
-                    case 10:
-                        resultImage.style.left = "32.35vw";
-                        resultImage.style.top = "16.75vh";
-                        break;
-                }
-                break;
-        }
-        boardArea.appendChild(resultImage);
-    }
-
-    function setupAssassination(conductAssassinationInformation) {
-        if (!conductAssassinationInformation.assassin) {
-            playersSelected = [];
-            assassinationModal.style.display = "flex";
-            assassinationArea.innerHTML = `
-                <h3 class="future-header" id="${ASSASSINATION_HEADER_ID}">Select Player(s) To Assassinate</h3>
-                <select id="${ASSASSINATION_ROLES_SELECT_ID}">
-                    <option value=""></option>
-                    <option value="Merlin">Merlin</option>
-                    <option value="Arthur">Arthur</option>
-                    <option value="Lovers">Lovers</option>
-                </select>
-                <button class="future-button" type="button"
-                    id="${RESET_ASSASSINATION_BUTTON_ID}">Reset Assassination</button>
-                <button class="future-button future-button-disabled" type="button"
-                    id="${CONFIRM_ASSASSINATION_BUTTON_ID}" disabled>Confirm Assassination</button>
-            `;
-    
-            for (let i = 0; i < gamePlayers.length; i++) {
-                const nameElement = document.getElementById(gamePlayers[i].nameId);
-                if (nameElement.classList.contains("resistance")) {
-                    nameElement.classList.add("clickable");
-                    nameElement.onclick = function () {
-                        handleAssassinationClick(i);
-                    };
-                }
-            }
-    
-            document.getElementById(RESET_ASSASSINATION_BUTTON_ID).onclick = function () {
-                playersSelected = [];
-                document.getElementById(ASSASSINATION_HEADER_ID).innerHTML = "Select Player(s) To Assassinate";
-                document.getElementById(ASSASSINATION_ROLES_SELECT_ID).innerHTML = `
-                    <option value=""></option>
-                    <option value="Merlin">Merlin</option>
-                    <option value="Arthur">Arthur</option>
-                    <option value="Lovers">Lovers</option>
-                `;
-                setButtonDisabled(document.getElementById(CONFIRM_ASSASSINATION_BUTTON_ID), true);
+        if (reverseAllowed) {
+            const reverseMissionActionImage = createImage(null, REVERSE_MISSION_IMG_SRC, REVERSE_MISSION_IMG_ALT, ['action-image', 'clickable']);
+            reverseMissionActionImage.onclick = function () {
+                handleMissionActionSelection(selectMissionActionContainer.children, reverseMissionActionImage, 'Reverse');
             };
+            selectMissionActionContainer.appendChild(reverseMissionActionImage);
+        }
+    } else {
+        gameContent.appendChild(createHeaderTwo(null, `Waiting for mission to finish...`));
+    }
+}
+
+function handleMissionActionSelection(actionOptions, selectedOption, selectedAction) {
+    for (let option of actionOptions) {
+        if (option.alt === selectedOption.alt) {
+            addClassToElement(option, "selected-image");
         } else {
-            statusMessage.innerHTML = `${conductAssassinationInformation.assassin} is choosing who to assassinate...`;
+            removeClassFromElement(option, "selected-image");
         }
     }
+    showConfirmMissionAction(selectedAction);
+}
 
-    function handleAssassinationClick(id) {
-        const index = playersSelected.indexOf(id);
-        if (index !== -1) {
-            playersSelected.splice(index, 1);
-        } else {
-            playersSelected.push(id);
-        }
+function showConfirmMissionAction(action) {
+    const gameContentButtons = gameContent.getElementsByTagName("button");
+    if (gameContentButtons.length === 0) {
+        showButton("Confirm", function () {
+            handleConfirmMissionActionClick(action);
+        });
+    } else {
+        gameContentButtons[0].onclick = function () {
+            handleConfirmMissionActionClick(action);
+        };
+    }
+}
 
-        const confirmAssassinationButton = document.getElementById(CONFIRM_ASSASSINATION_BUTTON_ID);
-        const assassinationHeader = document.getElementById(ASSASSINATION_HEADER_ID);
+function handleConfirmMissionActionClick(action) {
+    socket.emit('mission:conduct', action);
+    clearGameContent(false);
+    gameContent.appendChild(createHeaderTwo(null, `Waiting for mission to finish...`));
+}
 
-        if (playersSelected.length === 0) {
-            assassinationHeader.innerHTML = "Select Player(s) To Assassinate";
-            setButtonDisabled(document.getElementById(CONFIRM_ASSASSINATION_BUTTON_ID), true);
-        } else if (playersSelected.length > 2) {
-            assassinationHeader.innerHTML = "Too Many Players Selected! Please Reset";
-            setButtonDisabled(document.getElementById(CONFIRM_ASSASSINATION_BUTTON_ID), true);
-        } else {
-            assassinationHeader.innerHTML = `
-                Assassinate ${playersSelected.map(i => document.getElementById(gamePlayers[i].nameId).innerHTML).join(' and ')} as:
-            `;
+function showMissionResult(missionResultInformation) {
+    clearGameContent(false);
 
-            const assassinationRolesSelect = document.getElementById(ASSASSINATION_ROLES_SELECT_ID);
-            assassinationRolesSelect.onchange = function() {
-                if (assassinationRolesSelect.value && correctPlayersSelected(assassinationRolesSelect.value)) {
-                    confirmAssassinationButton.disabled = false;
-                    confirmAssassinationButton.classList.remove("future-button-disabled");
-                    confirmAssassinationButton.onclick = function () {
-                        socket.emit('conduct-assassination', {ids: playersSelected, role: assassinationRolesSelect.value});
-                        assassinationModal.style.display = "none";
-                    };
-                } else {
-                    setButtonDisabled(document.getElementById(CONFIRM_ASSASSINATION_BUTTON_ID), true);
-                }
+    if (missionResultInformation.result === "Success") {
+        gameContent.appendChild(createHeaderTwo(null, `Mission successful!`));
+    } else {
+        gameContent.appendChild(createHeaderTwo(null, `Mission failed!`));
+    }
+
+    const totalActions = missionResultInformation.successCount + missionResultInformation.failCount + missionResultInformation.reverseCount;
+    const rowSize = totalActions === 4 ? 2 : 3;
+    let actionsAdded = 0;
+
+    const missionActionsContainer = createDiv(MISSION_ACTIONS_CONTAINER_ID);
+    let currentActionsRow = null;
+
+    for (let i = 0; i < missionResultInformation.successCount; i++) {
+        if (actionsAdded % rowSize === 0) {
+            if (currentActionsRow) {
+                missionActionsContainer.appendChild(currentActionsRow);
             }
-            
-            if (playersSelected.length === 2) {
-                assassinationRolesSelect.innerHTML = `
-                    <option value=""></option>
-                    <option value="Lovers">Lovers</option>
-                `;
+            currentActionsRow = createDiv("mission-actions-row");
+        }
+        currentActionsRow.appendChild(createImage(null, SUCCEED_MISSION_IMG_SRC, SUCCEED_MISSION_IMG_ALT, ["action-image"]));
+        actionsAdded += 1;
+    }
+    for (let i = 0; i < missionResultInformation.failCount; i++) {
+        if (actionsAdded % rowSize === 0) {
+            if (currentActionsRow) {
+                missionActionsContainer.appendChild(currentActionsRow);
+            }
+            currentActionsRow = createDiv("mission-actions-row");
+        }
+        currentActionsRow.appendChild(createImage(null, FAIL_MISSION_IMG_SRC, FAIL_MISSION_IMG_ALT, ["action-image"]));
+        actionsAdded += 1;
+    }
+    for (let i = 0; i < missionResultInformation.reverseCount; i++) {
+        if (actionsAdded % rowSize === 0) {
+            if (currentActionsRow) {
+                missionActionsContainer.appendChild(currentActionsRow);
+            }
+            currentActionsRow = createDiv("mission-actions-row");
+        }
+        currentActionsRow.appendChild(createImage(null, REVERSE_MISSION_IMG_SRC, REVERSE_MISSION_IMG_ALT, ["action-image"]));
+        actionsAdded += 1;
+    }
+
+    missionActionsContainer.appendChild(currentActionsRow);
+    gameContent.appendChild(missionActionsContainer);
+}
+
+function updateMissionResults(missionResultsInformation) {
+    let missionResultsWrapper = document.getElementById(MISSION_RESULTS_WRAPPER_ID);
+    if (!missionResultsWrapper) {
+        missionResultsWrapper = createDiv(MISSION_RESULTS_WRAPPER_ID, []);
+        gameContent.insertBefore(missionResultsWrapper, gameContent.firstChild);
+    }
+
+    clearChildrenFromElement(missionResultsWrapper);
+    for (let missionInformation of missionResultsInformation.missions) {
+        const missionResultWrapper = createDiv(null, ["mission-result-wrapper"]);
+        if (missionInformation.result) {
+            if (missionInformation.result === 'Success') {
+                missionResultWrapper.appendChild(createImage(null, SUCCESSFUL_MISSION_IMG_SRC, SUCCESSFUL_MISSION_IMG_ALT));
             } else {
-                assassinationRolesSelect.innerHTML = `
-                    <option value=""></option>
-                    <option value="Merlin">Merlin</option>
-                    <option value="Arthur">Arthur</option>
-                `;
+                missionResultWrapper.appendChild(createImage(null, FAILED_MISSION_IMG_SRC, FAILED_MISSION_IMG_ALT));
             }
-            setButtonDisabled(document.getElementById(CONFIRM_ASSASSINATION_BUTTON_ID), true);
+        } else {
+            let spanText = "";
+            switch (missionInformation.teamSize) {
+                case 2:
+                    if (missionInformation.requiredFails === 1) {
+                        spanText = "&#9313;";
+                    } else {
+                        spanText = "&#9462;";
+                    }
+                    break;
+                case 3:
+                    if (missionInformation.requiredFails === 1) {
+                        spanText = "&#9314;";
+                    } else {
+                        spanText = "&#9463;";
+                    }
+                    break;
+                case 4:
+                    if (missionInformation.requiredFails === 1) {
+                        spanText = "&#9315;";
+                    } else {
+                        spanText = "&#9464;";
+                    }
+                    break;
+                case 5:
+                    if (missionInformation.requiredFails === 1) {
+                        spanText = "&#9316;";
+                    } else {
+                        spanText = "&#9465;";
+                    }
+                    break;
+            }
+            missionResultWrapper.appendChild(createParagraph(spanText));
         }
+        missionResultsWrapper.appendChild(missionResultWrapper);
     }
+}
 
-    function correctPlayersSelected(option) {
-        switch (option) {
-            case "Lovers":
-                return playersSelected.length === 2;
-            case "Merlin":
-            case "Arthur":
-                return playersSelected.length === 1;
-            default:
-                return playersSelected.length === 1 || playersSelected.length === 2;
-        }
+function handleConductRedemption(conductRedemptionInformation) {
+    clearGameContent(false);
+
+    if ('kay' in conductRedemptionInformation) {
+        gameContent.appendChild(createHeaderTwo(null, `
+            ${conductRedemptionInformation.kay} is attempting to redeem the <span class="resistance">Resistance</span>...
+        `));
+    } else {
+        showConductRedemption(conductRedemptionInformation);
     }
+}
 
-    function showGameResult(winner, resultHTML) {
-        resultsModal.style.display = "flex";
-        rolesModal.style.display = "none";
-        intelModal.style.display = "none";
-        resultsArea.innerHTML = resultHTML;
-        statusMessage.innerHTML = `${winner} wins!`;
-        if (startGameButton) {
-            startGameButton.style.display = "block";
-            closeGameButton.style.display = "block";
-        }
+function handleConductAssassination(conductAssassinationInformation) {
+    clearGameContent(false);
+
+    if ('assassin' in conductAssassinationInformation) {
+        gameContent.appendChild(createHeaderTwo(null, `${conductAssassinationInformation.assassin} is choosing who to assassinate...`));
+    } else {
+        showConductAssassination(conductAssassinationInformation);
     }
-
-    // Attach Socket functions
-    socket.on('update-players', (currentPlayers) => {
-        updateLobby(currentPlayers);
-    });
-
-    socket.on('setup-game', () => {
-        handleSetupGame();
-    });
-
-    socket.on('pick-identity', ({possibleResistanceRoles, possibleSpyRoles}) => {
-        handlePickIdentity(possibleResistanceRoles, possibleSpyRoles);
-    });
-    
-    socket.on('start-game', ({gameHTML, players}) => {
-        handleStartGame(gameHTML, players);
-    });
-
-    socket.on('close-lobby', () => {
-        location.replace(`${ROOT_URL}?menu=join`);
-    });
-
-    socket.on('update-leader', ({previousLeaderId, leaderId}) => {
-        updateLeader(previousLeaderId, leaderId);
-    });
-
-    socket.on('update-status', (message) => {
-        statusMessage.innerHTML = message;
-    });
-
-    socket.on('react', () => {
-        showAdvance();
-    });
-    
-    socket.on('propose-team', (gunSlots) => {
-        setupProposal(gunSlots);
-    });
-
-    socket.on('update-gun-slots', (gunSlots) => {
-        updateGunSlots(gunSlots);
-    });
-
-    socket.on('vote-team', (setupVoteInformation) => {
-        setupVote(setupVoteInformation);
-    });
-
-    socket.on('player-vote', (id) => {
-        showPlayerVoted(id);
-    });
-
-    socket.on('vote-result', ({votes, approved}) => {
-        showVoteResult(votes, approved);
-    });
-
-    socket.on('conduct-mission', (conductMissionInformation) => {
-        setupMission(conductMissionInformation);
-    });
-
-    socket.on('mission-result', ({result, showActions}) => {
-        showMissionResult(result, showActions);  
-    });
-
-    socket.on('conduct-assassination', (conductAssassinationInformation) => {
-        setupAssassination(conductAssassinationInformation);
-    });
-
-    socket.on('game-result', ({winner, resultHTML}) => {
-        showGameResult(winner, resultHTML);
-    });
-});
+}

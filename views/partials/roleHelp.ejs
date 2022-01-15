@@ -1,0 +1,214 @@
+<h1 class="future-header"><span class="resistance">Resistance</span> Roles</h1>
+<ul>
+    <li>
+        <span class="resistance">Merlin</span>: Sees <span class="spy">spies</span> (except <span class="spy">Mordred</span>) and
+        <span class="resistance">Puck</span>; Can be assassinated
+    </li>
+    <li>
+        <span class="resistance">Arthur</span>: Sees <span class="resistance">resistance</span> roles present; Can be assassinated
+    </li>
+    <li>
+        <span class="resistance">Tristan</span>: Sees <span class="resistance">Iseult</span>; Can be
+        assassinated with <span class="resistance">Iseult</span>
+    </li>
+    <li>
+        <span class="resistance">Iseult</span>: Sees <span class="resistance">Tristan</span>; Can be
+        assassinated with <span class="resistance">Tristan</span>
+    </li>
+    <% if (settings.ector) { %>
+    <li>
+        (8+) <span class="resistance">Ector</span>: Known by all <span class="resistance">Resistance</span> members; Can be
+        assassinated
+    </li>
+    <% } %>
+    <li>
+        <span class="resistance">Percival</span>: Sees <span class="resistance">Merlin</span> and
+        <span class="spy">Morgana</span>
+    </li>
+    <li>
+        <span class="resistance">Lancelot</span>: May play reverse cards
+    </li>
+    <li>
+        <span class="resistance">Uther</span>: Sees a random <span class="resistance">resistance</span> player
+    </li>
+    <li>
+        (7+) <span class="resistance">Guinevere</span>: Sees <span class="resistance">Lancelot</span> and
+        <span class="spy">Maelagant</span>
+    </li>
+    <li>
+        <span class="resistance">Jester</span>: Only wins if assassinated; Sees present assassinable roles
+    </li>
+    <li>
+        (7+) <span class="resistance">Puck</span>: Only wins if <span class="resistance">Resistance</span> wins after 5 rounds; May play fail cards
+    </li>
+    <li>
+        <span class="resistance">Galahad</span>: Sees <span class="resistance">Arthur</span>
+    </li>
+    <% if (settings.gaheris) { %>
+    <li>
+        (7+) <span class="resistance">Gaheris</span>: Can bind a player on a mission to the <span class="resistance">Resistance</span>
+    </li>
+    <% } %>
+    <% if (settings.geraint) { %>
+    <li>
+        (7+) <span class="resistance">Geraint</span>: Can protect a player on a mission from a <span class="spy">spy</span> bind
+    </li>
+    <% } %>
+    <li>
+        (8+) <span class="resistance">Bedivere</span>: Sees <span class="spy">spy</span> roles
+    </li>
+    <% if (settings.kay) { %>
+    <li>
+        (8+) <span class="resistance">Kay</span>: If <span class="spy">Spies</span> win 3 rounds, can redeem <span class="resistance">Resistance</span>
+        by naming all <span class="spy">Spies</span> correctly
+    </li>
+    <% } %>
+    <% if (settings.lamorak) { %>
+    <li>
+        (8+) <span class="resistance">Lamorak</span>: Sees two pairs of players, one pair is on the same team, one is on opposite teams
+    </li>
+    <% } %>
+    <% if (settings.sirrobin) { %>
+        <% if (settings.accolon) { %>
+        <li>
+            (9+) <span class="resistance">Sir Robin</span>: While conducting a mission, discovers a new <span class="resistance">Resistance</span> member also on
+            that mission; Blocked when <span class="spy">Accolon</span> is on the same mission
+        </li>
+        <% } else { %>
+        <li>
+            (9+) <span class="resistance">Sir Robin</span>: While conducting a mission, discovers a new <span class="resistance">Resistance</span> member also on
+            that mission
+        </li>
+        <% } %>
+    <% } %>
+    <% if (settings.titania) { %>
+    <li>
+        (10)<span class="resistance">Titania</span>: Appears as a <span class="spy">spy</span> to a random <span class="spy">spy</span> player
+    </li>
+    <% } %>
+</ul>
+<h1 class="future-header"><span class="spy">Spy</span> Roles</h1>
+<ul>
+    <li>
+        <span class="spy">Mordred</span>: Not seen by <span class="resistance">Merlin</span>
+    </li>
+    <% if (settings.gaheris) { %>
+    <li>
+        <span class="spy">Morgana</span>: Seen as possible <span class="resistance">Merlin</span>
+        by <span class="resistance">Percival</span>; Immunue to <span class="resistance">resistance</span> binds
+    </li>
+    <% } else { %>
+    <li>
+        <span class="spy">Morgana</span>: Seen as possible <span class="resistance">Merlin</span>
+        by <span class="resistance">Percival</span>
+    </li>
+    <% } %>
+    <li>
+        <span class="spy">Maelagant</span>: May play reverse cards
+    </li>
+    <li>
+        <span class="spy">Colgrevance</span>: Sees roles of all <span class="spy">spies</span>
+    </li>
+    <% if (settings.accolon) { %>
+        <% if (settings.sirrobin) { %>
+        <li>
+            (7+) <span class="spy">Accolon</span>: Sabotages the vision of a random <span class="resistance">resistance</span> player; Blocks
+            <span class="resistance">Sir Robin</span>'s ability if on that mission
+        </li>
+        <% } else { %>
+        <li>
+            (7+) <span class="spy">Accolon</span>: Sabotages the vision of a random <span class="resistance">resistance</span> player
+        </li>
+        <% } %>
+    <% } %>
+    <li>
+        (7+) <span class="spy">Lucius</span>: Sees <span class="resistance">resistance</span> roles not related to assassinatable roles
+    </li>
+    <% if (settings.cerdic) { %>
+    <li>
+        (7+) <span class="spy">Cerdic</span>: Can bind a player on a mission to the <span class="spy">Spies</span>
+    </li>
+    <% } %>
+    <% if (settings.cynric) { %>
+    <li>
+        (7+) <span class="spy">Cynric</span>: Can protect a player on a mission from a <span class="resistance">resistance</span> bind
+    </li>
+    <% } %>
+</ul>
+<h1 class="future-header">Role Generation</h1>
+<ul>
+    <li>Only one of the following can be present:
+        <ul>
+            <li><span class="resistance">Merlin</span></li>
+            <li><span class="resistance">Tristan</span> and <span class="resistance">Iseult</span></li>
+            <% if (settings.ector) { %>
+            <li><span class="resistance">Ector</span></li>
+            <% } %>
+        </ul>
+    </li>
+    <li>Only one of the following can be present:
+        <ul>
+            <li><span class="resistance">Tristan</span> and <span class="resistance">Iseult</span></li>
+            <li><span class="resistance">Uther</span></li>
+            <li><span class="resistance">Galahad</span></li>
+        </ul>
+    </li>
+    <li>Only one of the following can be present:
+        <ul>
+            <li><span class="resistance">Percival</span></li>
+            <li><span class="resistance">Guinevere</span></li>
+        </ul>
+    </li>
+    <li>Only one of the following can be present:
+        <ul>
+            <li><span class="resistance">Lancelot</span></li>
+            <li><span class="resistance">Puck</span></li>
+        </ul>
+    </li>
+    <% if (settings.accolon && settings.sirrobin) { %>
+    <li>Only one of the following can be present:
+        <ul>
+            <li><span class="resistance">Kay</span></li>
+            <li><span class="resistance">Sir Robin</span></li>
+        </ul>
+    </li>
+    <% } %>
+    <li>If <span class="resistance">Galahad</span> is present, then <span class="resistance">Arthur</span> is</li>
+    <li>If <span class="spy">Mordred</span> is present, then <span class="resistance">Merlin</span> is</li>
+    <li>If <span class="spy">Morgana</span> is present, then <span class="resistance">Percival</span> is</li>
+    <% if (settings.cynric && settings.gaheris) { %>
+    <li>If <span class="spy">Cynric</span> is present, then <span class="resistance">Gaheris</span> is</li>
+    <% } %>
+    <% if (settings.ector) { %>
+    <li>If <span class="resistance">Ector</span> is present, the following cannot be present:
+        <ul>
+            <li><span class="resistance">Merlin</span></li>
+            <li><span class="resistance">Tristan</span> and <span class="resistance">Iseult</span></li>
+            <li><span class="resistance">Uther</span></li>
+            <li><span class="resistance">Galahad</span></li>
+            <li><span class="resistance">Percival</span></li>
+            <li><span class="resistance">Guinevere</span></li>
+            <% if (settings.kay) { %>
+            <li><span class="resistance">Kay</span></li>
+            <% } %>
+            <% if (settings.sirrobin) { %>
+            <li><span class="resistance">Sir Robin</span></li>
+            <% } %>
+            <% if (settings.accolon) { %>
+            <li><span class="spy">Accolon</span></li>
+            <% } %>
+        </ul>
+    </li>
+    <% } %>
+    <% if (settings.accolon && settings.cerdic) { %>
+    <li>Only one of the following can be present:
+        <ul>
+            <li><span class="spy">Accolon</span></li>
+            <li><span class="spy">Cerdic</span></li>
+        </ul>
+    </li>
+    <% } %>
+    <% if (settings.geraint && settings.cerdic) { %>
+    <li>If <span class="resistance">Geraint</span> is present, then <span class="spy">Cerdic</span> is</li>
+    <% } %>
+</ul>

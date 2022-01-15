@@ -1,0 +1,43 @@
+<html lang="en">
+    <head>
+        <%- include('./partials/head.ejs') %>
+        <link rel="stylesheet" type="text/css" href="/stylesheets/gameOnline.css">
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/qs/6.9.4/qs.min.js"
+                integrity="sha512-BHtomM5XDcUy7tDNcrcX1Eh0RogdWiMdXl3wJcKB3PFekXb3l5aDzymaTher61u6vEZySnoC/SAj2Y/p918Y3w=="
+                crossorigin="anonymous">
+        </script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/2.3.0/socket.io.js"></script>
+        <script src="https://cdn.jsdelivr.net/npm/sortablejs@latest/Sortable.min.js"></script>
+        <script type="module" src="/javascripts/game.js"></script>
+        <script type="module" src="/javascripts/gameOnline.js"></script>
+    </head>
+    <body>
+        <div class="flex-column" id="root">
+            <button class="left-circle-future-button" id="back-button" title="Return To Lobby"> &#8249; </button>
+            <button class="right-circle-future-button" id="menu-button" title="Open Menu">
+                <img src="/images/menu.png" alt="Menu">
+            </button>
+            <div class="future-modal" id="menu-modal">
+                <div id="menu-modal-content">
+                    <button class="close-modal-button" id="close-menu-modal-button" title="Close Menu">&times;</button>
+                    <div id="menu-modal-body">
+                        <button class="future-button" type="button" id="view-help-button">View Help</button>
+                        <button class="future-button" type="button" id="view-lobby-button">Return To Lobby</button>
+                        <button class="future-button" type="button" id="view-role-button">View Role</button>
+                        <button class="future-button" type="button" id="view-game-button">Return To Game</button>
+                    </div>
+                </div>
+            </div>
+            <div class="center-flex-column" id="lobby-content">
+                <%- include('./partials/lobby.ejs') %>
+            </div>
+            <div class="flex-column" id="help-content">
+                <%- include('./partials/roleHelp.ejs') %>
+            </div>
+            <div class="center-flex-column" id="game-content">
+            </div>
+            <div class="center-flex-column" id="role-content">
+            </div>
+        </div>
+    </body>
+</html>

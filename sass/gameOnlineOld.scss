@@ -101,6 +101,13 @@
     position: relative;
 }
   
+.result-image {
+    z-index: 1;
+    position: absolute;
+    height: 9vh;
+    width: 7vw;
+}
+  
 .horizontal-player-area {
     height: 35vh;
     width: 25vw;
@@ -128,4 +135,18 @@
   
 .current-leader {
     text-decoration: underline;
+}
+  
+#action-area {
+    margin: auto;
+    @extend %future-color;
+    justify-content: center;
+    align-items: center;
+}
+  
+#reset-assassination-button, #confirm-assassination-button {
+    width: 20vw;
+    height: 5vh;
+    margin-top: 1vh;
+    font-size: 1.25em;
 }

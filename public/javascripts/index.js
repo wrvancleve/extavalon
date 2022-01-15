@@ -14,6 +14,10 @@ const SIGNOUT_BUTTON_TEXT = "Sign Out";
 
 const NEW_GAME_BUTTON_ID = "new-game-button";
 const NEW_GAME_BUTTON_TEXT = "New Game";
+const NEW_LOCAL_GAME_BUTTON_ID = "new-local-game-button";
+const NEW_LOCAL_GAME_BUTTON_TEXT = "New Local Game";
+const NEW_ONLINE_GAME_BUTTON_ID = "new-online-game-button";
+const NEW_ONLINE_GAME_BUTTON_TEXT = "New Online Game";
 const JOIN_GAME_BUTTON_ID = "join-game-button";
 const JOIN_GAME_BUTTON_TEXT = "Join Game";
 const CREATE_GAME_BUTTON_TEXT = "Create Game";
@@ -64,12 +68,15 @@ function createButton(id, text, disabled) {
     return button;
 }
 
-function createForm(method) {
+function createForm(method, type) {
     const form = document.createElement("form");
     form.method = method;
     form.action = "/game";
     form.autocomplete = "off";
     form.addEventListener('submit', (event) => {
+        if (type) {
+            form.appendChild(createHiddenInput("type", type));
+        }
         form.submit();
     });
     return form;
@@ -162,10 +169,8 @@ document.addEventListener('DOMContentLoaded', function () {
         statsButton.onclick = function () {
             location.assign(`${ROOT_URL}/stats`);
         };
-        newGameButton.onclick = function () {
-            handleNewGameButtonClick();
-        };
-        joinGameButton.onclick = handleJoinGameButtonClick;
+        newGameButton.onclick = showNewGameMenu;
+        joinGameButton.onclick = showJoinGameMenu;
         signoutButton.onclick = function () {
             location.assign(`${ROOT_URL}/login`);
         };
@@ -177,31 +182,74 @@ document.addEventListener('DOMContentLoaded', function () {
         main.appendChild(signoutButton);
     }
 
-    function handleNewGameButtonClick(clearErrors=true) {
+    function showNewGameMenu(clearErrors=true) {
         clearMain(clearErrors);
 
-        const newGameForm = createForm("post")
-        const settingContainer = createDiv(["center-flex-column"]);
-        const bedivereSetting = createGameSettingItem("Bedivere:", "bedivere", false);
-        const titaniaSetting = createGameSettingItem("Titania:", "titania", false);
-        const accolonSetting = createGameSettingItem("Accolon:", "accolon");
-        const mordredSetting = createGameSettingItem("Force Mordred:", "mordred", false);
-        const createGameButton = createSubmitInput(CREATE_GAME_BUTTON_TEXT);
+        const newLocalGameButton = createButton(NEW_LOCAL_GAME_BUTTON_ID, NEW_LOCAL_GAME_BUTTON_TEXT, false);
+        const newOnlineGameButton = createButton(NEW_ONLINE_GAME_BUTTON_ID, NEW_ONLINE_GAME_BUTTON_TEXT, false);
         const backButton = createButton(BACK_BUTTON_ID, BACK_BUTTON_TEXT, false);
 
+        newLocalGameButton.onclick = showNewLocalGameMenu;
+        newOnlineGameButton.onclick = showNewOnlineGameMenu;
         backButton.onclick = showMainMenu;
 
-        settingContainer.appendChild(bedivereSetting);
-        settingContainer.appendChild(titaniaSetting);
-        settingContainer.appendChild(accolonSetting);
-        settingContainer.appendChild(mordredSetting);
+        main.appendChild(newLocalGameButton);
+        main.appendChild(newOnlineGameButton);
+        main.appendChild(backButton);
+    }
+
+    function showNewLocalGameMenu(clearErrors=true) {
+        clearMain(clearErrors);
+
+        const newGameForm = createForm("post", "local");
+        const settingContainer = createDiv(["center-flex-column"]);
+
+        createNewGameSettings(settingContainer);
+
+        const createGameButton = createSubmitInput(CREATE_GAME_BUTTON_TEXT);
+        const backButton = createButton(BACK_BUTTON_ID, BACK_BUTTON_TEXT, false);
+        backButton.onclick = showNewGameMenu;
+
         newGameForm.appendChild(settingContainer);
         newGameForm.appendChild(createGameButton);
         main.appendChild(newGameForm);
         main.appendChild(backButton);
     }
 
-    function handleJoinGameButtonClick(clearErrors=true) {
+    function createNewGameSettings(settingContainer) {
+        settingContainer.appendChild(createGameSettingItem("Ector:", "ector", false));
+        settingContainer.appendChild(createGameSettingItem("Kay:", "kay", false));
+        settingContainer.appendChild(createGameSettingItem("Bors:", "bors", false));
+        settingContainer.appendChild(createGameSettingItem("Lamorak:", "lamorak", false));
+        settingContainer.appendChild(createGameSettingItem("Titania:", "titania", false));
+        settingContainer.appendChild(createGameSettingItem("Accolon:", "accolon", true));
+    }
+
+    function showNewOnlineGameMenu(clearErrors=true) {
+        clearMain(clearErrors);
+
+        const newGameForm = createForm("post", "online");
+        const settingContainer = createDiv(["center-flex-column"]);
+
+        createNewGameSettings(settingContainer);
+        
+        const sirRobinSetting = createGameSettingItem("Sir Robin:", "sirrobin", false);
+        const resistanceBindSetting = createGameSettingItem("Resistance Bind:", "resistancebind", false);
+        const spyBindSetting = createGameSettingItem("Spy Bind:", "spybind", false);
+        const createGameButton = createSubmitInput(CREATE_GAME_BUTTON_TEXT);
+        const backButton = createButton(BACK_BUTTON_ID, BACK_BUTTON_TEXT, false);
+        backButton.onclick = showNewGameMenu;
+        
+        settingContainer.appendChild(sirRobinSetting);
+        settingContainer.appendChild(resistanceBindSetting);
+        settingContainer.appendChild(spyBindSetting);
+        newGameForm.appendChild(settingContainer);
+        newGameForm.appendChild(createGameButton);
+        main.appendChild(newGameForm);
+        main.appendChild(backButton);
+    }
+
+    function showJoinGameMenu(clearErrors=true) {
         clearMain(clearErrors);
 
         const joinForm = createForm("get");
@@ -227,10 +275,16 @@ document.addEventListener('DOMContentLoaded', function () {
 
     switch (menu) {
         case 'new':
-            handleNewGameButtonClick(false);
+            showNewGameMenu(false);
+            break;
+        case 'newLocal':
+            showNewLocalGameMenu(false);
+            break;
+        case 'newOnline':
+            showNewOnlineGameMenu(false);
             break;
         case 'join':
-            handleJoinGameButtonClick(false);
+            showJoinGameMenu(false);
             break;
         default:
             showMainMenu(false);

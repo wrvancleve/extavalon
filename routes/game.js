@@ -17,7 +17,11 @@ router.get('/', authenticate, function (req, res) {
             req.session.errors = [{ msg: "Game full!" }]
             res.redirect(req.session.backURL);
         } else {
-            res.render('game', { title: 'Extavalon', code: code, host: host, settings: lobby.settings });
+            if (lobby.type === 'online') {
+                res.render('gameOnline', { title: 'Extavalon: Online Game', code: code, host: host, settings: lobby.settings });
+            } else {
+                res.render('gameLocal', { title: 'Extavalon: Local Game', code: code, host: host, settings: lobby.settings });
+            }
         }
     } else {
         req.session.errors = [{ msg: "Game not found!" }]
@@ -26,14 +30,21 @@ router.get('/', authenticate, function (req, res) {
 });
 
 router.post('/', authenticate, function (req, res) {
+    const type = req.body.type;
     const settings = {
-        titania: req.body.titania === 'on',
-        bedivere: req.body.bedivere === 'on',
-        accolon: req.body.accolon === 'on',
-        mordred: req.body.mordred === 'on'
+        ector: req.body.ector === "on",
+        kay: req.body.kay === "on",
+        titania: req.body.titania === "on",
+        accolon: req.body.accolon === "on",
+        bors: req.body.bors === "on",
+        lamorak: req.body.lamorak === "on",
+        gaheris: type === 'online' && req.body.resistancebind === "on",
+        geraint: type === 'online' && req.body.spybind === "on",
+        cynric: type === 'online' && req.body.resistancebind === "on",
+        cerdic: type === 'online' && req.body.spybind === "on",
+        sirrobin: type === 'online' && req.body.sirrobin === "on"
     };
-    const code = lobbyManager.create(req.cookies.userId, settings);
-
+    const code = lobbyManager.create(req.cookies.userId, type, settings);
     res.redirect(`/game?code=${code}`);
 });
 

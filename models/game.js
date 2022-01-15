@@ -1,19 +1,16 @@
 const Roles = require('./roles');
 const Player = require('./player');
-const Mission = require('./mission');
-const Proposal = require('./proposal');
-const Affects = require('./affects');
-const { shuffle, choice, sample } = require('../utils/random');
+const { shuffle, choice, sample, nextBoolean } = require('../utils/random');
 
 function Game(playerInformation, firstLeaderId, settings) {
-    this.resistanceWins = 0;
-    this.spyWins = 0;
+    this.phase = Game.PHASE_SETUP;
     this.playersByRole = new Map();
     this.resistance = [];
     this.spies = [];
     this.settings = settings;
 
     this.currentLeaderId = firstLeaderId;
+    this.rolePickerId = null;
     this.playerCount = playerInformation.length;
     if (this.playerCount >= 10) {
         this.spyPlayerCount = 4;
@@ -25,41 +22,18 @@ function Game(playerInformation, firstLeaderId, settings) {
         this.spyPlayerCount = 2;
     }
     this.resistancePlayerCount = this.playerCount - this.spyPlayerCount;
-    this.players = [];
 
+    this.resistanceWins = 0;
+    this.spyWins = 0;
+
+    this.players = [];
     for (let id = 0; id < this.playerCount; id++) {
         const player = new Player(id, playerInformation[id].name);
         this.players.push(player);
     }
 
-    let teamSizes = null;
-    switch (this.playerCount)
-    {
-        case 5:
-            teamSizes = [ 2, 3, 2, 3, 3 ];
-            break;
-        case 6:
-            teamSizes = [ 2, 3, 4, 3, 4 ];
-            break;
-        case 7:
-            teamSizes = [ 2, 3, 3, 4, 4 ];
-            break;
-        case 8:
-        case 9:
-        case 10:
-            teamSizes = [ 3, 4, 4, 5, 5 ];
-            break;
-    }
-    const requiredFails = this.playerCount >= 7 ? [ 1, 1, 1, 2, 1 ] : [ 1, 1, 1, 1, 1 ];
     this.missions = [];
-    for (let id = 0; id < 5; id++) {
-        this.missions.push(new Mission(id, teamSizes[id], requiredFails[id]));
-    }
-    this.currentMissionId = 0;
-
-    this.phase = Game.PHASE_SETUP;
-    this.robinUsedIntel = new Map();
-    this.castedBinds = [];
+    
     this.redemptionAttemptInformation = null;
     this.assassinationAttemptInformation = null;
     this.winner = null;
@@ -67,21 +41,21 @@ function Game(playerInformation, firstLeaderId, settings) {
     this.startTime = new Date(Date.now());
 }
 
-Game.PHASE_SETUP = 0;
-Game.PHASE_PROPOSE = 1;
-Game.PHASE_VOTE = 2;
-Game.PHASE_VOTE_REACT = 3;
-Game.PHASE_CONDUCT = 4;
-Game.PHASE_CONDUCT_REACT = 5;
-Game.PHASE_REDEMPTION = 6;
-Game.PHASE_ASSASSINATION = 7;
-Game.PHASE_DONE = 8;
-Game.NUM_WINS = 3;
 Game.NUM_MISSIONS = 5;
+
+Game.PHASE_SETUP = "SETUP";
+Game.PHASE_MISSIONS = "MISSIONS";
+Game.PHASE_REDEMPTION = "REDEMPTION";
+Game.PHASE_ASSASSINATION = "ASSASSINATION";
+Game.PHASE_DONE = "DONE";
 
 // #region Public functions
 
-Game.prototype.getStartGameInformation = function(id) {
+Game.prototype.isOnlineGame = function() {
+    return false;
+}
+
+Game.prototype.getRoleInformation = function(id) {
     return this.players[id].getPlayerHTML();
 }
 
@@ -99,23 +73,26 @@ Game.prototype.getPossibleRoles = function() {
     ];
 
     switch (this.playerCount) {
-        case 12:
-        case 11:
         case 10:
             if (this.settings.titania) {
                 possibleResistanceRoles.push(Roles.Titania.name);
             }
-            if (this.settings.bedivere) {
-                possibleResistanceRoles.push(Roles.Bedivere.name);
-            }
         case 9:
-            possibleResistanceRoles.push(Roles.SirRobin.name);
+            if (this.settings.ector) {
+                possibleResistanceRoles.push(Roles.Ector.name);
+            }
+            if (this.settings.bors) {
+                possibleResistanceRoles.push(Roles.Bors.name);
+            }
         case 8:
-            possibleResistanceRoles.push(Roles.Ector.name);
-            possibleResistanceRoles.push(Roles.Kay.name);
+            possibleResistanceRoles.push(Roles.Bedivere.name);
+            if (this.settings.kay) {
+                possibleResistanceRoles.push(Roles.Kay.name);
+            }
+            if (this.settings.lamorak) {
+                possibleResistanceRoles.push(Roles.Lamorak.name);
+            }
         case 7:
-            possibleResistanceRoles.push(Roles.Geraint.name);
-            possibleResistanceRoles.push(Roles.Gaheris.name);
             possibleResistanceRoles.push(Roles.Guinevere.name);
             possibleResistanceRoles.push(Roles.Puck.name);
             break;
@@ -132,8 +109,9 @@ Game.prototype.getPossibleRoles = function() {
         if (this.settings.accolon) {
             possibleSpyRoles.push(Roles.Accolon.name);
         }
-        possibleSpyRoles.push(Roles.Cerdic.name);
-        possibleSpyRoles.push(Roles.Cynric.name);
+        if (this.settings.lucius) {
+            possibleSpyRoles.push(Roles.Lucius.name);
+        }
     }
 
     return {
@@ -143,17 +121,14 @@ Game.prototype.getPossibleRoles = function() {
 }
 
 Game.prototype.assignRoles = function(identityPickInformation) {
-    const playerRoles = Roles.generateRoles(this.resistancePlayerCount, this.spyPlayerCount, this.settings, identityPickInformation);
+    this.rolePickerId = identityPickInformation.id;
+    const playerRoles = Roles.generateRoles(this.resistancePlayerCount, this.spyPlayerCount, this.isOnlineGame(), this.settings, [identityPickInformation]);
 
-    this.gaherisBindPossible = null;
     for (let id = 0; id < this.playerCount; id++) {
         const player = this.players[id];
         const playerRole = playerRoles.pop();
         player.assignRole(playerRole);
         this.playersByRole.set(playerRole.name, player);
-        if (playerRole === Roles.Gaheris) {
-            this.gaherisBindPossible = true;
-        }
         
         if (playerRole.team === "Resistance") {
             this.resistance.push(player);
@@ -179,474 +154,74 @@ Game.prototype.assignRoles = function(identityPickInformation) {
         this._performTitaniaSabotage();
     }
 
-    this._startProposal();
+    this.phase = Game.PHASE_MISSIONS
+}
+
+Game.prototype.getCurrentLeader = function() {
+    return this._getPlayer(this.currentLeaderId);
 }
 
 Game.prototype.getPlayerRoleName = function(id) {
     return this.players[id].role.name;
 }
 
-Game.prototype.isCurrentLeader = function(id) {
-    return this.currentLeaderId === id;
-}
-
-Game.prototype.getCurrentMission = function() {
-    return this.missions[this.currentMissionId];
-}
-
-Game.prototype.getCurrentProposal = function() {
-    return this.getCurrentMission().getCurrentProposal();
-}
-
-Game.prototype.isGameOver = function() {
-    return this.phase === Game.PHASE_DONE; 
-}
-
-Game.prototype.getSetupProposalInformation = function() {
-    const players = [];
-    const currentProposedTeam = this.getCurrentProposal().team;
-    
-    let currentPlayerId = this.currentLeaderId;
-    for (let i = 0; i < this.playerCount; i++) {
-        const currentPlayer = this.players[currentPlayerId];
-        players.push({
-            id: currentPlayer.id,
-            name: currentPlayer.name,
-            isLeader: i === 0,
-            isOnTeam: currentProposedTeam.includes(currentPlayer.id)
-        });
-        currentPlayerId += 1;
-        currentPlayerId %= this.playerCount;
-    }
-
-    return { 
-        players: players,
-        requiredTeamSize: this.getCurrentMission().teamSize
-    };
-}
-
-Game.prototype.advance = function() {
-    switch (this.phase) {
-        case Game.PHASE_PROPOSE:
-            this.phase = Game.PHASE_VOTE;
-            break;
-        case Game.PHASE_VOTE:
-            if (this.getProposalResult()) {
-                this.phase = Game.PHASE_VOTE_REACT;
-            } else {
-                const currentMission = this.getCurrentMission();
-                currentMission.failedProposalCount += 1;
-                if (currentMission.failedProposalCount === this.playerCount) {
-                    currentMission.result = 'Fail';
-                    if (this._processMissionResult(currentMission.result)) {
-                        this.winner = "Spies";
-                        this.phase = Game.PHASE_DONE;
-                    } else {
-                        this.phase = Game.PHASE_CONDUCT_REACT;
-                    }
-                } else {
-                    this.phase = Game.PHASE_VOTE_REACT;
-                }
-            }
-            break;
-        case Game.PHASE_VOTE_REACT:
-            if (this.getProposalResult()) {
-                for (let usedAffect of this.getCurrentProposal().getUsedAffects()) {
-                    if (Affects.areEqual(Affects.ResistanceBindAffect, usedAffect) || Affects.areEqual(Affects.SpyBindAffect, usedAffect)) {
-                        this.castedBinds.push(usedAffect);
-                    }
-                }
-                this.phase = Game.PHASE_CONDUCT;
-            } else {
-                this._advanceLeader();
-                this._startProposal();
-            }
-            break;
-        case Game.PHASE_CONDUCT:
-            const missionResult = this.getMissionResult();
-            const roundsWinner = this._processMissionResult(missionResult.result);
-            if (roundsWinner) {
-                if (roundsWinner === "Spies") {
-                    if (this.playersByRole.has(Roles.Kay.name)) {
-                        this.phase = Game.PHASE_REDEMPTION;
-                    } else {
-                        this.winner = "Spies";
-                        this.phase = Game.PHASE_DONE;
-                    }
-                } else {
-                    this.phase = Game.PHASE_ASSASSINATION;
-                }
-            } else {
-                this.phase = Game.PHASE_CONDUCT_REACT;
-            }
-            break;
-        case Game.PHASE_CONDUCT_REACT:
-            this._advanceLeader();
-            this.currentMissionId += 1;
-            this._startProposal();
-            break;
-        case Game.PHASE_REDEMPTION:
-            this.phase = Game.PHASE_DONE;
-            break;
-        case Game.PHASE_ASSASSINATION:
-            this.phase = Game.PHASE_DONE;
-            break;
-    }
-}
-
-Game.prototype.getCurrentProposedTeamInformation = function() {
-    return {
-        leaderName: this.players[this.currentLeaderId].name,
-        team: this.getCurrentProposal().team.map(playerId => {
-            return this._getProposalInformationForPlayerId(playerId, true);
-        })
-    };
-}
-
-Game.prototype._getProposalInformationForPlayerId = function(playerId, isOnTeam) {
-    return {
-        id: playerId,
-        name: this.players[playerId].name,
-        isLeader: playerId === this.currentLeaderId,
-        isOnTeam: isOnTeam
-    };
-}
-
-Game.prototype.updateProposal = function(ids) {
-    this.getCurrentProposal().updateTeam(ids);
-}
-
-Game.prototype.finalizeProposalTeam = function(ids) {
-    this.updateProposal(ids);
-    this.advance();
-}
-
-Game.prototype.getSetupVoteInformation = function(id) {
-    const playerRoleName = this.getPlayerRoleName(id);
-    let applyAffect = null;
-    if (this.resistanceWins !== 2 && this.spyWins !== 2) {
-        switch (playerRoleName) {
-            case Roles.Cerdic.name:
-                // Spy Bind
-                if (this.castedBinds.find(Affects.isSpyBind) === undefined) {
-                    applyAffect = "SpyBind";
-                }
-                break;
-            case Roles.Cynric.name:
-                if (this.castedBinds.find(Affects.isResistanceBind) === undefined) {
-                    applyAffect = "ResistanceProtect";
-                }
-                break;
-            case Roles.Gaheris.name:
-                // Resistance Bind
-                if (this.castedBinds.find(Affects.isResistanceBind) === undefined) {
-                    applyAffect = "ResistanceBind";
-                }
-                break;
-            case Roles.Geraint.name:
-                if (this.castedBinds.find(Affects.isSpyBind) === undefined) {
-                    applyAffect = "SpyProtect";
-                }
-                break;
+Game.prototype.setMissionResults = function(missionResults) {
+    let roundsWinner = null;
+    for (let missionResult of missionResults) {
+        if (missionResult !== null) {
+            roundsWinner = this._processMissionResult(missionResult === "Resistance" ? "Success" : "Fail")
         }
+        this.missions.push(missionResult);
     }
 
-    const currentProposal = this.getCurrentProposal();
-    const team = currentProposal.team.map(playerId => {
-        const currentProposalInformationForPlayer = this._getProposalInformationForPlayerId(playerId, true);
-        if (applyAffect) {
-            switch (playerRoleName) {
-                case Roles.Cerdic.name:
-                    // Spy Bind
-                    if (currentProposal.hasAffectOnPlayerId(playerId, Affects.SpyBindAffect)) {
-                        currentProposalInformationForPlayer.affect = Affects.SpyBindAffect;
-                    }
-                    break;
-                case Roles.Cynric.name:
-                    if (currentProposal.hasAffectOnPlayerId(playerId, Affects.ResistanceProtectAffect)) {
-                        currentProposalInformationForPlayer.affect = Affects.ResistanceProtectAffect;
-                    }
-                    break;
-                case Roles.Gaheris.name:
-                    // Resistance Bind
-                    if (currentProposal.hasAffectOnPlayerId(playerId, Affects.ResistanceBindAffect)) {
-                        currentProposalInformationForPlayer.affect = Affects.ResistanceBindAffect;
-                    }
-                    break;
-                case Roles.Geraint.name:
-                    if (currentProposal.hasAffectOnPlayerId(playerId, Affects.SpyProtectAffect)) {
-                        currentProposalInformationForPlayer.affect = Affects.SpyProtectAffect;
-                    }
-                    break;
-            }
-        }
-
-        return currentProposalInformationForPlayer;
-    })
-
-    return {
-        team: team,
-        selectedVote: this.getCurrentProposal().getVote(id),
-        applyAffect: applyAffect
-    };
+    this.handleMissionsFinished(roundsWinner);
 }
 
-Game.prototype.setProposalVote = function(id, vote) {
-    const currentProposal = this.getCurrentProposal();
-    currentProposal.setVote(id, vote);
-    if (currentProposal.voteCount === this.playerCount) {
-        currentProposal.finalize();
-        this.advance();
-        return true;
-    } else {
-        return false;
-    }
-}
-
-Game.prototype.toggleAffect = function(sourceId, destinationId) {
-    let affect = Affects.getAffectFromRole(this.getPlayerRoleName(sourceId));
-    if (Affects.isResistanceBind(affect)) {
-        affect.valid = this.getPlayerRoleName(destinationId) !== Roles.Morgana.name;
-    } else {
-        affect.valid = true;
-    }
-    this.getCurrentProposal().toggleAffect(sourceId, destinationId, affect);
-}
-
-Game.prototype.getProposalResult = function () {
-    return this.getCurrentProposal().result;
-}
-
-Game.prototype.getProposalResultExtendedInformation = function(playerId) {
-    const currentProposal = this.getCurrentProposal();
-    if (currentProposal && currentProposal.result !== null) {
-        const missionTeam = currentProposal.team;
-        const approvedVoteInformation = [];
-        const importantApprovedVoteInformation = [];
-        const rejectedVoteInformation = [];
-        const importantRejectedVoteInformation = [];
-        const voteInformation = [];
-
-        for (let id = 0; id < this.playerCount; id++) {
-            const isMissionLeader = this.currentLeaderId === id;
-            const playerAffect = currentProposal.getAffectOnPlayerId(id);
-            const isOnTeam = missionTeam.includes(id);
-            if (isMissionLeader || isOnTeam) {
-                if (currentProposal.getVote(id)) {
-                    importantApprovedVoteInformation.push({
-                        name: this.players[id].name,
-                        vote: true,
-                        isLeader: isMissionLeader,
-                        isOnTeam: isOnTeam,
-                        affect: this._getVisibleAffectForPlayerId(playerId, playerAffect)
-                    });
-                } else {
-                    importantRejectedVoteInformation.push({
-                        name: this.players[id].name,
-                        vote: false,
-                        isLeader: isMissionLeader,
-                        isOnTeam: isOnTeam,
-                        affect: this._getVisibleAffectForPlayerId(playerId, playerAffect)
-                    });
-                }
-            } else {
-                if (currentProposal.getVote(id)) {
-                    approvedVoteInformation.push({
-                        name: this.players[id].name,
-                        vote: true,
-                        isLeader: false,
-                        isOnTeam: false,
-                        affect: this._getVisibleAffectForPlayerId(playerId, playerAffect)
-                    });
-                } else {
-                    rejectedVoteInformation.push({
-                        name: this.players[id].name,
-                        vote: false,
-                        isLeader: false,
-                        isOnTeam: false,
-                        affect: this._getVisibleAffectForPlayerId(playerId, playerAffect)
-                    });
-                }
-            }
-        }
-
-        Array.prototype.push.apply(voteInformation, importantApprovedVoteInformation);
-        Array.prototype.push.apply(voteInformation, approvedVoteInformation);
-        Array.prototype.push.apply(voteInformation, importantRejectedVoteInformation);
-        Array.prototype.push.apply(voteInformation, rejectedVoteInformation);
-        return {
-            voteInformation: voteInformation,
-            result: currentProposal.result
-        };
-    } else {
-        return null;
-    }
-}
-
-Game.prototype._getVisibleAffectForPlayerId = function(playerId, visibleAffect) {
-    if (!visibleAffect) {
-        return null;
+Game.prototype._processMissionResult = function(result) {
+    switch (result) {
+        case "Success":
+            this.resistanceWins += 1;
+            break;
+        case "Fail":
+            this.spyWins += 1;
+            break;
     }
 
-    const isSpy = this.players[playerId].isSpy;
-    const isSource = visibleAffect.sourceId === playerId;
-    const isDestination = visibleAffect.destinationId === playerId;
-
-    if (visibleAffect.name === "Protect") {
-        if (isSpy || isSource) {
-            return {
-                name: visibleAffect.name,
-                type: visibleAffect.type
-            };
-        }
-    } else if (visibleAffect.name === "Bind") {
-        if (isSpy || isSource || isDestination) {
-            return {
-                name: visibleAffect.name,
-                type: visibleAffect.type
-            };
-        }
+    if (this.resistanceWins === 3) {
+        return "Resistance";
+    } else if (this.spyWins === 3) {
+        return "Spies";
     }
 
     return null;
 }
 
-Game.prototype.getConductMissionInformation = function(id) {
-    const player = this._getPlayer(id);
-    const currentMission = this.getCurrentMission();
-    const isOnMission = currentMission.isOnMissionTeam(id);
-    const hasConducted = currentMission.hasConducted(id);
-    if (isOnMission && !hasConducted) {
-        const playerRole = player.role;
-        const playerTeam = player.team;
-        const playerBind = currentMission.getBindOnPlayerId(id);
-        const resistanceBound = Affects.isResistanceBind(playerBind);
-        const spyBound = Affects.isSpyBind(playerBind);
-        const successAllowed = !spyBound;
-        const failAllowed = (playerTeam === "Spies" || playerRole === Roles.Puck.name || spyBound) && !resistanceBound;
-        const reverseAllowed = (playerRole === Roles.Lancelot.name || playerRole === Roles.Maelagant.name) && !resistanceBound && !spyBound;
-        let sirRobinIntel = undefined;
-        let spySuggestion = null;
-
-        if (playerRole === Roles.SirRobin.name) {
-            sirRobinIntel = this._getSirRobinIntel(id, currentMission);
+Game.prototype.handleMissionsFinished = function(roundsWinner) {
+    if (roundsWinner === "Spies") {
+        if (this.playersByRole.has(Roles.Kay.name)) {
+            this.phase = Game.PHASE_REDEMPTION;
+        } else {
+            this.winner = "Spies";
+            this.phase = Game.PHASE_DONE;
         }
-
-        if (playerTeam === "Spies" && !resistanceBound && !spyBound) {
-            const sabotagingPlayers = this._getSabotagingPlayers(currentMission);
-            if (sabotagingPlayers.includes(id)) {
-                if (sabotagingPlayers.length === currentMission.requiredFails) {
-                    if (playerRole === Roles.Maelagant && currentMission.requiredFails === 1) {
-                        spySuggestion = ["fail", "reverse"];
-                    } else {
-                        spySuggestion = ["fail"];
-                    }
-                } else {
-                    if (playerRole === Roles.Maelagant) {
-                        // 2 fails required, you are Maelagant
-                        spySuggestion = ["reverse"];
-                    } else if (this.resistanceWins !== 2) {
-                        // 2 fails required, no second spy
-                        spySuggestion = ["success"];
-                    }
-                }
-            } else {
-                spySuggestion = ["success"];
-            }
-        }
-        
-        const conductMissionInformation = {
-            resistanceBound: resistanceBound,
-            spyBound: spyBound,
-            spySuggestion: spySuggestion,
-            successAllowed: successAllowed,
-            failAllowed: failAllowed,
-            reverseAllowed: reverseAllowed
-        };
-        if (sirRobinIntel !== undefined) {
-            conductMissionInformation.sirRobinIntel = sirRobinIntel;
-        }
-        return conductMissionInformation;
     } else {
-        return null;
+        this.phase = Game.PHASE_ASSASSINATION;
     }
-}
-
-Game.prototype._getSirRobinIntel = function (id, currentMission) {
-    let intel = null;
-    if (this.robinUsedIntel.has(this.currentMissionId)) {
-        intel = this.players[this.robinUsedIntel.get(this.currentMissionId)].name;
-    } else if (!this.playersByRole.has(Roles.Accolon.name) || !currentMission.isOnMissionTeam(this.playersByRole.get(Roles.Accolon.name).id)) {
-        const possibleIntel = currentMission.getMissionTeam()
-            .filter(missionPlayerId => missionPlayerId !== id && !Array.from(this.robinUsedIntel.values()).includes(missionPlayerId) && !this.players[missionPlayerId].isSpy);
-        if (possibleIntel.length > 0) {
-            const usedIntel = choice(possibleIntel);
-            this.robinUsedIntel.set(this.currentMissionId, usedIntel);
-            intel = this.players[usedIntel].name;
-        }
-    }
-
-    return intel;
-}
-
-Game.prototype.addMissionAction = function(id, action) {
-    const currentMission = this.getCurrentMission();
-    currentMission.addAction(id, action);
-    if (currentMission.actionCount === currentMission.teamSize) {
-        currentMission.finalize();
-        this.advance();
-        return true;
-    } else {
-        return false;
-    }
-}
-
-Game.prototype.getMissionResult = function(missionId) {
-    if (missionId === undefined) {
-        missionId = this.currentMissionId;
-    }
-    const mission = this.missions[missionId];
-
-    if (mission && mission.result !== null) {
-        return {
-            result: mission.result,
-            successCount: mission.actionCount - mission.failActionCount - mission.reverseActionCount,
-            failCount: mission.failActionCount,
-            reverseCount: mission.reverseActionCount
-        };
-    } else {
-        return null;
-    }
-}
-
-Game.prototype.getMissionResultsInformation = function() {
-    const missions = [];
-    for (let i = 0; i < Game.NUM_MISSIONS; i++) {
-        const mission = this.missions[i];
-        missions.push({
-            teamSize: mission.teamSize,
-            result: mission.result
-        });
-    }
-
-    return {
-        missions: missions
-    };
 }
 
 Game.prototype.getConductRedemptionInformation = function(id) {
-    const currentPlayer = this.players[id];
-    if (!currentPlayer.isSpy && currentPlayer.role === Roles.Kay) {
-        return {
-            players: this._selectPlayers({
-                excludedIds: [id]
-            }, ['id', 'name'], false),
-            spyCount: this.spyPlayerCount
-        };
+    return {
+        players: this._selectPlayers({}, ['id', 'name'], false),
+        spyCount: this.spyPlayerCount
+    };
+}
+
+Game.prototype.handleRedemptionAttempt = function(ids) {
+    if (this.processRedemptionAttempt(ids)) {
+        this.phase = Game.PHASE_ASSASSINATION;
     } else {
-        return {
-            kay: this.playersByRole.get(Roles.Kay.name).name
-        }
+        this.winner = "Spies";
+        this.phase = Game.PHASE_DONE;
     }
 }
 
@@ -663,25 +238,18 @@ Game.prototype.processRedemptionAttempt = function(ids) {
         incorrectSpies: incorrectSpies
     };
 
-    if (incorrectSpies === 0) {
-        this.phase = Game.PHASE_ASSASSINATION;
-    } else {
-        this.winner = "Spies";
-        this.phase = Game.PHASE_DONE;
-    }
+    return incorrectSpies === 0;
 }
 
 Game.prototype.getConductAssassinationInformation = function(id) {
-    const currentPlayer = this.players[id];
-    if (currentPlayer.isAssassin === true) {
-        return {
-            players: this.resistance.map(player => player.getPlayerInformation())
-        };
-    } else {
-        return {
-            assassin: this.players[this.assassinId].name
-        };
-    }
+    return {
+        players: this.resistance.map(player => player.getPlayerInformation())
+    };
+}
+
+Game.prototype.handleAssassinationAttempt = function(conductAssassinationInformation) {
+    this.processAssassinationAttempt(conductAssassinationInformation);
+    this.phase = Game.PHASE_DONE;
 }
 
 Game.prototype.processAssassinationAttempt = function(conductAssassinationInformation) {
@@ -720,28 +288,12 @@ Game.prototype.processAssassinationAttempt = function(conductAssassinationInform
                 break;
         }
     }
-
-    this.advance();
 }
 
-Game.prototype.getGameResult = function() {
-    const missions = [];
-    for (let i = 0; i < Game.NUM_MISSIONS; i++) {
-        let missionResult = null;
-        switch (this.missions[i].result) {
-            case "Success":
-                missionResult = "Resistance";
-                break;
-            case "Fail":
-                missionResult = "Spies";
-                break;
-        }
-        missions.push(missionResult);
-    }
-    
+Game.prototype.getGameResult = function() {    
     return {
         winner: this.winner,
-        missions: missions,
+        missions: this.missions,
         assassination: this.assassinationAttemptInformation
     };
 }
@@ -780,12 +332,13 @@ Game.prototype.getGameResultInformation = function() {
 Game.prototype._performAccolonSabotage = function() {
     let possibleTargetRoles = [
         Roles.Merlin, Roles.Percival, Roles.Tristan, Roles.Iseult, Roles.Arthur,
-        Roles.Uther, Roles.Galahad, Roles.Guinevere, Roles.Bedivere
+        Roles.Uther, Roles.Galahad, Roles.Guinevere, Roles.Bedivere, Roles.Lamorak
     ];
 
     const target = this.players[this._selectPlayers({
         includedRoles: possibleTargetRoles,
-        includedTeams: []
+        includedTeams: [],
+        excludedIds: [this.rolePickerId]
     })[0].id];
     let intel = target.intel[0];
 
@@ -809,6 +362,30 @@ Game.prototype._performAccolonSabotage = function() {
         const randomIndex = choice(possibleIndexes);
         intel[randomIndex] = null;
         target.performSabotage(intel);
+    } else if (target.role === Roles.Lamorak) {
+        const insertIntoSameTeam = nextBoolean();
+        let isFirstPairSameTeam = false;
+        let firstPairTeam = null;
+        for (const player in intel[0]) {
+            if (firstPairTeam === null) {
+                firstPairTeam = player.team;
+            } else {
+                isFirstPairSameTeam = player.team === firstPairTeam;
+            }
+        }
+        if (insertIntoSameTeam) {
+            if (isFirstPairSameTeam) {
+                intel[0][choice([0, 1])] = target.getPlayerInformation();
+            } else {
+                intel[1][choice([0, 1])] = target.getPlayerInformation();
+            }
+        } else {
+            if (isFirstPairSameTeam) {
+                intel[1][choice([0, 1])] = target.getPlayerInformation();
+            } else {
+                intel[0][choice([0, 1])] = target.getPlayerInformation();
+            }
+        }
     } else {
         let insertPlayer = null;
         switch (target.role) {
@@ -905,6 +482,9 @@ Game.prototype._addResistanceRoleIntel = function() {
                 break;
             case Roles.Bedivere:
                 resistancePlayer.addIntel(this._getBedivereIntel());
+                break;
+            case Roles.Lamorak:
+                resistancePlayer.addIntel(this._getLamorakIntel());
                 break;
             default:
                 resistancePlayer.addIntel(null);
@@ -1008,6 +588,65 @@ Game.prototype._getBedivereIntel = function() {
     });
 }
 
+Game.prototype._getLamorakIntel = function() {
+    const sameTeamPair = [];
+    const differentTeamPair = [];
+    const usedPlayerIds = [];
+
+    const firstRandomPlayer = this._selectPlayers({
+        excludedRoles: [Roles.Lamorak]
+    }, ['id', 'name', 'role', 'team'])[0];
+    usedPlayerIds.push(firstRandomPlayer.id);
+    const isFirstPairOnSameTeam = nextBoolean();
+    if (isFirstPairOnSameTeam) {
+        sameTeamPair.push(firstRandomPlayer);
+        const sameTeamPlayer = this._selectPlayers({
+            excludedRoles: [Roles.Lamorak],
+            excludedIds: [firstRandomPlayer.id],
+            includedTeams: [firstRandomPlayer.team]
+        }, ['id', 'name', 'role', 'team'])[0];
+        sameTeamPair.push(sameTeamPlayer);
+        usedPlayerIds.push(sameTeamPlayer.id);
+    } else {
+        differentTeamPair.push(firstRandomPlayer);
+        const differentTeamPlayer = this._selectPlayers({
+            excludedRoles: [Roles.Lamorak],
+            excludedTeams: [firstRandomPlayer.team]
+        }, ['id', 'name', 'role', 'team'])[0];
+        differentTeamPair.push(differentTeamPlayer);
+        usedPlayerIds.push(differentTeamPlayer.id);
+    }
+
+    if (isFirstPairOnSameTeam) {
+        const firstPlayerOfDifferentTeam = this._selectPlayers({
+            excludedRoles: [Roles.Lamorak],
+            excludedIds: usedPlayerIds
+        }, ['id', 'name', 'role', 'team'])[0];
+        differentTeamPair.push(firstPlayerOfDifferentTeam);
+        usedPlayerIds.push(firstPlayerOfDifferentTeam.id);
+
+        const secondPlayerOfDifferentTeam = this._selectPlayers({
+            excludedRoles: [Roles.Lamorak],
+            excludedIds: usedPlayerIds,
+            excludedTeams: [firstPlayerOfDifferentTeam.team]
+        }, ['id', 'name', 'role', 'team'])[0];
+        differentTeamPair.push(secondPlayerOfDifferentTeam);
+        usedPlayerIds.push(secondPlayerOfDifferentTeam.id);
+    } else {
+        Array.prototype.push.apply(sameTeamPair, this._selectPlayers({
+            excludedRoles: [Roles.Lamorak],
+            excludedIds: usedPlayerIds,
+            excludedTeams: [nextBoolean() ? "Resistance" : "Spies"]
+        }, ['id', 'name', 'role', 'team']).slice(0, 2));
+    }
+
+    if (nextBoolean()) {
+        return [sameTeamPair, differentTeamPair];
+    } else {
+        return [differentTeamPair, sameTeamPair];
+    }
+}
+
 Game.prototype._getLuciusIntel = function() {
     const seenPlayers = this._selectPlayers({
         excludedRoles: [
@@ -1044,6 +683,7 @@ Game.prototype._selectPlayers = function(searchOptions, playerInformationOptions
     const excludedRoles = 'excludedRoles' in searchOptions ? searchOptions.excludedRoles : [];
     const excludedIds = 'excludedIds' in searchOptions ? searchOptions.excludedIds : [];
     const includedTeams = 'includedTeams' in searchOptions ? searchOptions.includedTeams : ["Resistance", "Spies"];
+    const excludedTeams = 'excludedTeams' in searchOptions ? searchOptions.excludedTeams : [];
 
     const players = [];
     for (let i = 0; i < this.players.length; i++) {
@@ -1051,65 +691,12 @@ Game.prototype._selectPlayers = function(searchOptions, playerInformationOptions
         const role = player.role;
         const team = role.team;
         if ((includedRoles.includes(role) || includedTeams.includes(team))
-            && !excludedRoles.includes(role) && !excludedIds.includes(i)) {
+            && !excludedRoles.includes(role) && !excludedIds.includes(i) && !excludedTeams.includes(team)) {
             players.push(player.getPlayerInformation(playerInformationOptions));
         }
     }
 
     return shuffled ? shuffle(players) : players;
-}
-
-// #endregion
-
-// #region Advance Helper Functions
-
-Game.prototype._advanceLeader = function() {
-    this.currentLeaderId += 1;
-    this.currentLeaderId %= this.playerCount;
-}
-
-Game.prototype._startProposal = function() {
-    const proposal = new Proposal(this.currentLeaderId);
-    this.getCurrentMission().addProposal(this.currentLeaderId, proposal);
-    this.phase = Game.PHASE_PROPOSE;
-}
-
-Game.prototype._processMissionResult = function(result) {
-    switch (result) {
-        case "Success":
-            this.resistanceWins += 1;
-            break;
-        case "Fail":
-            this.spyWins += 1;
-            break;
-    }
-
-    if (this.resistanceWins === 3) {
-        return "Resistance";
-    } else if (this.spyWins === 3) {
-        return "Spies";
-    }
-
-    return null;
-}
-
-// #endregion
-
-// #region Information Building Helper Functions
-
-Game.prototype._getSabotagingPlayers = function(currentMission) {
-    const sabotagingPlayers = currentMission.getMissionTeam().filter(playerId => Affects.isSpyBind(currentMission.getBindOnPlayerId(playerId)));
-    const requiredFails = currentMission.requiredFails;
-    let currentSpyIndex = 0;
-    while (sabotagingPlayers.length < requiredFails && currentSpyIndex < this.spies.length) {
-        const spyId = this.spies[currentSpyIndex].id;
-        if (!sabotagingPlayers.includes(spyId) && currentMission.isOnMissionTeam(spyId) && !Affects.isResistanceBind(currentMission.getBindOnPlayerId(spyId))) {
-            sabotagingPlayers.push(spyId);
-        }
-        currentSpyIndex += 1;
-    }
-
-    return sabotagingPlayers;
 }
 
 // #endregion

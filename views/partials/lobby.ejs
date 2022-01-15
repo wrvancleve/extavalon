@@ -1,0 +1,9 @@
+<h1 class="future-header" id="game-code">Game Code: <%= code %></h1>
+<div id="lobby-players">
+    <h2 id="lobby-player-count">Players [0]</h2>
+</div>
+<% if (host) { %>
+    <button class="future-button future-button-disabled" type="button"
+        id="start-game-button" disabled>Start Game</button>
+    <button class="future-button" type="button" id="close-lobby-button">Close Lobby</button>
+<% } %>
