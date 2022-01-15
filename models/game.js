@@ -105,13 +105,11 @@ Game.prototype.getPossibleRoles = function() {
         Roles.Colgrevance.name
     ];
 
-    if (this.playerCount > 6) {
-        if (this.settings.accolon) {
-            possibleSpyRoles.push(Roles.Accolon.name);
-        }
-        if (this.settings.lucius) {
-            possibleSpyRoles.push(Roles.Lucius.name);
-        }
+    if (this.playerCount > 6 && this.settings.accolon) {
+        possibleSpyRoles.push(Roles.Accolon.name);
+    }
+    if (this.playerCount > 8) {
+        possibleSpyRoles.push(Roles.Lucius.name);
     }
 
     return {
