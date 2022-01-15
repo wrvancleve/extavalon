@@ -219,7 +219,7 @@ document.addEventListener('DOMContentLoaded', function () {
     function createNewGameSettings(settingContainer) {
         settingContainer.appendChild(createGameSettingItem("Ector:", "ector", false));
         settingContainer.appendChild(createGameSettingItem("Kay:", "kay", false));
-        settingContainer.appendChild(createGameSettingItem("Bors:", "bors", false));
+        //settingContainer.appendChild(createGameSettingItem("Bors:", "bors", false));
         settingContainer.appendChild(createGameSettingItem("Lamorak:", "lamorak", false));
         settingContainer.appendChild(createGameSettingItem("Titania:", "titania", false));
         settingContainer.appendChild(createGameSettingItem("Accolon:", "accolon", true));
