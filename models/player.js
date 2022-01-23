@@ -500,12 +500,11 @@ Player.prototype._getGaherisHTML = function () {
     let gaherisHTML = `
         <h2 class="future-header resistance">Gaheris</h2>
         <section>
-            <p>While voting for a team, you may mark one player for a <span class="resistance">Resistance</span> bind.</p>
-            <p>A <span class="resistance">Resistance</span> bound player must play a success mission card for that mission unless the player is <span class="spy">Morgana</span>.</p>
-            <p>If the team is approved, your bind is attempted against the marked player and you may no longer mark another player for a <span class="resistance">Resistance</span> bind.</p>
-            <p>If your bind is attempted against a player marked as protected from <span class="resistance">Resistance</span> binds then your bind is blocked.</p>
-            <p>If your bind is attempted against a player not marked as protected from <span class="resistance">Resistance</span> binds then your bind is applied to the player.</p>
-            <p>On later missions that can result in the game ending, no binds or protections can occur.</p>
+            <p>While voting for a team, you may attempt to bind one player to the <span class="resistance">Resistance</span>.</p>
+            <p>If the team is approved, the bind will be attempted on the player.
+            <p>If the bind is not blocked, the player bound must play a success unless the player is <span class="spy">Morgana</span>.</p>
+            <p>Once the bind is attempted, this bind can no longer be attempted.</p>
+            <p>On later missions that can result in the game ending, no binds can occur.</p>
         </section>
     `;
 
@@ -520,12 +519,10 @@ Player.prototype._getGeraintHTML = function () {
     let geraintHTML = `
         <h2 class="future-header resistance">Geraint</h2>
         <section>
-            <p>While voting for a team, you may mark one player to be protected from a <span class="spy">Spy</span> bind.</p>
-            <p>A <span class="spy">Spy</span> bound player must play a fail mission card for that mission.</p>
-            <p>If the team is approved, the protection is applied to the marked player.</p>
-            <p>If a <span class="spy">Spy</span> bind occurs against the protected player, the bind is blocked and no future <span class="spy">Spy</span> binds may occur.</p>
-            <p>If a <span class="spy">Spy</span> bind occurs against a different player, the bind is applied to the unprotected player and no future <span class="spy">Spy</span> binds may occur.</p>
-            <p>If no <span class="spy">Spy</span> bind is attempted, you may again mark a player to be protected from a <span class="spy">Spy</span> bind.</p>
+            <p>While voting for a team, you may protect one player from a <span class="spy">Spy</span> bind.</p>
+            <p>A player that is <span class="spy">Spy</span> bound must play a fail.</p>
+            <p>If the team is approved, the protection will block a <span class="spy">Spy</span> bind attempted on that player.</p>
+            <p>You may keep attempting a protection while the <span class="spy">Spy</span> bind can still be used.</p>
             <p>On later missions that can result in the game ending, no binds or protections can occur.</p>
         </section>
     `;
@@ -617,12 +614,11 @@ Player.prototype._getCerdicHTML = function() {
     let cerdicHTML = `
         <h2 class="future-header spy">Cerdic</h2>
         <section>
-            <p>While voting for a team, you may mark one player for a <span class="spy">Spy</span> bind.</p>
-            <p>A <span class="spy">Spy</span> bound player must play a fail mission card for that mission.</p>
-            <p>If the team is approved, your bind is attempted against the marked player and you may no longer mark another player for a <span class="spy">Spy</span> bind.</p>
-            <p>If your bind is attempted against a player marked as protected from <span class="spy">Spy</span> binds then your bind is blocked.</p>
-            <p>If your bind is attempted against a player not marked as protected from <span class="spy">Spy</span> binds then your bind is applied to the player.</p>
-            <p>On later missions that can result in the game ending, no binds or protections can occur.</p>
+            <p>While voting for a team, you may attempt to bind one player to the <span class="spy">Spies</span>.</p>
+            <p>If the team is approved, the bind will be attempted on the player.
+            <p>If the bind is not blocked, the player bound must play a fail.</p>
+            <p>Once the bind is attempted, this bind can no longer be attempted.</p>
+            <p>On later missions that can result in the game ending, no binds can occur.</p>
         </section>
     `;
     cerdicHTML += this._getSpyHTML();
@@ -633,12 +629,10 @@ Player.prototype._getCynricHTML = function() {
     let cynricHTML = `
         <h2 class="future-header spy">Cynric</h2>
         <section>
-            <p>While voting for a team, you may mark one player to be protected from a <span class="resistance">Resistance</span> bind.</p>
-            <p>A <span class="resistance">Resistance</span> bound player must play a success mission card for that mission unless the player is <span class="spy">Morgana</span>.</p>
-            <p>If the team is approved, the protection is applied to the marked player.</p>
-            <p>If a <span class="resistance">Resistance</span> bind occurs against the protected player, the bind is blocked and no future <span class="resistance">Resistance</span> binds may occur.</p>
-            <p>If a <span class="resistance">Resistance</span> bind occurs against a different player, the bind is applied to the unprotected player and no future <span class="resistance">Resistance</span> binds may occur.</p>
-            <p>If no <span class="resistance">Resistance</span> bind is attempted, you may again mark a player to be protected from a <span class="resistance">Resistance</span> bind.</p>
+            <p>While voting for a team, you may protect one player from a <span class="resistance">Resistance</span> bind.</p>
+            <p>A player that is <span class="resistance">Resistance</span> bound must play a success unless the player is <span class="spy">Morgana</span>.</p>
+            <p>If the team is approved, the protection will block a <span class="resistance">Resistance</span> bind attempted on that player.</p>
+            <p>You may keep attempting a protection while the <span class="resistance">Resistance</span> bind can still be used.</p>
             <p>On later missions that can result in the game ending, no binds or protections can occur.</p>
         </section>
     `;

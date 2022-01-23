@@ -271,12 +271,20 @@ OnlineGame.prototype.getSetupVoteInformation = function(id) {
         }
 
         return currentProposalInformationForPlayer;
-    })
+    });
+
+    const playersStillVoting = [];
+    for (let i = 0; i < this.playerCount; i++) {
+        if (!currentProposal.hasVoted(i)) {
+            playersStillVoting.push(this._getPlayer(i, ["id", "name"]));
+        }
+    }
 
     return {
         team: team,
-        selectedVote: this.getCurrentProposal().getVote(id),
-        applyAffect: applyAffect
+        selectedVote: currentProposal.getVote(id),
+        applyAffect: applyAffect,
+        playersStillVoting: playersStillVoting
     };
 }
 
@@ -290,6 +298,10 @@ OnlineGame.prototype.setProposalVote = function(id, vote) {
     } else {
         return false;
     }
+}
+
+OnlineGame.prototype.hasPlayerVoted = function(id) {
+    return this.getCurrentProposal().hasVoted(id);
 }
 
 OnlineGame.prototype.toggleAffect = function(sourceId, destinationId) {
@@ -329,17 +341,15 @@ OnlineGame.prototype.getProposalResultExtendedInformation = function(playerId) {
                 const isViewerTheDestination = playerAffect.destinationId === playerId;
             
                 if (playerAffect.name === "Protect") {
-                    if (isSpy || isViewerTheSource) {
+                    if (isViewerTheSource) {
                         visibleAffect = {
                             name: playerAffect.name,
                             type: playerAffect.type
                         };
-                        if (isViewerTheSource) {
-                            bindInformation.push(`You successfully protected ${this.players[id].name} from a <span class="${playerAffect.type.toLowerCase()}">${playerAffect.type}</span> bind.`);
-                        } else if (isSpy && isViewerTheDestination) {
-                            bindInformation.push(`You have been protected from a <span class="${playerAffect.type.toLowerCase()}">${playerAffect.type}</span> bind.`);
+                        if (isViewerTheDestination) {
+                            bindInformation.push(`You successfully protected yourself from a <span class="${playerAffect.type.toLowerCase()}">${playerAffect.type}</span> bind.`);
                         } else {
-                            bindInformation.push(`${this.players[id].name} has been protected from a <span class="${playerAffect.type.toLowerCase()}">${playerAffect.type}</span> bind.`);
+                            bindInformation.push(`You successfully protected ${this.players[id].name} from a <span class="${playerAffect.type.toLowerCase()}">${playerAffect.type}</span> bind.`);
                         }
                     }
                 } else if (playerAffect.name === "Bind") {

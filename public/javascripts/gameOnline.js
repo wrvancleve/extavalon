@@ -366,27 +366,32 @@ function setupVote(setupVoteInformation) {
     const selectedVote = setupVoteInformation.selectedVote;
     const team = setupVoteInformation.team;
     const applyAffect = setupVoteInformation.applyAffect;
+    const playersStillVoting = setupVoteInformation.playersStillVoting;
+
+    if (selectedVote !== undefined) {
+        if (playersStillVoting.length > 3) {
+            gameContent.appendChild(createHeaderTwo(null, `
+                Still Voting: ${playersStillVoting.length} players
+            `));
+        } else {
+            gameContent.appendChild(createHeaderTwo(null, `
+                Still Voting: ${playersStillVoting.map(player => player.name).join(", ")}
+            `));
+        }
+    }
 
     switch (applyAffect) {
         case "ResistanceProtect":
-            gameContent.appendChild(createHeaderTwo(null, `
-                You may select one player below to protect from a <span class="resistance">Resistance</span> bind. Refer to your role information for more details.
-            `));
+            gameContent.appendChild(createHeaderTwo(null, `You may select one player below to protect from a <span class="resistance">Resistance</span> bind.`));
             break;
         case "ResistanceBind":
-            gameContent.appendChild(createHeaderTwo(null, `
-                You may select one player below to bind to the <span class="resistance">Resistance</span>. Refer to your role information for more details.
-            `));
+            gameContent.appendChild(createHeaderTwo(null, `You may select one player below to bind to the <span class="resistance">Resistance</span>.`));
             break;
         case "SpyProtect":
-            gameContent.appendChild(createHeaderTwo(null, `
-                You may select one player below to protect from a <span class="spy">Spy</span> bind. Refer to your role information for more details.
-            `));
+            gameContent.appendChild(createHeaderTwo(null, `You may select one player below to protect from a <span class="spy">Spy</span> bind.`));
             break;
         case "SpyBind":
-            gameContent.appendChild(createHeaderTwo(null, `
-                You may select one player below to bind to the <span class="spy">Spies</span>. Refer to your role information for more details.
-            `));
+            gameContent.appendChild(createHeaderTwo(null, `You may select one player below to bind to the <span class="spy">Spies</span>.`));
             break;
     }
 

@@ -116,7 +116,6 @@ const Bors = {
 };
 
 function generateRoles(resistanceCount, spyCount, gameType, settings, identityPickInformation) {
-    console.log("Is Game Online: %j", gameType);
     const playerCount = resistanceCount + spyCount;
     let resistanceRoles = new Set();
     let spyRoles = new Set();

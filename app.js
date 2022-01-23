@@ -78,4 +78,14 @@ process.on('SIGINT', function() {
   process.exit();
 });
 
+const util = require('util');
+const fs = require('fs');
+
+var log_file_err=fs.createWriteStream(__dirname + '/error.log',{flags:'a'});  
+
+process.on('uncaughtException', function(err) {
+  console.log('Caught exception: ' + err);
+  log_file_err.write(util.format('Caught exception: ' + err) + '\n');
+});
+
 module.exports = app;

@@ -78,9 +78,6 @@ Game.prototype.getPossibleRoles = function() {
                 possibleResistanceRoles.push(Roles.Titania.name);
             }
         case 9:
-            if (this.settings.ector) {
-                possibleResistanceRoles.push(Roles.Ector.name);
-            }
             if (this.settings.bors) {
                 possibleResistanceRoles.push(Roles.Bors.name);
             }
@@ -91,6 +88,9 @@ Game.prototype.getPossibleRoles = function() {
             }
             if (this.settings.lamorak) {
                 possibleResistanceRoles.push(Roles.Lamorak.name);
+            }
+            if (this.settings.ector) {
+                possibleResistanceRoles.push(Roles.Ector.name);
             }
         case 7:
             possibleResistanceRoles.push(Roles.Guinevere.name);
@@ -353,7 +353,7 @@ Game.prototype._performAccolonSabotage = function() {
     } else if (target.role === Roles.Bedivere) {
         const possibleIndexes = [];
         for (let i = 0; i < intel.length; i++) {
-            if (intel[i] !== Roles.Accolon.name && intel[i] !== Roles.Mordred.name) {
+            if (intel[i] !== Roles.Accolon.name) {
                 possibleIndexes.push(i);
             }
         }
@@ -592,14 +592,14 @@ Game.prototype._getLamorakIntel = function() {
     const usedPlayerIds = [];
 
     const firstRandomPlayer = this._selectPlayers({
-        excludedRoles: [Roles.Lamorak]
+        excludedRoles: [Roles.Lamorak, Roles.Ector]
     }, ['id', 'name', 'role', 'team'])[0];
     usedPlayerIds.push(firstRandomPlayer.id);
     const isFirstPairOnSameTeam = nextBoolean();
     if (isFirstPairOnSameTeam) {
         sameTeamPair.push(firstRandomPlayer);
         const sameTeamPlayer = this._selectPlayers({
-            excludedRoles: [Roles.Lamorak],
+            excludedRoles: [Roles.Lamorak, Roles.Ector],
             excludedIds: [firstRandomPlayer.id],
             includedTeams: [firstRandomPlayer.team]
         }, ['id', 'name', 'role', 'team'])[0];
@@ -608,7 +608,7 @@ Game.prototype._getLamorakIntel = function() {
     } else {
         differentTeamPair.push(firstRandomPlayer);
         const differentTeamPlayer = this._selectPlayers({
-            excludedRoles: [Roles.Lamorak],
+            excludedRoles: [Roles.Lamorak, Roles.Ector],
             excludedTeams: [firstRandomPlayer.team]
         }, ['id', 'name', 'role', 'team'])[0];
         differentTeamPair.push(differentTeamPlayer);
@@ -617,14 +617,14 @@ Game.prototype._getLamorakIntel = function() {
 
     if (isFirstPairOnSameTeam) {
         const firstPlayerOfDifferentTeam = this._selectPlayers({
-            excludedRoles: [Roles.Lamorak],
+            excludedRoles: [Roles.Lamorak, Roles.Ector],
             excludedIds: usedPlayerIds
         }, ['id', 'name', 'role', 'team'])[0];
         differentTeamPair.push(firstPlayerOfDifferentTeam);
         usedPlayerIds.push(firstPlayerOfDifferentTeam.id);
 
         const secondPlayerOfDifferentTeam = this._selectPlayers({
-            excludedRoles: [Roles.Lamorak],
+            excludedRoles: [Roles.Lamorak, Roles.Ector],
             excludedIds: usedPlayerIds,
             excludedTeams: [firstPlayerOfDifferentTeam.team]
         }, ['id', 'name', 'role', 'team'])[0];
@@ -632,7 +632,7 @@ Game.prototype._getLamorakIntel = function() {
         usedPlayerIds.push(secondPlayerOfDifferentTeam.id);
     } else {
         Array.prototype.push.apply(sameTeamPair, this._selectPlayers({
-            excludedRoles: [Roles.Lamorak],
+            excludedRoles: [Roles.Lamorak, Roles.Ector],
             excludedIds: usedPlayerIds,
             excludedTeams: [nextBoolean() ? "Resistance" : "Spies"]
         }, ['id', 'name', 'role', 'team']).slice(0, 2));
@@ -672,8 +672,8 @@ Game.prototype._getSpyIntel = function(currentPlayer) {
 
 // #region Player Helper Functions
 
-Game.prototype._getPlayer = function(id) {
-    return this.players[id].getPlayerInformation(['id', 'name', 'role', 'team']);
+Game.prototype._getPlayer = function(id, playerInformationFields=['id', 'name', 'role', 'team']) {
+    return this.players[id].getPlayerInformation(playerInformationFields);
 }
 
 Game.prototype._selectPlayers = function(searchOptions, playerInformationOptions, shuffled=true) {

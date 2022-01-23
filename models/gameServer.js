@@ -311,25 +311,31 @@ function createGameServer(httpServer, sessionMiddleware) {
 
     function handleVoteTeam(lobby, userId, vote) {
         const playerId = lobby.playerCollection.getPlayerIdOfUserId(userId);
-        const voteFinished = lobby.game.setProposalVote(playerId, vote);
+        const game = lobby.game;
+        const alreadyVoted = game.hasPlayerVoted(playerId);
+        const voteFinished = game.setProposalVote(playerId, vote);
 
         if (voteFinished) {
             for (let gamePlayer of lobby.playerCollection.getGamePlayers()) {
-                sendVoteResult(lobby.game, gamePlayer);
+                sendVoteResult(game, gamePlayer);
             }
             
-            if (lobby.game.phase !== OnlineGame.PHASE_VOTE_REACT) {
-                sendMissionResultsInformation(lobby.game, lobby.code);
+            if (game.phase !== OnlineGame.PHASE_VOTE_REACT) {
+                sendMissionResultsInformation(game, lobby.code);
                 
-                if (lobby.game.phase === Game.PHASE_REDEMPTION) {
+                if (game.phase === Game.PHASE_REDEMPTION) {
                     startConductRedemption(lobby);
-                } else if (lobby.game.isGameOver()) {
+                } else if (game.isGameOver()) {
                     finishGame(lobby);
                 } else {
                     sendReact(lobby.playerCollection.getSocketIdOfPlayerId(0));
                 }
             } else {
                 sendReact(lobby.playerCollection.getSocketIdOfPlayerId(0));
+            }
+        } else if (!alreadyVoted) {
+            for (let gamePlayer of lobby.playerCollection.getGamePlayers()) {
+                sendVoteTeam(game, gamePlayer);
             }
         }
     }
