@@ -85,7 +85,7 @@ var log_file_err=fs.createWriteStream(__dirname + '/error.log',{flags:'a'});
 
 process.on('uncaughtException', function(err) {
   log_file_err.write(util.format('Caught exception: ' + err) + '\n');
-  log_file_err.write(util.format(err.stack) + '\n');
+  log_file_err.write(err.stack + '\n');
   process.exit();
 });
 
