@@ -341,15 +341,27 @@ OnlineGame.prototype.getProposalResultExtendedInformation = function(playerId) {
                 const isViewerTheDestination = playerAffect.destinationId === playerId;
             
                 if (playerAffect.name === "Protect") {
-                    if (isViewerTheSource) {
+                    const isViewerTheBinder = playerAffect.bindSourceId === playerId;
+                    const isBinderASpy = this.players[playerAffect.bindSourceId].isSpy;
+                    const isDestinationASpy = this.players[playerAffect.destinationId].isSpy;
+
+                    // If you casted the protect, were blocked or spy buddy was blocked
+                    if (isViewerTheSource || isViewerTheBinder || (isSpy && (isDestinationASpy || isBinderASpy))) {
                         visibleAffect = {
                             name: playerAffect.name,
                             type: playerAffect.type
                         };
-                        if (isViewerTheDestination) {
-                            bindInformation.push(`You successfully protected yourself from a <span class="${playerAffect.type.toLowerCase()}">${playerAffect.type}</span> bind.`);
+
+                        if (isViewerTheSource) {
+                            if (isViewerTheDestination) {
+                                bindInformation.push(`You successfully protected yourself from a <span class="${playerAffect.type.toLowerCase()}">${playerAffect.type}</span> bind.`);
+                            } else {
+                                bindInformation.push(`You successfully protected ${this.players[id].name} from a <span class="${playerAffect.type.toLowerCase()}">${playerAffect.type}</span> bind.`);
+                            }
+                        } else if (isViewerTheBinder || isDestinationASpy) {
+                            bindInformation.push(`<span class="${playerAffect.type.toLowerCase()}">${playerAffect.type}</span> bind on ${this.players[id].name} was blocked!`);
                         } else {
-                            bindInformation.push(`You successfully protected ${this.players[id].name} from a <span class="${playerAffect.type.toLowerCase()}">${playerAffect.type}</span> bind.`);
+                            bindInformation.push(`${this.players[playerAffect.bindSourceId].name}'s <span class="${playerAffect.type.toLowerCase()}">${playerAffect.type}</span> bind on ${this.players[id].name} was blocked!`);
                         }
                     }
                 } else if (playerAffect.name === "Bind") {

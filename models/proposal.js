@@ -129,26 +129,47 @@ Proposal.prototype.finalize = function() {
             }
     
             if (resistanceProtected) {
-                /*
-                if (!resistanceProtect || !resistanceBind.valid) {
-                    // Morgana protected
-                    finalizedPlayerAffects.push({
-                        name: "Protect",
-                        type: "Resistance",
-                        sourceId: playerId,
-                        destinationId: playerId
-                    });
+                if (!resistanceProtect) {
+                    if (!resistanceBind.valid) {
+                        // Morgana protected
+                        finalizedPlayerAffects.push({
+                            name: "Protect",
+                            type: "Resistance",
+                            sourceId: playerId,
+                            destinationId: playerId,
+                            bindSourceId: resistanceBind.sourceId
+                        });
+                    } else {
+                        // Binds cancelled each other
+                        finalizedPlayerAffects.push({
+                            name: "Protect",
+                            type: "Resistance",
+                            sourceId: null,
+                            destinationId: playerId,
+                            bindSourceId: resistanceBind.sourceId
+                        });
+                    }
                 } else {
+                    resistanceProtect.bindSourceId = resistanceBind.sourceId;
                     finalizedPlayerAffects.push(resistanceProtect);
                 }
                 this.playerIdByAffect.set(Affects.getAffectKey(Affects.ResistanceProtectAffect), playerId);
-                */
-                finalizedPlayerAffects.push(resistanceProtect);
-                this.playerIdByAffect.set(Affects.getAffectKey(resistanceProtect), playerId);
             }
             if (spyProtected) {
-                finalizedPlayerAffects.push(spyProtect);
-                this.playerIdByAffect.set(Affects.getAffectKey(spyProtect), playerId);
+                if (!spyProtect) {
+                    // Binds cancelled each other
+                    finalizedPlayerAffects.push({
+                        name: "Protect",
+                        type: "Spy",
+                        sourceId: null,
+                        destinationId: playerId,
+                        bindSourceId: spyBind.sourceId
+                    });
+                } else {
+                    spyProtect.bindSourceId = spyBind.sourceId;
+                    finalizedPlayerAffects.push(spyProtect);
+                }
+                this.playerIdByAffect.set(Affects.getAffectKey(Affects.SpyProtectAffect), playerId);
             }
     
             if (finalizedPlayerAffects.length > 0) {
@@ -212,7 +233,6 @@ Proposal.prototype.getUsedAffects = function() {
     for (let blockedAffect of this.blockedAffects) {
         usedAffects.push(Affects.getAffectFromKey(blockedAffect));
     }
-    console.log("Used affects: %j", usedAffects);
     return usedAffects;
 }
 
