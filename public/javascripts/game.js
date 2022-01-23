@@ -1,4 +1,5 @@
 const ROOT_URL = "https://extavalon.com";
+//const ROOT_URL = "http://localhost:25565";
 
 const BACK_BUTTON_ID = "back-button";
 const MENU_BUTTON_ID = "menu-button";

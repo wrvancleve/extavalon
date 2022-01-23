@@ -129,6 +129,20 @@ Proposal.prototype.finalize = function() {
             }
     
             if (resistanceProtected) {
+                /*
+                if (!resistanceProtect || !resistanceBind.valid) {
+                    // Morgana protected
+                    finalizedPlayerAffects.push({
+                        name: "Protect",
+                        type: "Resistance",
+                        sourceId: playerId,
+                        destinationId: playerId
+                    });
+                } else {
+                    finalizedPlayerAffects.push(resistanceProtect);
+                }
+                this.playerIdByAffect.set(Affects.getAffectKey(Affects.ResistanceProtectAffect), playerId);
+                */
                 finalizedPlayerAffects.push(resistanceProtect);
                 this.playerIdByAffect.set(Affects.getAffectKey(resistanceProtect), playerId);
             }
