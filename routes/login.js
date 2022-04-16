@@ -4,11 +4,12 @@ const { check, validationResult } = require('express-validator');
 const { getPlayerId } = require('../models/database');
 
 function titleCase(str) {
-    if ((str === null) || (str === ''))
+    if ((str === null) || (str === '')) {
         return false;
-    else
+    } else {
         str = str.toString();
         str = str.trim();
+    }
 
     return str.replace(/\w\S*/g, function (txt) { return txt.charAt(0).toUpperCase() + txt.substr(1).toLowerCase(); });
 }
