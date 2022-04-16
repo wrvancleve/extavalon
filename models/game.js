@@ -167,7 +167,7 @@ Game.prototype.setMissionResults = function(missionResults) {
     let roundsWinner = null;
     for (let missionResult of missionResults) {
         if (missionResult !== null) {
-            roundsWinner = this._processMissionResult(missionResult === "Resistance" ? "Success" : "Fail")
+            roundsWinner = this._processMissionResult(missionResult === "Resistance" ? "Success" : "Fail");
         }
         this.missions.push(missionResult);
     }
@@ -303,7 +303,11 @@ Game.prototype.getGameResultInformation = function() {
         };
         if (this.playersByRole.has(Roles.Puck.name)) {
             gameResultInformation.puck = this.playersByRole.get(Roles.Puck.name).getPlayerInformation(["name"]);
-            gameResultInformation.puck.won = this.currentMissionId === 4
+            if (this.missions[this.NUM_MISSIONS - 1] instanceof String) {
+                gameResultInformation.puck.won = this.winner === "Resistance" && this.missions[this.NUM_MISSIONS - 1] === "Resistance";
+            } else {
+                gameResultInformation.puck.won = this.winner === "Resistance" && this.missions[this.NUM_MISSIONS - 1].result === "Success";
+            }
         }
         if (this.playersByRole.has(Roles.Jester.name)) {
             gameResultInformation.jester = this.playersByRole.get(Roles.Jester.name).getPlayerInformation(["name"]);
