@@ -261,10 +261,8 @@ Game.prototype.processAssassinationAttempt = function(conductAssassinationInform
     const targetOne = this._getPlayer(ids[0]);
     const targetTwo = role === "Lovers" ? this._getPlayer(ids[1]) : null;
 
-    if (targetOne.role === Roles.Jester.name) {
-        this.winner = targetOne.name;
-    } else if (targetTwo && targetTwo.role === Roles.Jester.name) {
-        this.winner = targetTwo.name;
+    if (targetOne.role === Roles.Jester.name || (targetTwo && targetTwo.role === Roles.Jester.name)) {
+        this.winner = Roles.Jester.name;
     } else {
         switch (role) {
             case Roles.Merlin.name:

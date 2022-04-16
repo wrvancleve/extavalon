@@ -36,6 +36,7 @@ router.post('/', function (req, res) {
             if (err) {
                 res.redirect(`/login`);
             } else {
+                res.set('credentials', 'include');
                 res.cookie('userId', result);
                 res.cookie('firstName', firstName);
                 res.cookie('lastName', lastName);
