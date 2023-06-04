@@ -9,12 +9,15 @@ const logger = require('morgan');
 const expressSession = require('express-session');
 const http = require('http');
 const sassMiddleware = require('node-sass-middleware');
+const cors = require('cors')
 
 const indexRouter = require('./routes/index');
 const loginRouter = require('./routes/login');
 const profileRouter = require('./routes/profile');
 const statsRouter = require('./routes/stats');
 const gameRouter = require('./routes/game');
+
+const ROOT_URL = process.env.ROOT_URL;
 
 const createGameServer = require('./models/gameServer');
 
@@ -30,6 +33,9 @@ const sessionMiddleware = expressSession({
   secure: true
 });
 
+app.use(cors({
+  origin: ROOT_URL
+}));
 app.use(sessionMiddleware);
 app.use(logger('dev'));
 app.use(bodyParser.json());
