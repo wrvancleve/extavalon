@@ -5,13 +5,12 @@ const lobbyManager = require('../models/lobbyManager');
 
 router.get('/', authenticate, function (req, res) {
     const code = req.query.code;
-    res.cookie('lastGameCode', code);
     req.session.backURL = '/?menu=join';
 
     if (lobbyManager.has(code)) {
         const lobby = lobbyManager.get(code);
-        const host = lobby.host === req.cookies.userId;
-        const lobbyFull = !lobby.playerCollection.doesUserIdExist(req.cookies.userId) && lobby.playerCollection.getPlayerCount() === 10;
+        const host = lobby.host === req.session.userId;
+        const lobbyFull = !lobby.playerCollection.doesUserIdExist(req.session.userId) && lobby.playerCollection.getPlayerCount() === 10;
 
         if (lobbyFull) {
             req.session.errors = [{ msg: "Game full!" }]
@@ -44,7 +43,7 @@ router.post('/', authenticate, function (req, res) {
         cerdic: type === 'online' && req.body.spybind === "on",
         sirrobin: type === 'online' && req.body.sirrobin === "on"
     };
-    const code = lobbyManager.create(req.cookies.userId, type, settings);
+    const code = lobbyManager.create(req.session.userId, type, settings);
     res.redirect(`/game?code=${code}`);
 });
 

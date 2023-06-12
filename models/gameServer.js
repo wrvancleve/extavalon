@@ -31,7 +31,8 @@ function createGameServer(httpServer, sessionMiddleware) {
     }, 600000);
 
     function updatePlayer(lobby, socket) {
-        const userId = socket.handshake.query.userId;
+        //const userId = socket.handshake.query.userId;
+        const userId = socket.request.session.userId;
         const socketId = socket.id;
         lobby.playerCollection.updatePlayer(userId, socketId, true);
 
@@ -475,7 +476,8 @@ function createGameServer(httpServer, sessionMiddleware) {
 
     io.on('connection', socket => {
         const code = socket.handshake.query.code;
-        const userId = socket.handshake.query.userId;
+        //const userId = socket.handshake.query.userId;
+        const userId = socket.request.session.userId;
 
         const lobby = lobbyManager.get(code);
         if (lobby) {

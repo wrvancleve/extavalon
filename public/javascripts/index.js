@@ -117,12 +117,14 @@ function createGameSettingItem(text, name, checked=true) {
     return settingItem;
 }
 
+/*
 function parseCookie(str) {
     return str.split(';').map(v => v.split('=')).reduce((acc, v) => {
       acc[decodeURIComponent(v[0].trim())] = decodeURIComponent(v[1].trim());
       return acc;
     }, {});
 };
+*/
 
 document.addEventListener('DOMContentLoaded', function () {
     const root = document.getElementById(ROOT_ID);
@@ -132,11 +134,13 @@ document.addEventListener('DOMContentLoaded', function () {
         ignoreQueryPrefix: true
     });
 
+    /*
     let lastGameCode = null;
     const parsedCookie = parseCookie(document.cookie);
     if (parsedCookie.lastGameCode) {
         lastGameCode = parsedCookie.lastGameCode;
     }
+    */
 
     function clearMain(clearErrors) {
         if (clearErrors) {
@@ -258,9 +262,11 @@ document.addEventListener('DOMContentLoaded', function () {
         const joinButton = createSubmitInput(JOIN_GAME_BUTTON_TEXT);
         const backButton = createButton(BACK_BUTTON_ID, BACK_BUTTON_TEXT, false);
 
+        /*
         if (parsedCookie.lastGameCode) {
             gameCodeInput.value = parsedCookie.lastGameCode;
         }
+        */
         gameCodeInput.oninput = function () {
             let p=this.selectionStart;
             this.value=this.value.toUpperCase();

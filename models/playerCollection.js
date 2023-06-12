@@ -74,10 +74,13 @@ class PlayerCollection {
     }
 
     addPlayer(socket) {
-        const userId = socket.handshake.query.userId;
+        //const userId = socket.handshake.query.userId;
+        const userId = socket.request.session.userId;
         const socketId = socket.id;
-        const firstName = socket.handshake.query.firstName;
-        const lastName = socket.handshake.query.lastName;
+        //const firstName = socket.handshake.query.firstName;
+        //const lastName = socket.handshake.query.lastName;
+        const firstName = socket.request.session.firstName;
+        const lastName = socket.request.session.lastName;
         const displayName = this._getDisplayNameFromFirstAndLastName(userId, firstName, lastName);
         const newPlayer = {
             userId: userId,

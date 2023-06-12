@@ -1,9 +1,5 @@
-function checkCookie(cookie) {
-    return cookie && (!cookie.expires || cookie.expires > Date.now())
-}
-
 module.exports = function (req, res, next) {
-    if (!checkCookie(req.cookies.firstName) || !checkCookie(req.cookies.lastName) || !checkCookie(req.cookies.userId)) {
+    if (req.session.firstName == null || req.session.lastName == null || req.session.userId == null) {
         res.redirect(`/login`);
     } else {
         return next();

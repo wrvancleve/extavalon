@@ -15,13 +15,12 @@ function titleCase(str) {
 }
 
 router.get('/', function (req, res) {
-    res.cookie('userId', { expires: Date.now() });
-    res.cookie('firstName', { expires: Date.now() });
-    res.cookie('lastName', { expires: Date.now() });
+    req.session.userId = undefined;
+    req.session.firstName = undefined;
+    req.session.lastName = undefined;
     const errors = req.session.errors;
     req.session.errors = null;
     res.render('login', { title: 'Login', errors: errors });
-
 });
 
 router.post('/', function (req, res) {
@@ -38,10 +37,9 @@ router.post('/', function (req, res) {
             if (err) {
                 res.redirect(`/login`);
             } else {
-                res.set('credentials', 'include');
-                res.cookie('userId', result);
-                res.cookie('firstName', firstName);
-                res.cookie('lastName', lastName);
+                req.session.userId = result;
+                req.session.firstName = firstName;
+                req.session.lastName = lastName;
                 res.redirect(`/`);
             }
         });

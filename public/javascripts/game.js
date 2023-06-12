@@ -179,6 +179,7 @@ const {code} = Qs.parse(location.search, {
     ignoreQueryPrefix: true
 });
 
+/*
 const parsedCookie = document.cookie.split(';').map(v => v.split('=')).reduce((acc, v) => {
     acc[decodeURIComponent(v[0].trim())] = decodeURIComponent(v[1].trim());
     return acc;
@@ -186,9 +187,11 @@ const parsedCookie = document.cookie.split(';').map(v => v.split('=')).reduce((a
 const userId = parsedCookie.userId;
 const firstName = parsedCookie.firstName;
 const lastName = parsedCookie.lastName;
+*/
 const amHost = startGameButton !== null && startGameButton !== undefined;
  
-const socket = io.connect(`${ROOT_URL}?code=${code}&userId=${userId}&firstName=${firstName}&lastName=${lastName}`);
+//const socket = io.connect(`${ROOT_URL}?code=${code}&userId=${userId}&firstName=${firstName}&lastName=${lastName}`);
+const socket = io.connect(`${ROOT_URL}?code=${code}`);
 
 socket.on('role:setup', () => {
     handleRoleSetup();

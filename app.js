@@ -3,7 +3,6 @@ require('dotenv').config({ path: `${__dirname}/.env` })
 const createError = require('http-errors');
 const express = require('express');
 const path = require('path');
-const cookieParser = require('cookie-parser');
 const bodyParser = require('body-parser');
 const logger = require('morgan');
 const expressSession = require('express-session');
@@ -26,21 +25,29 @@ const app = express();
 app.set('views', path.join(__dirname, 'views'));
 app.set('view engine', 'ejs');
 
-const sessionMiddleware = expressSession({
+const sessionMiddlewareOptions = {
   secret: 'extavalon',
   resave: false,
   saveUninitialized: false,
-  secure: true
-});
+  cookie: {
+    httpOnly: true,
+    secure: false
+  }
+};
 
 app.use(cors({
   origin: ROOT_URL
 }));
+if (app.get('env') === 'production') {
+  app.set('trust proxy', 1);
+  sessionMiddlewareOptions.cookie.secure = true;
+}
+const sessionMiddleware = expressSession(sessionMiddlewareOptions);
+app.set('trust proxy', 1);
 app.use(sessionMiddleware);
 app.use(logger('dev'));
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: false }));
-app.use(cookieParser());
 app.use(
   sassMiddleware({
     src: __dirname + '/sass',
@@ -84,13 +91,7 @@ process.on('SIGINT', function() {
   process.exit();
 });
 
-const fs = require('fs');
-const util = require('util');
-
-var log_file_err=fs.createWriteStream(__dirname + '/error.log',{flags:'a'});  
-
 process.on('uncaughtException', function(err) {
-  log_file_err.write(util.format('Caught exception: ' + err) + '\n');
   process.exit();
 });
 

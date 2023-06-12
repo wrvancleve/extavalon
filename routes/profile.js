@@ -4,8 +4,8 @@ const authenticate = require('../middleware/authenticate');
 const { getGameLog } = require('../models/database');
 
 router.get('/', authenticate, function(req, res) {
-  getGameLog(req.cookies.userId, (gameLog) => {
-    res.render('profile', { title: 'Profile', firstName: req.cookies.firstName, lastName: req.cookies.lastName, gameLog: gameLog });
+  getGameLog(req.session.userId, (gameLog) => {
+    res.render('profile', { title: 'Profile', firstName: req.session.firstName, lastName: req.session.lastName, gameLog: gameLog });
   });
 });
 
