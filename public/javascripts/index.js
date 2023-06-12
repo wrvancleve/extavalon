@@ -69,7 +69,7 @@ function createButton(id, text, disabled) {
     return button;
 }
 
-function createForm(method, type) {
+function createForm(method, type, submitEvent) {
     const form = document.createElement("form");
     form.method = method;
     form.action = "/game";
@@ -77,6 +77,9 @@ function createForm(method, type) {
     form.addEventListener('submit', (event) => {
         if (type) {
             form.appendChild(createHiddenInput("type", type));
+        }
+        if (submitEvent) {
+            submitEvent();
         }
         form.submit();
     });
@@ -134,14 +137,6 @@ document.addEventListener('DOMContentLoaded', function () {
         ignoreQueryPrefix: true
     });
 
-    /*
-    let lastGameCode = null;
-    const parsedCookie = parseCookie(document.cookie);
-    if (parsedCookie.lastGameCode) {
-        lastGameCode = parsedCookie.lastGameCode;
-    }
-    */
-
     function clearMain(clearErrors) {
         if (clearErrors) {
             var rootChildren = root.children;
@@ -177,6 +172,8 @@ document.addEventListener('DOMContentLoaded', function () {
         newGameButton.onclick = showNewGameMenu;
         joinGameButton.onclick = showJoinGameMenu;
         signoutButton.onclick = function () {
+            localStorage.removeItem("firstName");
+            localStorage.removeItem("lastName");
             location.assign(`${ROOT_URL}/login`);
         };
 
@@ -256,17 +253,20 @@ document.addEventListener('DOMContentLoaded', function () {
 
     function showJoinGameMenu(clearErrors=true) {
         clearMain(clearErrors);
-
-        const joinForm = createForm("get");
+        
         const gameCodeInput = createTextInput(null, GAME_CODE_INPUT_NAME, GAME_CODE_INPUT_PLACEHOLDER, 4);
         const joinButton = createSubmitInput(JOIN_GAME_BUTTON_TEXT);
         const backButton = createButton(BACK_BUTTON_ID, BACK_BUTTON_TEXT, false);
 
-        /*
-        if (parsedCookie.lastGameCode) {
-            gameCodeInput.value = parsedCookie.lastGameCode;
+        function submitJoinEvent() {
+            sessionStorage.setItem("lastGameCode", gameCodeInput.value);
         }
-        */
+        const joinForm = createForm("get", undefined, submitJoinEvent);
+
+        const lastGameCode = sessionStorage.getItem("lastGameCode");
+        if (lastGameCode) {
+            gameCodeInput.value = lastGameCode;
+        }
         gameCodeInput.oninput = function () {
             let p=this.selectionStart;
             this.value=this.value.toUpperCase();

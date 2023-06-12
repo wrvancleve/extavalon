@@ -3,17 +3,6 @@ const router = express.Router();
 const { check, validationResult } = require('express-validator');
 const { getPlayerId } = require('../models/database');
 
-function titleCase(str) {
-    if ((str === null) || (str === '')) {
-        return false;
-    } else {
-        str = str.toString();
-        str = str.trim();
-    }
-
-    return str.replace(/\w\S*/g, function (txt) { return txt.charAt(0).toUpperCase() + txt.substr(1).toLowerCase(); });
-}
-
 router.get('/', function (req, res) {
     req.session.userId = undefined;
     req.session.firstName = undefined;
@@ -31,8 +20,8 @@ router.post('/', function (req, res) {
         req.session.errors = errors.array();
         res.redirect(`/login`);
     } else {
-        const firstName = titleCase(req.body.firstName);
-        const lastName = titleCase(req.body.lastName);
+        const firstName = req.body.firstName;
+        const lastName = req.body.lastName;
         getPlayerId(firstName, lastName, (err, result) => {
             if (err) {
                 res.redirect(`/login`);

@@ -38,6 +38,7 @@ const sessionMiddlewareOptions = {
 app.use(cors({
   origin: ROOT_URL
 }));
+console.log(`Running in ${app.get('env')} mode`);
 if (app.get('env') === 'production') {
   app.set('trust proxy', 1);
   sessionMiddlewareOptions.cookie.secure = true;
