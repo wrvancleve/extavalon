@@ -101,6 +101,8 @@ Player.prototype.getPlayerHTML = function() {
             return this._getGaherisHTML();
         case Roles.Geraint.name:
             return this._getGeraintHTML();
+        case Roles.Bors.name:
+            return this._getBorsHTML();
         case Roles.Mordred.name:
             return this._getMordredHTML();
         case Roles.Morgana.name:
@@ -117,6 +119,8 @@ Player.prototype.getPlayerHTML = function() {
             return this._getCerdicHTML();
         case Roles.Cynric.name:
             return this._getCynricHTML();
+        case Roles.Ryons.name:
+            return this._getRyonsHTML();
         default:
             return null;
     }
@@ -486,6 +490,23 @@ Player.prototype._getLamorakHTML = function () {
     return lamorakHTML;
 }
 
+Player.prototype._getBorsHTML = function() {
+    let borsHTML = `
+        <h2 class="future-header resistance">Bors</h2><section>
+    `;
+    borsHTML += `<p>You see:</p></section><section>`;
+
+    const sightPair = this.intel[0];
+    borsHTML += `<p>${sightPair[0].name} has information on ${sightPair[1].name}</p>`;
+    borsHTML += `</section>`;
+
+    if (this.intel.length > 1) {
+        borsHTML += this._getResistanceEctorHTML();
+    }
+
+    return borsHTML;
+}
+
 Player.prototype._getSirRobinHTML = function () {
     return `
         <h2 class="future-header resistance">Sir Robin</h2>
@@ -608,6 +629,21 @@ Player.prototype._getLuciusHTML = function() {
 
     luciusHTML += this._getSpyHTML();
     return luciusHTML;
+}
+
+Player.prototype._getRyonsHTML = function() {
+    let ryonsHTML = `
+        <h2 class="future-header spy">Ryons</h2>
+        <section>
+            <p>You hijacked the visions of the <span class="resistance">Resistance</span> and found:</p>
+        </section>
+        <section>
+            <p>${this.intel[1].name} has information about another <span class="resistance">Resistance</span> player.</p>
+        </section>
+    `;
+
+    ryonsHTML += this._getSpyHTML();
+    return ryonsHTML;
 }
 
 Player.prototype._getCerdicHTML = function() {

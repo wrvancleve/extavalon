@@ -1,3 +1,5 @@
+const crypto = require("crypto");
+
 const FiniteSet = require('./finiteSet');
 
 function RandomSample() {
@@ -31,7 +33,8 @@ RandomSample.prototype.select = function(count) {
     const selections = new Set();
     
     while (selections.size < count) {
-        const randomIndex = Math.floor(Math.random() * this.possibilities.size);
+        //const randomIndex = Math.floor(Math.random() * this.possibilities.size);
+        const randomIndex = crypto.randomInt(0, this.possibilities.size);
         const randomSelection = Array.from(this.possibilities)[randomIndex];
     
         const newSelections = [randomSelection];

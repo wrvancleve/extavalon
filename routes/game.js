@@ -36,6 +36,7 @@ router.post('/', authenticate, function (req, res) {
         titania: req.body.titania === "on",
         accolon: req.body.accolon === "on",
         bors: req.body.bors === "on",
+        ryons: req.body.ryons === "on",
         lamorak: req.body.lamorak === "on",
         gaheris: type === 'online' && req.body.resistancebind === "on",
         geraint: type === 'online' && req.body.spybind === "on",

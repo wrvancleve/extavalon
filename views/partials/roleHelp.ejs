@@ -44,6 +44,11 @@
     <li>
         <span class="resistance">Galahad</span>: Sees <span class="resistance">Arthur</span>
     </li>
+    <% if (settings.bors) { %>
+    <li>
+        (7+) <span class="resistance">Bors</span>: Sees the random sight of a random player
+    </li>
+    <% } %>
     <% if (settings.gaheris) { %>
     <li>
         (7+) <span class="resistance">Gaheris</span>: Can bind a player on a mission to the <span class="resistance">Resistance</span>
@@ -120,6 +125,11 @@
             (7+) <span class="spy">Accolon</span>: Sabotages the vision of a random <span class="resistance">resistance</span> player
         </li>
         <% } %>
+    <% } %>
+    <% if (settings.ryons) { %>
+    <li>
+        (8+) <span class="spy">Ryons</span>: Sees a random <span class="resistance">resistance</span> player that has information about another <span class="resistance">resistance</span> player
+    </li>
     <% } %>
     <% if (settings.cerdic) { %>
     <li>

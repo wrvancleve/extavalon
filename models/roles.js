@@ -33,6 +33,10 @@ const Lucius = {
     name: "Lucius",
     team: "Spies"
 };
+const Ryons = {
+    name: "Ryons",
+    team: "Spies"
+};
 
 const Merlin = {
     name: "Merlin",
@@ -179,6 +183,8 @@ function getRoleOfName(roleName) {
             return Cerdic;
         case "Cynric":
             return Cynric;
+        case "Ryons":
+            return Ryons;
         case "Merlin":
             return Merlin;
         case "Percival":
@@ -496,9 +502,17 @@ function getResistanceNonAssassinatableRolesSample(playerCount, resistanceCount,
                 nonAssassinatableRolesSample.addDisjunction(new Set([Lancelot, Puck]));
             }
         }
+
+        if (settings.bors && !usedResistanceRoles.has(Bors)) {
+            nonAssassinatableRolesSample.addPossibility(Bors);
+        }
     } else {
         if (!usedResistanceRoles.has(Bedivere)) {
             nonAssassinatableRolesSample.addPossibility(Bedivere);
+        }
+
+        if (settings.bors && !usedResistanceRoles.has(Bors)) {
+            nonAssassinatableRolesSample.addPossibility(Bors);
         }
 
         if (settings.lamorak && !usedResistanceRoles.has(Lamorak)) {
@@ -602,6 +616,10 @@ function getSpyRolesSample(playerCount, spyCount, usedSpyRoles, usedResistanceRo
     }
 
     if (playerCount === 7) {
+        if (!usedSpyRoles.has(Lucius)) {
+            spyRolesSample.addPossibility(Lucius);
+        }
+
         if (!usedSpyRoles.has(Cerdic) && !usedSpyRoles.has(Accolon) && !usedSpyRoles.has(Cynric)) {
             const possibility = [];
             if (settings.accolon && !usedResistanceRoles.has(Ector)) {
@@ -621,6 +639,19 @@ function getSpyRolesSample(playerCount, spyCount, usedSpyRoles, usedResistanceRo
             }
         }
     } else if (playerCount > 7) {
+        if (!usedSpyRoles.has(Lucius)) {
+            spyRolesSample.addPossibility(Lucius);
+        }
+
+        if (settings.ryons && !usedSpyRoles.has(Ryons) && (
+            (usedResistanceRoles.has(Merlin) && usedResistanceRoles.has(Puck)) || usedResistanceRoles.has(Tristan)
+            || (usedResistanceRoles.has(Percival) && usedResistanceRoles.has(Merlin))
+            || (usedResistanceRoles.has(Guinevere) && usedResistanceRoles.has(Lancelot))
+            || usedResistanceRoles.has(Galahad) || usedResistanceRoles.has(Uther) || usedResistanceRoles.has(Lamorak)
+        )) {
+            spyRolesSample.addPossibility(Ryons);
+        }
+
         if (settings.cynric && !usedSpyRoles.has(Cynric) && usedResistanceRoles.has(Gaheris)) {
             spyRolesSample.addPossibility(Cynric);
         }
@@ -640,10 +671,6 @@ function getSpyRolesSample(playerCount, spyCount, usedSpyRoles, usedResistanceRo
                 }
             }
         }
-
-        if (!usedSpyRoles.has(Lucius) && spyRolesSample.size < spyCount - usedSpyRoles.size) {
-            spyRolesSample.addPossibility(Lucius);
-        }
     }
 
     return spyRolesSample;
@@ -659,6 +686,7 @@ module.exports = {
     Accolon,
     Cerdic,
     Cynric,
+    Ryons,
     Merlin,
     Percival,
     Uther,

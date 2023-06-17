@@ -93,6 +93,7 @@ process.on('SIGINT', function() {
 });
 
 process.on('uncaughtException', function(err) {
+  console.log(err);
   process.exit();
 });
 

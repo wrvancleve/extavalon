@@ -135,7 +135,8 @@ const RESISTANCE_ROLES = [
     "Gaheris",
     "Kay",
     "Sir Robin",
-    "Lamorak"
+    "Lamorak",
+    "Bors"
 ]
 const RESISTANCE_KEY_WORDS = [
     "Resistance",
@@ -152,6 +153,7 @@ const SPY_ROLES = [
     "Morgana",
     "Cerdic",
     "Cynric",
+    "Ryons"
 ];
 const SPY_KEY_WORDS = [
     "Spies"    
