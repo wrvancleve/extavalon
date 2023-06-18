@@ -9,8 +9,11 @@ const {
     insertGamePlayer
 } = require('./database');
 
-function createGameServer(httpServer, sessionMiddleware) {
-    const io = require('socket.io')(httpServer, {allowEIO3: true});
+function createGameServer(httpServer, corsOptions, sessionMiddleware) {
+    const io = require('socket.io')(httpServer, {
+        allowEIO3: true,
+        cors: corsOptions
+    });
     io.use(function (socket, next) {
         sessionMiddleware(socket.request, socket.request.res || {}, next);
     });

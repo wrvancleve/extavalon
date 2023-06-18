@@ -38,7 +38,8 @@ const sessionMiddlewareOptions = {
 };
 
 const corsOptions = {
-  origin: [ROOT_URL]
+  origin: [ROOT_URL],
+  credentials: true
 }
 if (app.get('env') === 'production') {
   corsOptions.origin.push(ROOT_URL.replace("https://", "https://www."))
@@ -50,7 +51,6 @@ if (app.get('env') === 'production') {
   sessionMiddlewareOptions.cookie.secure = true;
 }
 const sessionMiddleware = expressSession(sessionMiddlewareOptions);
-app.set('trust proxy', 1);
 app.use(sessionMiddleware);
 app.use(logger('dev'));
 app.use(bodyParser.json());
@@ -73,7 +73,7 @@ app.use('/game', gameRouter);
 
 app.createServer = function() {
   const server = http.createServer(app);
-  createGameServer(server, sessionMiddleware);
+  createGameServer(server, corsOptions, sessionMiddleware);
   return server;
 };
 
