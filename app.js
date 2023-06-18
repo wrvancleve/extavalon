@@ -25,6 +25,8 @@ const app = express();
 app.set('views', path.join(__dirname, 'views'));
 app.set('view engine', 'ejs');
 
+console.log(`Running in ${app.get('env')} mode`);
+
 const sessionMiddlewareOptions = {
   secret: 'extavalon',
   resave: false,
@@ -35,10 +37,14 @@ const sessionMiddlewareOptions = {
   }
 };
 
-app.use(cors({
-  origin: ROOT_URL
-}));
-console.log(`Running in ${app.get('env')} mode`);
+const corsOptions = {
+  origin: [ROOT_URL]
+}
+if (app.get('env') === 'production') {
+  corsOptions.origin.push(ROOT_URL.replace("https://", "https://www."))
+}
+app.use(cors(corsOptions));
+
 if (app.get('env') === 'production') {
   app.set('trust proxy', 1);
   sessionMiddlewareOptions.cookie.secure = true;
